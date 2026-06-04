@@ -278,17 +278,31 @@
   }
   .step-del:hover { color: #ff4444; }
 
-  /* ========== パレート ========== */
-  .pareto-wrap {
-    flex: 1; padding: 14px; overflow-y: auto;
+  /* ========== 分析タブ ========== */
+  .analysis-wrap {
+    flex: 1; padding: 12px; overflow-y: auto;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .analysis-wrap::-webkit-scrollbar { width: 3px; }
+  .analysis-wrap::-webkit-scrollbar-thumb { background: var(--border); }
+
+  .chart-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 14px;
     display: flex; flex-direction: column; gap: 10px;
   }
-  .pareto-legend { display: flex; gap: 14px; flex-wrap: wrap; }
+  .chart-card-title {
+    font-family: var(--mono); font-size: 10px; color: var(--accent);
+    letter-spacing: 0.1em;
+  }
+  .chart-legend { display: flex; gap: 12px; flex-wrap: wrap; }
   .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-dim); }
-  .legend-dot  { width: 10px; height: 10px; border-radius: 2px; }
-  .pareto-card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 8px; padding: 14px; flex: 1; min-height: 300px; position: relative;
+  .legend-dot  { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+  .chart-canvas-wrap { position: relative; }
+  .chart-empty {
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: 8px; color: var(--text-dim);
+    font-size: 12px; min-height: 120px;
   }
 
   /* ========== 右パネル ========== */
@@ -391,7 +405,7 @@
   <div class="panel-center">
     <div class="tab-bar">
       <button class="tab-btn active" onclick="switchTab('editor')">工程エディタ</button>
-      <button class="tab-btn" onclick="switchTab('pareto')">パレート図</button>
+      <button class="tab-btn" onclick="switchTab('analysis')">分析</button>
     </div>
 
     <!-- エディタ -->
@@ -408,22 +422,57 @@
       <div class="step-list" id="stepList"></div>
     </div>
 
-    <!-- パレート -->
-    <div class="tab-content" id="tab-pareto">
-      <div class="pareto-wrap">
-        <div class="pareto-legend">
-          <div class="legend-item"><div class="legend-dot" style="background:var(--type-va)"></div>主要 (VA)</div>
-          <div class="legend-item"><div class="legend-dot" style="background:var(--type-sv)"></div>補助 (SV)</div>
-          <div class="legend-item"><div class="legend-dot" style="background:var(--type-nva)"></div>ムダ (NVA)</div>
-          <div class="legend-item"><div class="legend-dot" style="background:var(--accent);border-radius:50%"></div>累積%</div>
-        </div>
-        <div class="pareto-card">
-          <canvas id="paretoChart"></canvas>
-          <div id="paretoEmpty" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--text-dim);font-size:12px;flex-direction:column;gap:8px">
-            <div style="font-size:28px;opacity:0.2">📊</div>
-            <div>工程エディタで要素を追加するとグラフが表示されます</div>
+    <!-- 分析タブ -->
+    <div class="tab-content" id="tab-analysis">
+      <div class="analysis-wrap">
+
+        <!-- 1. パレート図 -->
+        <div class="chart-card">
+          <div class="chart-card-title">パレート図（時間降順）</div>
+          <div class="chart-legend">
+            <div class="legend-item"><div class="legend-dot" style="background:var(--type-va)"></div>主要 (VA)</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--type-sv)"></div>補助 (SV)</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--type-nva)"></div>ムダ (NVA)</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--accent);border-radius:50%"></div>累積%</div>
+          </div>
+          <div class="chart-canvas-wrap" style="height:280px">
+            <canvas id="paretoChart"></canvas>
+            <div id="paretoEmpty" class="chart-empty" style="position:absolute;inset:0">
+              <div style="font-size:24px;opacity:0.2">📊</div>
+              <div>工程エディタで要素を追加してください</div>
+            </div>
           </div>
         </div>
+
+        <!-- 2. VA/SV/NVA ドーナツ -->
+        <div class="chart-card">
+          <div class="chart-card-title">動作分類の内訳（時間比率）</div>
+          <div class="chart-legend">
+            <div class="legend-item"><div class="legend-dot" style="background:var(--type-va)"></div>主要 (VA)</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--type-sv)"></div>補助 (SV)</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--type-nva)"></div>ムダ (NVA)</div>
+          </div>
+          <div class="chart-canvas-wrap" style="height:220px">
+            <canvas id="donutChart"></canvas>
+            <div id="donutEmpty" class="chart-empty" style="position:absolute;inset:0">
+              <div style="font-size:24px;opacity:0.2">🥧</div>
+              <div>工程エディタで要素を追加してください</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. カテゴリ別横棒 -->
+        <div class="chart-card">
+          <div class="chart-card-title">カテゴリ別時間（秒）</div>
+          <div class="chart-canvas-wrap" style="height:220px">
+            <canvas id="catChart"></canvas>
+            <div id="catEmpty" class="chart-empty" style="position:absolute;inset:0">
+              <div style="font-size:24px;opacity:0.2">📋</div>
+              <div>工程エディタで要素を追加してください</div>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
@@ -546,7 +595,7 @@ const DEFAULT_LIBRARY = [
   { id:'f7',  cat:'固定系', icon:'📍', name:'ピン・キーを抜く',              sec:2.0, param:'none', defaultType:'sv'  },
 
   { id:'wl1', cat:'溶接・接合系', icon:'⚡', name:'スポット溶接する',        sec:2.0, param:'none',     defaultType:'va' },
-  { id:'wl2', cat:'溶接・接合系', icon:'🔦', name:'アーク溶接する',          sec:5.0, param:'distance', secPerUnit:0.05, defaultType:'va' },
+  { id:'wl2', cat:'溶接・接合系', icon:'🔦', name:'アーク溶接する',          sec:5.0, param:'none',                     defaultType:'va' },
   { id:'wl3', cat:'溶接・接合系', icon:'🟡', name:'ろう付けする',            sec:4.0, param:'none',     defaultType:'va' },
   { id:'wl4', cat:'溶接・接合系', icon:'💧', name:'接着剤を塗布・圧着する',  sec:4.0, param:'none',     defaultType:'va' },
   { id:'wl5', cat:'溶接・接合系', icon:'🔗', name:'リベット・かしめる',      sec:3.0, param:'none',     defaultType:'va' },
@@ -577,6 +626,8 @@ let library  = [];
 let steps    = [];
 let dragSrcIdx  = null;
 let paretoChart = null;
+let donutChart  = null;
+let catChart    = null;
 
 // カテゴリの折りたたみ状態（初期：すべて展開）
 const libCollapsed = {};
@@ -592,11 +643,11 @@ function saveCustomElements() {
 // ===== タブ =====
 function switchTab(name) {
   document.querySelectorAll('.tab-btn').forEach((b, i) => {
-    b.classList.toggle('active', ['editor','pareto'][i] === name);
+    b.classList.toggle('active', ['editor','analysis'][i] === name);
   });
   document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
   document.getElementById('tab-' + name).classList.add('active');
-  if (name === 'pareto') renderPareto();
+  if (name === 'analysis') renderAnalysis();
 }
 
 // ===== ライブラリ描画（カテゴリ折りたたみ付き） =====
@@ -831,16 +882,23 @@ function updateSummary() {
   });
 }
 
-// ===== パレート図 =====
-function renderPareto() {
-  const canvas   = document.getElementById('paretoChart');
-  const emptyMsg = document.getElementById('paretoEmpty');
-  if (steps.length === 0) {
-    canvas.style.display = 'none'; emptyMsg.style.display = 'flex';
-    if (paretoChart) { paretoChart.destroy(); paretoChart = null; }
-    return;
-  }
-  canvas.style.display = 'block'; emptyMsg.style.display = 'none';
+// ===== 分析タブ：全グラフ描画 =====
+function renderAnalysis() {
+  renderParetoChart();
+  renderDonutChart();
+  renderCatChart();
+}
+
+// 共通：空表示切り替え
+function setChartVisible(canvasId, emptyId, hasData) {
+  document.getElementById(canvasId).style.display = hasData ? 'block' : 'none';
+  document.getElementById(emptyId).style.display  = hasData ? 'none'  : 'flex';
+}
+
+// ---- 1. パレート図 ----
+function renderParetoChart() {
+  setChartVisible('paretoChart', 'paretoEmpty', steps.length > 0);
+  if (!steps.length) { if (paretoChart) { paretoChart.destroy(); paretoChart = null; } return; }
 
   const sorted = [...steps]
     .map(s => ({ label: s.title||s.name, sec: calcStepSec(s), type: s.type||'sv' }))
@@ -850,7 +908,7 @@ function renderPareto() {
   const cumPct = sorted.map(x => { cum += x.sec; return +(cum/total*100).toFixed(1); });
 
   if (paretoChart) { paretoChart.destroy(); paretoChart = null; }
-  paretoChart = new Chart(canvas, {
+  paretoChart = new Chart(document.getElementById('paretoChart'), {
     data: {
       labels: sorted.map((x,i) => `${String(i+1).padStart(2,'0')} ${x.label}`),
       datasets: [
@@ -885,6 +943,119 @@ function renderPareto() {
              title:{display:true,text:'累積 (%)',color:'#00e5ff',font:{size:10}},
              ticks:{color:'#00e5ff',font:{size:10},callback:v=>v+'%'},
              grid:{drawOnChartArea:false} },
+      },
+    },
+  });
+}
+
+// ---- 2. 動作分類ドーナツ ----
+function renderDonutChart() {
+  setChartVisible('donutChart', 'donutEmpty', steps.length > 0);
+  if (!steps.length) { if (donutChart) { donutChart.destroy(); donutChart = null; } return; }
+
+  const ts = { va:0, sv:0, nva:0 };
+  steps.forEach(s => { ts[s.type||'sv'] += calcStepSec(s); });
+  const total = ts.va + ts.sv + ts.nva;
+
+  if (donutChart) { donutChart.destroy(); donutChart = null; }
+  donutChart = new Chart(document.getElementById('donutChart'), {
+    type: 'doughnut',
+    data: {
+      labels: ['主要 (VA)', '補助 (SV)', 'ムダ (NVA)'],
+      datasets: [{
+        data: [+ts.va.toFixed(2), +ts.sv.toFixed(2), +ts.nva.toFixed(2)],
+        backgroundColor: ['rgba(0,208,132,0.8)', 'rgba(255,209,102,0.8)', 'rgba(255,77,77,0.8)'],
+        borderColor:     ['rgba(0,208,132,1)',    'rgba(255,209,102,1)',   'rgba(255,77,77,1)'],
+        borderWidth: 1,
+        hoverOffset: 6,
+      }],
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      cutout: '62%',
+      plugins: {
+        legend: {
+          display: true, position: 'right',
+          labels: { color:'#6b7a99', font:{size:11}, padding:14,
+            generateLabels: chart => {
+              const ds = chart.data.datasets[0];
+              return chart.data.labels.map((label, i) => ({
+                text: `${label}  ${ds.data[i].toFixed(1)}s  (${total>0?(ds.data[i]/total*100).toFixed(0):0}%)`,
+                fillStyle: ds.backgroundColor[i],
+                strokeStyle: ds.borderColor[i],
+                lineWidth: 1, hidden: false, index: i,
+              }));
+            },
+          },
+        },
+        tooltip: {
+          backgroundColor:'#1e2330', borderColor:'#2a3042', borderWidth:1,
+          titleColor:'#e0e6f0', bodyColor:'#6b7a99',
+          callbacks: {
+            label: ctx => {
+              const v = ctx.parsed;
+              const pct = total > 0 ? (v/total*100).toFixed(1) : 0;
+              return ` ${v.toFixed(1)}秒  (${pct}%)`;
+            },
+          },
+        },
+      },
+    },
+  });
+}
+
+// ---- 3. カテゴリ別横棒 ----
+function renderCatChart() {
+  setChartVisible('catChart', 'catEmpty', steps.length > 0);
+  if (!steps.length) { if (catChart) { catChart.destroy(); catChart = null; } return; }
+
+  // カテゴリ集計（VA/SV/NVAに分解）
+  const cats = {};
+  steps.forEach(s => {
+    if (!cats[s.cat]) cats[s.cat] = { va:0, sv:0, nva:0 };
+    cats[s.cat][s.type||'sv'] += calcStepSec(s);
+  });
+  const sorted = Object.entries(cats)
+    .map(([cat, ts]) => ({ cat, total: ts.va+ts.sv+ts.nva, ...ts }))
+    .sort((a,b) => b.total - a.total);
+
+  const labels = sorted.map(x => x.cat);
+
+  if (catChart) { catChart.destroy(); catChart = null; }
+  catChart = new Chart(document.getElementById('catChart'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label:'主要 (VA)', data: sorted.map(x=>+x.va.toFixed(2)),
+          backgroundColor:'rgba(0,208,132,0.8)', borderColor:'rgba(0,208,132,1)', borderWidth:1 },
+        { label:'補助 (SV)', data: sorted.map(x=>+x.sv.toFixed(2)),
+          backgroundColor:'rgba(255,209,102,0.8)', borderColor:'rgba(255,209,102,1)', borderWidth:1 },
+        { label:'ムダ (NVA)', data: sorted.map(x=>+x.nva.toFixed(2)),
+          backgroundColor:'rgba(255,77,77,0.8)', borderColor:'rgba(255,77,77,1)', borderWidth:1 },
+      ],
+    },
+    options: {
+      indexAxis: 'y',
+      responsive:true, maintainAspectRatio:false,
+      interaction:{ mode:'index', intersect:false },
+      plugins: {
+        legend: {
+          display:true, position:'top',
+          labels:{ color:'#6b7a99', font:{size:10}, padding:10, boxWidth:10 },
+        },
+        tooltip: {
+          backgroundColor:'#1e2330', borderColor:'#2a3042', borderWidth:1,
+          titleColor:'#e0e6f0', bodyColor:'#6b7a99',
+          callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.x.toFixed(1)}s` },
+        },
+      },
+      scales: {
+        x: { stacked:true,
+             ticks:{color:'#6b7a99',font:{size:10}}, grid:{color:'rgba(42,48,66,0.6)'},
+             title:{display:true,text:'時間 (秒)',color:'#6b7a99',font:{size:10}} },
+        y: { stacked:true,
+             ticks:{color:'#6b7a99',font:{size:10}}, grid:{color:'rgba(42,48,66,0.4)'} },
       },
     },
   });
