@@ -536,6 +536,9 @@ select.modal-input { cursor: pointer; }
   .print-bar-track { height: 4.5mm; border: 1px solid #d7dee9; background: #f8fafc; }
   .print-bar-fill { height: 100%; }
   .print-bar-value { text-align: right; color: #64748b; font-variant-numeric: tabular-nums; }
+  .print-chart-grid { display: grid; gap: 4mm; }
+  .print-chart-img { width: 100%; border: 1px solid #d7dee9; background: #fff; break-inside: avoid; page-break-inside: avoid; }
+  .print-chart-img.tall { max-height: 54mm; object-fit: contain; }
   .print-gantt { display: grid; gap: 0.8mm; }
   .print-gantt-row { display: grid; grid-template-columns: 10mm 16mm 56mm 1fr 17mm; gap: 2mm; align-items: center; min-height: 5mm; font-size: 8px; break-inside: avoid; }
   .print-gantt-no, .print-gantt-sec { text-align: right; color: #64748b; font-variant-numeric: tabular-nums; }
@@ -1537,7 +1540,11 @@ function exportJSON() {
 function printBar(widthPct,color,label,value) {
   return `<div class="print-bar-row"><div class="print-bar-label">${escHtml(label)}</div><div class="print-bar-track"><div class="print-bar-fill" style="width:${Math.max(1,widthPct)}%;background:${color}"></div></div><div class="print-bar-value">${escHtml(value)}</div></div>`;
 }
-function buildPrintView() {
+function chartDataUrl(id) {
+  const canvas=document.getElementById(id);
+  return canvas && canvas.style.display !== 'none' ? canvas.toDataURL('image/png') : '';
+}
+function buildPrintView(chartImages={}) {
   const summary=processSummary();
   const C=typeColors();
   const sRows=stepRows();
@@ -1548,7 +1555,17 @@ function buildPrintView() {
   const totalGantt=Math.max(gRows.length?gRows[gRows.length-1].end:0,0.001);
   const stepHtml=sRows.map(r=>`<tr><td class="num">${r.no}</td><td>${escHtml(r.ieLabel)}</td><td>${escHtml(r.title)}</td><td>${escHtml(r.typeLabel)}</td><td class="num">${r.distance}</td><td class="num">${r.sec.toFixed(1)}</td><td>${escHtml(r.note)}</td></tr>`).join('');
   const paretoHtml=pRows.map(r=>printBar(r.sec/maxPareto*100,C[r.type],`${String(r.rank).padStart(2,'0')} ${r.name} [${r.typeLabel}] x${r.count}`,`${r.sec.toFixed(1)}s / ${r.cumulativePercent.toFixed(1)}%`)).join('');
+  const analysisHtml = chartImages.pareto
+    ? `<div class="print-chart-grid">
+        <img class="print-chart-img tall" src="${chartImages.pareto}" alt="パレート図">
+        <img class="print-chart-img tall" src="${chartImages.donut}" alt="動作分類の内訳">
+        <img class="print-chart-img tall" src="${chartImages.cat}" alt="カテゴリ別時間内訳">
+      </div>`
+    : `<div class="print-bars">${paretoHtml}</div>`;
   const catHtml=cRows.map(r=>`<tr><td>${escHtml(r.cat)}</td><td class="num">${r.count}</td><td class="num">${r.va.toFixed(1)}</td><td class="num">${r.sv.toFixed(1)}</td><td class="num">${r.nva.toFixed(1)}</td><td class="num">${r.total.toFixed(1)}</td></tr>`).join('');
+  const categoryTableHtml = chartImages.pareto ? '' : `
+      <div class="print-section-title">カテゴリ別時間</div>
+      <table class="print-table"><thead><tr><th>カテゴリ</th><th>件数</th><th>主要 秒</th><th>補助 秒</th><th>ムダ 秒</th><th>合計 秒</th></tr></thead><tbody>${catHtml}</tbody></table>`;
   const ganttHtml=gRows.map(r=>{
     const left=r.start/totalGantt*100;
     const width=Math.max(0.8,r.sec/totalGantt*100);
@@ -1572,9 +1589,8 @@ function buildPrintView() {
       <h1 class="print-title">分析</h1>
       <div class="print-sub">パレート / カテゴリ別時間</div>
       <div class="print-section-title">パレート図（要素別集計）</div>
-      <div class="print-bars">${paretoHtml}</div>
-      <div class="print-section-title">カテゴリ別時間</div>
-      <table class="print-table"><thead><tr><th>カテゴリ</th><th>件数</th><th>主要 秒</th><th>補助 秒</th><th>ムダ 秒</th><th>合計 秒</th></tr></thead><tbody>${catHtml}</tbody></table>
+      ${analysisHtml}
+      ${categoryTableHtml}
     </section>
     <section class="print-page">
       <h1 class="print-title">連続動作チャート</h1>
@@ -1582,12 +1598,31 @@ function buildPrintView() {
       <div class="print-gantt">${ganttHtml}</div>
     </section>`;
 }
-function preparePrintView() {
-  document.getElementById('printRoot').innerHTML = buildPrintView();
+function waitFrame() {
+  return new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
 }
-function exportPDF() {
+function settleCharts() {
+  [paretoChart,donutChart,catChart,ganttChart].forEach(chart=>{ if(chart) chart.update('none'); });
+}
+async function collectAnalysisChartImages() {
+  const activePane=document.querySelector('.tab-pane.active');
+  const activeName=activePane ? activePane.id.replace('tab-','') : 'editor';
+  switchTab('analysis');
+  renderAnalysis();
+  settleCharts();
+  await waitFrame();
+  settleCharts();
+  const images={pareto:chartDataUrl('paretoChart'),donut:chartDataUrl('donutChart'),cat:chartDataUrl('catChart')};
+  switchTab(activeName);
+  return images;
+}
+function preparePrintView(chartImages={}) {
+  document.getElementById('printRoot').innerHTML = buildPrintView(chartImages);
+}
+async function exportPDF() {
   if(!steps.length){alert('工程が空です');return;}
-  preparePrintView();
+  const chartImages=await collectAnalysisChartImages();
+  preparePrintView(chartImages);
   window.print();
 }
 function dl(content,filename,mime){
