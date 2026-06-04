@@ -761,22 +761,44 @@ select.modal-input { cursor: pointer; }
     </div>
     <div class="modal-row">
       <div class="modal-label" data-i18n="iconEmoji">アイコン（絵文字）</div>
-      <input class="modal-input" id="customIcon" type="text" value="⚙️" maxlength="2">
+      <select class="modal-input" id="customIcon">
+        <option value="⚙️">⚙️</option>
+        <option value="🚶">🚶</option>
+        <option value="🤚">🤚</option>
+        <option value="✋">✋</option>
+        <option value="📥">📥</option>
+        <option value="🔩">🔩</option>
+        <option value="🔧">🔧</option>
+        <option value="🗜️">🗜️</option>
+        <option value="⚡">⚡</option>
+        <option value="▶️">▶️</option>
+        <option value="⏳">⏳</option>
+        <option value="💨">💨</option>
+        <option value="🧴">🧴</option>
+        <option value="👁️">👁️</option>
+        <option value="📏">📏</option>
+        <option value="📋">📋</option>
+        <option value="🔍">🔍</option>
+      </select>
     </div>
     <div class="modal-row">
       <div class="modal-label" data-i18n="motionName">動作名</div>
       <input class="modal-input" id="customName" type="text" placeholder="例：専用治具をセットする" data-i18n-placeholder="customNamePh">
     </div>
-    <div class="modal-row">
+    <div class="modal-row" id="customTimeRow">
       <div class="modal-label" data-i18n="standardSec">標準時間（秒）</div>
       <input class="modal-input" id="customTime" type="number" value="3" min="0.1" step="0.1">
     </div>
     <div class="modal-row">
       <div class="modal-label" data-i18n="distanceParam">距離パラメータ</div>
-      <select class="modal-input" id="customParam">
+      <select class="modal-input" id="customParam" onchange="updateCustomParamFields()">
         <option value="none" data-i18n="fixedTime">なし（固定時間）</option>
         <option value="distance" data-i18n="distanceCm">距離（cm）</option>
       </select>
+    </div>
+    <div class="modal-row" id="customSecPerUnitRow" style="display:none">
+      <div class="modal-label" data-i18n="secPerCm">距離あたり時間（秒/cm）</div>
+      <input class="modal-input" id="customSecPerUnit" type="number" value="0.02" min="0.001" step="0.001">
     </div>
     <div class="modal-row">
       <div class="modal-label" data-i18n="motionClassification">動作分類</div>
@@ -834,6 +856,7 @@ const I18N = {
     valueCode:'価値分類コード', ieClass:'IE分類', distanceCsv:'距離(cm)', note:'メモ', displayUnit:'表示単位',
     startSec:'開始(秒)', endSec:'終了(秒)', categoryCsv:'カテゴリ', totalSecCsv:'合計(秒)', processNo:'工程No.',
     ieDonutTitle:'IE分類の内訳（時間比率）', duplicateGroup:'複製', groupCopySuffix:'コピー',
+    secPerCm:'距離あたり時間（秒/cm）',
   },
   en: {
     appTitle:'Standard Time Design Tool', brandSub:'Standard Time Design Tool', searchMotion:'Search motions...',
@@ -871,6 +894,7 @@ const I18N = {
     valueCode:'Value class code', ieClass:'IE class', distanceCsv:'Distance (cm)', note:'Memo', displayUnit:'Display unit',
     startSec:'Start (sec)', endSec:'End (sec)', categoryCsv:'Category', totalSecCsv:'Total (sec)', processNo:'Process No.',
     ieDonutTitle:'IE Classification Breakdown (time ratio)', duplicateGroup:'Duplicate', groupCopySuffix:'copy',
+    secPerCm:'Time per distance (sec/cm)',
   }
 };
 const TYPE_LABELS_BY_LANG = {
@@ -1823,10 +1847,19 @@ const ganttConnectorPlugin = {
   id:'ganttConnector',
   afterDatasetsDraw(chart) {
     const rows = chart.data.datasets[0].ganttRows || [];
-    if (rows.length < 2) return;
-    const {ctx, scales} = chart;
+    if (!rows.length) return;
+    const {ctx, scales, chartArea} = chart;
     const df = chartDefaults();
     ctx.save();
+    const ctX = scales.x.getPixelForValue(rows[rows.length-1].end);
+    ctx.strokeStyle = document.body.classList.contains('dark') ? '#00e5ff' : '#2563eb';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([]);
+    ctx.beginPath();
+    ctx.moveTo(ctX, chartArea.top);
+    ctx.lineTo(ctX, chartArea.bottom);
+    ctx.stroke();
+    if (rows.length < 2) { ctx.restore(); return; }
     ctx.strokeStyle = document.body.classList.contains('dark') ? '#00e5ff' : '#2563eb';
     ctx.lineWidth = 1.5;
     ctx.setLineDash([4,3]);
@@ -1885,7 +1918,7 @@ function renderGanttChart() {
       responsive:true,
       maintainAspectRatio:false,
       animation:false,
-      layout:{padding:{left:220,top:32}},
+      layout:{padding:{left:220,top:38}},
       plugins:{
         legend:{display:false},
         tooltip:{backgroundColor:df.tooltipBg,borderColor:df.tooltipBdr,borderWidth:1,
@@ -1903,6 +1936,9 @@ function renderGanttChart() {
           title:{display:true,text:t('timeAxis'),color:df.tickColor,font:{size:10}},
           ticks:{color:df.tickColor,font:{size:10},callback:v=>`${v}s`},
           grid:{color:df.gridColor}},
+        xTop:{type:'linear',position:'top',min:0,suggestedMax:Math.max(total,1),
+          ticks:{color:df.tickColor,font:{size:10},callback:v=>`${v}s`},
+          grid:{drawOnChartArea:false}},
         y:{ticks:{display:false},
           title:{display:false},
           grid:{color:df.gridColor}},
@@ -1913,16 +1949,22 @@ function renderGanttChart() {
 }
 
 // ===== カスタム要素 =====
-function openCustomModal()  { document.getElementById('customModal').classList.add('open'); }
+function openCustomModal()  { document.getElementById('customModal').classList.add('open'); updateCustomParamFields(); }
 function closeCustomModal() { document.getElementById('customModal').classList.remove('open'); }
+function updateCustomParamFields() {
+  const isDistance = document.getElementById('customParam').value === 'distance';
+  document.getElementById('customTimeRow').style.display = isDistance ? 'none' : 'block';
+  document.getElementById('customSecPerUnitRow').style.display = isDistance ? 'block' : 'none';
+}
 function saveCustom() {
   const name=document.getElementById('customName').value.trim();
   if(!name){alert(t('customNameRequired'));return;}
+  const param=document.getElementById('customParam').value;
   library.push({id:'custom_'+Date.now(),
     cat:document.getElementById('customCategory').value,
     icon:document.getElementById('customIcon').value||'⚙️',
     name,sec:parseFloat(document.getElementById('customTime').value)||3,
-    param:document.getElementById('customParam').value,secPerUnit:0.02,
+    param,secPerUnit:param==='distance' ? Math.max(0.001,parseFloat(document.getElementById('customSecPerUnit').value)||0.02) : 0.02,
     defaultType:document.getElementById('customDefaultType').value,custom:true});
   saveCustomElements();renderLib();closeCustomModal();
   document.getElementById('customName').value='';
