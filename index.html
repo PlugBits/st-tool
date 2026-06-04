@@ -439,50 +439,6 @@ body.dark .step-del:hover { background: rgba(220,38,38,0.15); }
 }
 .ie-select:focus { outline: none; border-color: var(--blue); color: var(--text); }
 
-/* ===== PDF report pages ===== */
-.report-host {
-  position: fixed;
-  left: -10000px;
-  top: 0;
-  width: 1122px;
-  background: #fff;
-  color: #172033;
-  z-index: -1;
-}
-.report-page {
-  width: 1122px;
-  height: 794px;
-  padding: 34px 40px;
-  background: #fff;
-  color: #172033;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  overflow: hidden;
-}
-.report-page h1 { margin: 0; font-size: 24px; line-height: 1.2; }
-.report-page h2 { margin: 18px 0 8px; font-size: 14px; color: #334155; }
-.report-sub { margin-top: 4px; color: #64748b; font-size: 11px; }
-.report-kpis { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-top: 18px; }
-.report-kpis div { border: 1px solid #d7dee9; border-radius: 6px; padding: 12px; background: #f8fafc; }
-.report-kpis b { display: block; font-size: 24px; color: #2563eb; }
-.report-kpis span { color: #64748b; font-size: 11px; }
-.report-table { width: 100%; border-collapse: collapse; font-size: 10px; }
-.report-table th, .report-table td { border: 1px solid #d7dee9; padding: 4px 6px; text-align: left; }
-.report-table th { background: #eef2f6; color: #475569; font-weight: 800; }
-.report-table .num { text-align: right; font-variant-numeric: tabular-nums; }
-.report-bars { display: flex; flex-direction: column; gap: 5px; }
-.report-bar-row { display: grid; grid-template-columns: 280px 1fr 92px; align-items: center; gap: 8px; font-size: 10px; }
-.report-bar-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #334155; }
-.report-bar-track { height: 14px; background: #eef2f6; border: 1px solid #d7dee9; }
-.report-bar-fill { height: 100%; }
-.report-bar-value { text-align: right; color: #64748b; font-variant-numeric: tabular-nums; }
-.report-gantt { display: flex; flex-direction: column; gap: 2px; margin-top: 12px; }
-.report-gantt-row { display: grid; grid-template-columns: 36px 58px 210px 1fr 54px; align-items: center; gap: 8px; font-size: 10px; min-height: 20px; }
-.report-gantt-no, .report-gantt-sec { text-align: right; color: #64748b; font-variant-numeric: tabular-nums; }
-.report-gantt-class { color: #334155; }
-.report-gantt-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #334155; }
-.report-gantt-track { position: relative; height: 16px; background: repeating-linear-gradient(90deg,#eef2f6 0,#eef2f6 1px,#fff 1px,#fff 48px); border: 1px solid #d7dee9; }
-.report-gantt-fill { position: absolute; top: 2px; bottom: 2px; border-radius: 2px; }
-
 /* ===== フッター ===== */
 footer {
   height: 42px;
@@ -1531,70 +1487,39 @@ function exportJSON() {
       sec:+calcStepSec(s).toFixed(1),note:s.note})),
     exportedAt:new Date().toISOString()},null,2),`${name}_ST.json`,'application/json');
 }
-function reportBar(widthPct,color,label,value) {
-  return `<div class="report-bar-row"><div class="report-bar-label">${escHtml(label)}</div><div class="report-bar-track"><div class="report-bar-fill" style="width:${Math.max(1,widthPct)}%;background:${color}"></div></div><div class="report-bar-value">${escHtml(value)}</div></div>`;
-}
-function buildReportPages() {
-  const summary=processSummary();
-  const C=typeColors();
-  const rows=stepRows();
-  const pRows=paretoRows();
-  const cRows=categoryRows();
-  const gRows=ganttRows();
-  const maxPareto=Math.max(...pRows.map(r=>r.sec),0.001);
-  const totalGantt=Math.max(gRows.length?gRows[gRows.length-1].end:0,0.001);
-  const page1Rows=rows.slice(0,28).map(r=>`<tr><td>${r.no}</td><td>${escHtml(r.ieLabel)}</td><td>${escHtml(r.title)}</td><td>${escHtml(r.typeLabel)}</td><td class="num">${r.sec.toFixed(1)}</td><td>${escHtml(r.note)}</td></tr>`).join('');
-  const paretoHtml=pRows.slice(0,18).map(r=>reportBar(r.sec/maxPareto*100,typeColors()[r.type],`${String(r.rank).padStart(2,'0')} ${r.name} [${r.typeLabel}]`,`${r.sec.toFixed(1)}s / ${r.cumulativePercent.toFixed(0)}%`)).join('');
-  const catHtml=cRows.map(r=>`<tr><td>${escHtml(r.cat)}</td><td class="num">${r.count}</td><td class="num">${r.va.toFixed(1)}</td><td class="num">${r.sv.toFixed(1)}</td><td class="num">${r.nva.toFixed(1)}</td><td class="num">${r.total.toFixed(1)}</td></tr>`).join('');
-  const ganttHtml=gRows.map(r=>{
-    const left=r.start/totalGantt*100;
-    const width=Math.max(0.8,r.sec/totalGantt*100);
-    return `<div class="report-gantt-row"><div class="report-gantt-no">${r.noText}</div><div class="report-gantt-class">${IE_LABELS[r.ieClass]}</div><div class="report-gantt-name">${escHtml(r.label)}</div><div class="report-gantt-track"><div class="report-gantt-fill" style="left:${left}%;width:${width}%;background:${C[r.type]}"></div></div><div class="report-gantt-sec">${r.sec.toFixed(1)}s</div></div>`;
-  }).join('');
-  return `
-    <div class="report-page">
-      <h1>${escHtml(summary.name)}</h1>
-      <div class="report-sub">標準時間レポート / Page 1 Summary</div>
-      <div class="report-kpis">
-        <div><b>${summary.total.toFixed(1)}</b><span>正味秒</span></div>
-        <div><b>${summary.std.toFixed(1)}</b><span>標準秒</span></div>
-        <div><b>${summary.vaRate!=null?summary.vaRate.toFixed(1):'-'}%</b><span>付加価値率</span></div>
-        <div><b>${summary.daily}</b><span>日次数量</span></div>
-      </div>
-      <h2>工程一覧</h2>
-      <table class="report-table"><thead><tr><th>No</th><th>IE分類</th><th>工程</th><th>価値分類</th><th>秒</th><th>メモ</th></tr></thead><tbody>${page1Rows}</tbody></table>
-    </div>
-    <div class="report-page">
-      <h1>分析</h1>
-      <div class="report-sub">Page 2 Pareto / Category</div>
-      <h2>パレート（要素別集計）</h2>
-      <div class="report-bars">${paretoHtml}</div>
-      <h2>カテゴリ別時間</h2>
-      <table class="report-table"><thead><tr><th>カテゴリ</th><th>件数</th><th>主要</th><th>補助</th><th>ムダ</th><th>合計</th></tr></thead><tbody>${catHtml}</tbody></table>
-    </div>
-    <div class="report-page">
-      <h1>連続動作チャート</h1>
-      <div class="report-sub">Page 3 Gantt / Total ${totalGantt.toFixed(1)}s</div>
-      <div class="report-gantt">${ganttHtml}</div>
-    </div>`;
+function waitFrame() {
+  return new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
 }
 async function exportPDF() {
   if(!steps.length){alert('工程が空です');return;}
   if(!window.html2canvas || !window.jspdf?.jsPDF){alert('PDF出力ライブラリの読み込みに失敗しました');return;}
   const summary=processSummary();
-  const host=document.createElement('div');
-  host.className='report-host';
-  host.innerHTML=buildReportPages();
-  document.body.appendChild(host);
+  const activePane=document.querySelector('.tab-pane.active');
+  const activeName=activePane ? activePane.id.replace('tab-','') : 'editor';
+  const captureTarget=document.querySelector('.workspace');
   const pdf=new window.jspdf.jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
-  const pages=[...host.querySelectorAll('.report-page')];
+  const pages=['editor','analysis','gantt'];
   for(let i=0;i<pages.length;i++){
-    const canvas=await html2canvas(pages[i],{scale:2,backgroundColor:'#ffffff'});
+    switchTab(pages[i]);
+    await waitFrame();
+    if (pages[i]==='analysis') renderAnalysis();
+    if (pages[i]==='gantt') renderGanttChart();
+    await waitFrame();
+    const canvas=await html2canvas(captureTarget,{scale:2,backgroundColor:getComputedStyle(document.body).backgroundColor});
     const img=canvas.toDataURL('image/png');
+    const imgW=canvas.width;
+    const imgH=canvas.height;
+    const pageW=297;
+    const pageH=210;
+    const scale=Math.min(pageW/imgW,pageH/imgH);
+    const w=imgW*scale;
+    const h=imgH*scale;
+    const x=(pageW-w)/2;
+    const y=(pageH-h)/2;
     if(i>0) pdf.addPage('a4','landscape');
-    pdf.addImage(img,'PNG',0,0,297,210);
+    pdf.addImage(img,'PNG',x,y,w,h);
   }
-  document.body.removeChild(host);
+  switchTab(activeName);
   pdf.save(`${fileSafeName(summary.name)}_report.pdf`);
 }
 function dl(content,filename,mime){
