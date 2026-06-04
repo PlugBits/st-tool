@@ -539,7 +539,7 @@ select.modal-input { cursor: pointer; }
         <div class="analysis-wrap">
 
           <div class="chart-card">
-            <div class="chart-title">パレート図（時間降順）</div>
+            <div class="chart-title">パレート図（要素別集計・時間降順）</div>
             <div class="chart-legend">
               <div class="legend-item"><div class="legend-dot" style="background:var(--va)"></div>主要 (VA)</div>
               <div class="legend-item"><div class="legend-dot" style="background:var(--sv)"></div>補助 (SV)</div>
@@ -1015,14 +1015,23 @@ function renderParetoChart() {
   if (!steps.length) { if(paretoChart){paretoChart.destroy();paretoChart=null;} return; }
   const C  = typeBgColors();
   const df = chartDefaults();
-  const sorted=[...steps].map(s=>({label:s.title||s.name,sec:calcStepSec(s),type:s.type||'sv'})).sort((a,b)=>b.sec-a.sec);
+  const grouped = {};
+  steps.forEach(s=>{
+    const type = s.type||'sv';
+    const elementKey = s.id || s.name;
+    const key = `${elementKey}__${type}`;
+    if (!grouped[key]) grouped[key] = {label:s.name,sec:0,type,count:0};
+    grouped[key].sec += calcStepSec(s);
+    grouped[key].count += 1;
+  });
+  const sorted=Object.values(grouped).sort((a,b)=>b.sec-a.sec);
   const tot=sorted.reduce((s,x)=>s+x.sec,0);
   let cum=0;
   const cumPct=sorted.map(x=>{cum+=x.sec;return+(cum/tot*100).toFixed(1);});
   if(paretoChart){paretoChart.destroy();paretoChart=null;}
   paretoChart=new Chart(document.getElementById('paretoChart'),{
     data:{
-      labels:sorted.map((x,i)=>`${String(i+1).padStart(2,'0')} ${x.label}`),
+      labels:sorted.map((x,i)=>`${String(i+1).padStart(2,'0')} ${x.label}${x.count>1?` x${x.count}`:''}`),
       datasets:[
         {type:'bar',label:'時間(秒)',data:sorted.map(x=>+x.sec.toFixed(2)),
           backgroundColor:sorted.map(x=>C[x.type]),
