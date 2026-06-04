@@ -1147,6 +1147,7 @@ function ganttRows() {
     cursor = end;
     return {
       no:i+1,
+      noText:String(i+1).padStart(2,'0'),
       label:s.title||s.name,
       start,
       end,
@@ -1156,6 +1157,58 @@ function ganttRows() {
     };
   });
 }
+
+function fitCanvasText(ctx,text,maxWidth) {
+  text = String(text||'');
+  if (ctx.measureText(text).width <= maxWidth) return text;
+  let out = text;
+  while (out.length > 1 && ctx.measureText(out + '...').width > maxWidth) out = out.slice(0,-1);
+  return out + '...';
+}
+
+const ganttAxisTablePlugin = {
+  id:'ganttAxisTable',
+  afterDraw(chart) {
+    const rows = chart.data.datasets[0].ganttRows || [];
+    if (!rows.length) return;
+    const {ctx, chartArea, scales} = chart;
+    const df = chartDefaults();
+    const left = chartArea.left;
+    const top = chartArea.top;
+    const bottom = chartArea.bottom;
+    const cols = {
+      no: {x: 10, w: 48},
+      cls:{x: 62, w: 64},
+      name:{x: 130, w: Math.max(72, left - 138)},
+    };
+    ctx.save();
+    ctx.font = '700 10px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+    ctx.fillStyle = df.tickColor;
+    ctx.textBaseline = 'middle';
+    ctx.fillText('工程No.', cols.no.x, top - 14);
+    ctx.fillText('分類', cols.cls.x, top - 14);
+    ctx.fillText('工程', cols.name.x, top - 14);
+    ctx.strokeStyle = df.gridColor;
+    ctx.lineWidth = 1;
+    [cols.cls.x - 8, cols.name.x - 8, left - 8].forEach(x=>{
+      ctx.beginPath();
+      ctx.moveTo(x, top - 24);
+      ctx.lineTo(x, bottom);
+      ctx.stroke();
+    });
+    ctx.font = '10px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+    rows.forEach((row,i)=>{
+      const y = scales.y.getPixelForValue(i);
+      ctx.fillStyle = df.tickColor;
+      ctx.textAlign = 'right';
+      ctx.fillText(row.noText, cols.no.x + cols.no.w - 6, y);
+      ctx.textAlign = 'left';
+      ctx.fillText(IE_LABELS[row.ieClass], cols.cls.x, y);
+      ctx.fillText(fitCanvasText(ctx,row.label,cols.name.w), cols.name.x, y);
+    });
+    ctx.restore();
+  },
+};
 
 const ganttConnectorPlugin = {
   id:'ganttConnector',
@@ -1205,7 +1258,7 @@ function renderGanttChart() {
   ganttChart = new Chart(document.getElementById('ganttChart'),{
     type:'bar',
     data:{
-      labels:rows.map(r=>`${String(r.no).padStart(2,'0')} [${IE_LABELS[r.ieClass]}] ${r.label}`),
+      labels:rows.map(r=>r.noText),
       datasets:[{
         label:'動作時間',
         data:rows.map(r=>[+r.start.toFixed(2), +r.end.toFixed(2)]),
@@ -1223,6 +1276,7 @@ function renderGanttChart() {
       responsive:true,
       maintainAspectRatio:false,
       animation:false,
+      layout:{padding:{left:220,top:18}},
       plugins:{
         legend:{display:false},
         tooltip:{backgroundColor:df.tooltipBg,borderColor:df.tooltipBdr,borderWidth:1,
@@ -1240,12 +1294,12 @@ function renderGanttChart() {
           title:{display:true,text:'時間 (秒)',color:df.tickColor,font:{size:10}},
           ticks:{color:df.tickColor,font:{size:10},callback:v=>`${v}s`},
           grid:{color:df.gridColor}},
-        y:{ticks:{color:df.tickColor,font:{size:10},autoSkip:false},
-          title:{display:true,text:'工程順の作業要素',color:df.tickColor,font:{size:10}},
+        y:{ticks:{display:false},
+          title:{display:false},
           grid:{color:df.gridColor}},
       },
     },
-    plugins:[ganttConnectorPlugin],
+    plugins:[ganttAxisTablePlugin,ganttConnectorPlugin],
   });
 }
 
