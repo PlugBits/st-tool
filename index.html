@@ -12,7 +12,7 @@
 html, body {
   margin: 0; width: 100%; height: 100%;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  font-size: 13px;
+  font-size: 14px;
   color: #172033;
   background: #eef2f6;
 }
@@ -116,8 +116,8 @@ body.dark {
   background: var(--blue); color: #fff;
   font-size: 16px; font-weight: 900; flex-shrink: 0;
 }
-.brand-text { font-size: 15px; font-weight: 900; color: var(--text); line-height: 1.2; }
-.brand-sub  { font-size: 10px; font-weight: 600; color: var(--text-3); }
+.brand-text { font-size: 16px; font-weight: 900; color: var(--text); line-height: 1.2; }
+.brand-sub  { font-size: 12px; font-weight: 600; color: var(--text-3); }
 
 .lib-search {
   padding: 8px 10px;
@@ -150,11 +150,11 @@ body.dark {
 }
 .lib-group-header:hover { background: var(--blue-bg); }
 .lib-group-chevron {
-  font-size: 9px; color: var(--text-4); transition: transform 0.18s; flex-shrink: 0;
+  font-size: 12px; color: var(--text-4); transition: transform 0.18s; flex-shrink: 0;
 }
 .lib-group-chevron.open { transform: rotate(90deg); }
-.lib-group-name  { font-size: 11px; font-weight: 700; color: var(--text-2); flex: 1; }
-.lib-group-count { font-size: 10px; color: var(--text-4); }
+.lib-group-name  { font-size: 12px; font-weight: 700; color: var(--text-2); flex: 1; }
+.lib-group-count { font-size: 12px; color: var(--text-4); }
 .lib-group-items { display: none; }
 .lib-group-items.open { display: block; }
 
@@ -167,12 +167,12 @@ body.dark {
 }
 .motion-btn:hover { background: var(--blue-bg); }
 .motion-icon { font-size: 13px; min-width: 18px; text-align: center; }
-.motion-name { font-size: 11px; flex: 1; line-height: 1.3; color: var(--text-2); }
-.motion-time { font-size: 10px; color: var(--text-3); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.motion-name { font-size: 12px; flex: 1; line-height: 1.3; color: var(--text-2); }
+.motion-time { font-size: 12px; color: var(--text-3); white-space: nowrap; font-variant-numeric: tabular-nums; }
 
 /* 分類バッジ（ライブラリ） */
 .type-pill {
-  font-size: 9px; font-weight: 800;
+  font-size: 12px; font-weight: 800;
   padding: 1px 5px; border-radius: 10px; flex-shrink: 0;
   white-space: nowrap;
 }
@@ -189,7 +189,7 @@ body.dark .type-pill.nva { background: rgba(255,77,77,0.12); color: var(--nva); 
   background: transparent;
   border: 1px dashed var(--border);
   color: var(--text-3); border-radius: 4px; cursor: pointer;
-  font-size: 11px; font-weight: 600; width: calc(100% - 20px);
+  font-size: 12px; font-weight: 600; width: calc(100% - 20px);
   transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 5px;
 }
 .add-custom-btn:hover { border-color: var(--blue); color: var(--blue); }
@@ -216,10 +216,10 @@ body.dark .type-pill.nva { background: rgba(255,77,77,0.12); color: var(--nva); 
   border: 1px solid var(--border);
   background: var(--surface2);
   color: var(--text);
-  padding: 5px 9px; border-radius: 4px; font-size: 13px; font-weight: 600;
+  padding: 5px 9px; border-radius: 4px; font-size: 14px; font-weight: 600;
 }
 .topbar input[type=text]:focus { outline: none; border-color: var(--blue); }
-.topbar-label { font-size: 11px; color: var(--text-3); white-space: nowrap; }
+.topbar-label { font-size: 12px; color: var(--text-3); white-space: nowrap; }
 .topbar input[type=number] {
   width: 58px; border: 1px solid var(--border);
   background: var(--surface2); color: var(--text);
@@ -237,7 +237,7 @@ body.dark .type-pill.nva { background: rgba(255,77,77,0.12); color: var(--nva); 
 .tab-btn {
   padding: 7px 16px; background: none;
   border: none; border-bottom: 2px solid transparent;
-  color: var(--text-3); font-size: 12px; font-weight: 700;
+  color: var(--text-3); font-size: 14px; font-weight: 700;
   cursor: pointer; transition: all 0.15s; margin-bottom: -1px;
 }
 .tab-btn:hover { color: var(--text); }
@@ -267,7 +267,7 @@ body.dark .type-pill.nva { background: rgba(255,77,77,0.12); color: var(--nva); 
   border-left-width: 3px;
   border-radius: var(--radius);
   margin-bottom: 3px;
-  height: 38px;
+  height: 42px;
   transition: border-color 0.12s, box-shadow 0.12s;
   cursor: grab;
   box-shadow: var(--shadow);
@@ -280,9 +280,9 @@ body.dark .type-pill.nva { background: rgba(255,77,77,0.12); color: var(--nva); 
 .step-card.dragging  { opacity: 0.45; }
 .step-card.drag-over { border-color: var(--blue); background: var(--blue-bg); }
 
-.step-drag { color: var(--text-4); font-size: 11px; padding: 0 4px; flex-shrink: 0; cursor: grab; }
-.step-num  { font-size: 10px; color: var(--text-4); min-width: 20px; flex-shrink: 0; font-variant-numeric: tabular-nums; }
-.step-icon { font-size: 14px; min-width: 20px; text-align: center; flex-shrink: 0; }
+.step-drag { color: var(--text-4); font-size: 12px; padding: 0 4px; flex-shrink: 0; cursor: grab; }
+.step-num  { font-size: 12px; color: var(--text-4); min-width: 24px; flex-shrink: 0; font-variant-numeric: tabular-nums; }
+.step-icon { font-size: 16px; min-width: 22px; text-align: center; flex-shrink: 0; }
 .step-select {
   width: 14px; height: 14px; flex-shrink: 0;
   accent-color: var(--blue); cursor: pointer;
@@ -292,7 +292,7 @@ body.dark .type-pill.nva { background: rgba(255,77,77,0.12); color: var(--nva); 
   flex: 1; min-width: 120px;
   background: transparent; border: none;
   border-bottom: 1px solid transparent;
-  color: var(--text); font-size: 13px; font-weight: 600;
+  color: var(--text); font-size: 14px; font-weight: 600;
   padding: 0 4px; height: 100%; cursor: text;
 }
 .step-title-input:focus { outline: none; border-bottom-color: var(--blue); }
@@ -302,7 +302,7 @@ body.dark .type-pill.nva { background: rgba(255,77,77,0.12); color: var(--nva); 
   width: 220px; flex-shrink: 0; margin-left: auto;
   background: transparent; border: none;
   border-bottom: 1px solid var(--border);
-  color: var(--text-3); font-size: 11px;
+  color: var(--text-3); font-size: 12px;
   padding: 0 4px; height: 22px;
 }
 .step-memo-input:focus { outline: none; border-bottom-color: var(--blue); color: var(--text); }
@@ -310,11 +310,11 @@ body.dark .type-pill.nva { background: rgba(255,77,77,0.12); color: var(--nva); 
 
 /* 分類バッジ（ステップ行） */
 .type-badge {
-  font-size: 9px; font-weight: 800;
+  font-size: 12px; font-weight: 800;
   padding: 2px 7px; border-radius: 10px;
   cursor: pointer; user-select: none; flex-shrink: 0;
   white-space: nowrap; transition: filter 0.12s;
-  width: 42px; text-align: center;
+  width: 52px; text-align: center;
 }
 .type-badge.va  { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
 .type-badge.sv  { background: #fef3c7; color: #b45309; border: 1px solid #fcd34d; }
@@ -333,7 +333,7 @@ body.dark .type-badge.nva { background: rgba(255,77,77,0.15); color: var(--nva);
   border: 1px solid var(--border);
   background: var(--surface2);
   color: var(--text);
-  font-size: 13px; font-weight: 700;
+  font-size: 14px; font-weight: 700;
   padding: 3px 5px; border-radius: 4px;
   width: 56px; text-align: right; height: 26px;
   font-variant-numeric: tabular-nums;
@@ -344,12 +344,12 @@ body.dark .type-badge.nva { background: rgba(255,77,77,0.15); color: var(--nva);
 .step-time-input:focus { outline: none; border-color: var(--green); }
 body.dark .step-dist-input { border-color: var(--border); }
 body.dark .step-time-input { border-color: var(--border); }
-.step-time-calc { font-size: 13px; font-weight: 700; color: var(--green); min-width: 52px; text-align: right; font-variant-numeric: tabular-nums; }
-.step-unit { font-size: 10px; color: var(--text-3); }
+.step-time-calc { font-size: 14px; font-weight: 700; color: var(--green); min-width: 52px; text-align: right; font-variant-numeric: tabular-nums; }
+.step-unit { font-size: 12px; color: var(--text-3); }
 
 .step-copy, .step-del {
   background: none; border: none; color: var(--text-4);
-  cursor: pointer; font-size: 13px; padding: 4px 5px; border-radius: 4px; flex-shrink: 0;
+  cursor: pointer; font-size: 14px; padding: 4px 5px; border-radius: 4px; flex-shrink: 0;
   width: 26px; height: 26px; display: inline-grid; place-items: center;
 }
 .step-copy:hover { color: var(--blue); background: var(--blue-bg); }
@@ -364,7 +364,7 @@ body.dark .step-del:hover { background: rgba(220,38,38,0.15); }
 }
 .props-header {
   padding: 12px 14px;
-  font-size: 12px; font-weight: 800; color: var(--text-2);
+  font-size: 14px; font-weight: 800; color: var(--text-2);
   letter-spacing: 0.05em;
   border-bottom: 1px solid var(--border);
   background: var(--surface2); flex-shrink: 0;
@@ -377,24 +377,24 @@ body.dark .step-del:hover { background: rgba(220,38,38,0.15); }
   padding: 12px 14px;
   border-bottom: 1px solid var(--border);
 }
-.stat-label { font-size: 10px; font-weight: 700; color: var(--text-3); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 4px; }
-.stat-value { font-size: 26px; font-weight: 900; color: var(--blue); line-height: 1; font-variant-numeric: tabular-nums; }
-.stat-sub   { font-size: 10px; color: var(--text-3); margin-top: 3px; }
+.stat-label { font-size: 12px; font-weight: 700; color: var(--text-3); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 4px; }
+.stat-value { font-size: 30px; font-weight: 900; color: var(--blue); line-height: 1; font-variant-numeric: tabular-nums; }
+.stat-sub   { font-size: 12px; color: var(--text-3); margin-top: 3px; }
 
 /* VA率バー */
 .va-bar-wrap { height: 5px; background: var(--border); border-radius: 3px; margin-top: 7px; overflow: hidden; }
 .va-bar { height: 100%; border-radius: 3px; transition: width 0.4s; background: var(--va); }
 .va-segs { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
-.va-seg  { font-size: 9px; display: flex; align-items: center; gap: 3px; }
+.va-seg  { font-size: 12px; display: flex; align-items: center; gap: 3px; }
 .va-seg-dot { width: 6px; height: 6px; border-radius: 2px; }
 
 /* カテゴリ内訳 */
 .cat-item { padding: 6px 14px; border-bottom: 1px solid var(--border); }
 .cat-row  { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; }
-.cat-icon  { font-size: 11px; min-width: 16px; }
-.cat-name  { font-size: 11px; color: var(--text-2); flex: 1; }
-.cat-count { font-size: 10px; color: var(--text-3); min-width: 22px; text-align: center; }
-.cat-time  { font-size: 11px; font-weight: 700; color: var(--text); min-width: 40px; text-align: right; font-variant-numeric: tabular-nums; }
+.cat-icon  { font-size: 13px; min-width: 16px; }
+.cat-name  { font-size: 12px; color: var(--text-2); flex: 1; }
+.cat-count { font-size: 12px; color: var(--text-3); min-width: 22px; text-align: center; }
+.cat-time  { font-size: 12px; font-weight: 700; color: var(--text); min-width: 40px; text-align: right; font-variant-numeric: tabular-nums; }
 .cat-bar-wrap { height: 2px; background: var(--border); border-radius: 1px; }
 .cat-bar { height: 100%; background: var(--blue); border-radius: 1px; transition: width 0.3s; }
 
@@ -415,10 +415,10 @@ body.dark .step-del:hover { background: rgba(220,38,38,0.15); }
   box-shadow: var(--shadow);
 }
 .chart-title {
-  font-size: 11px; font-weight: 800; color: var(--text-2); letter-spacing: 0.04em;
+  font-size: 14px; font-weight: 800; color: var(--text-2); letter-spacing: 0.04em;
 }
 .chart-legend { display: flex; gap: 10px; flex-wrap: wrap; }
-.legend-item  { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-3); }
+.legend-item  { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--text-3); }
 .legend-dot   { width: 9px; height: 9px; border-radius: 2px; flex-shrink: 0; }
 .chart-wrap   { position: relative; }
 .chart-empty  {
@@ -431,7 +431,7 @@ body.dark .step-del:hover { background: rgba(220,38,38,0.15); }
   border: 1px solid var(--border);
   background: var(--surface2);
   color: var(--text-2);
-  font-size: 11px; font-weight: 700;
+  font-size: 12px; font-weight: 700;
   padding: 3px 4px; border-radius: 4px;
   width: 58px; height: 26px; flex-shrink: 0;
 }
@@ -439,7 +439,7 @@ body.dark .step-del:hover { background: rgba(220,38,38,0.15); }
 
 /* ===== フッター ===== */
 footer {
-  height: 42px;
+  height: 46px;
   background: var(--surface);
   border-top: 1px solid var(--border);
   display: flex; align-items: center; gap: 6px; padding: 0 12px; flex-shrink: 0;
@@ -448,7 +448,7 @@ footer {
   display: inline-flex; align-items: center; gap: 5px;
   padding: 5px 12px; border-radius: 4px;
   border: 1px solid var(--border); cursor: pointer;
-  font-size: 11px; font-weight: 700; transition: all 0.12s;
+  font-size: 12px; font-weight: 700; transition: all 0.12s;
   background: var(--surface);
   color: var(--text-2);
 }
@@ -459,7 +459,11 @@ footer {
 .btn-green:hover  { filter: brightness(1.1); color: #fff; }
 .btn-danger { margin-left: auto; color: #fff; background: var(--red); border-color: var(--red); }
 .btn-danger:hover { color: #fff; filter: brightness(1.08); background: var(--red); border-color: var(--red); }
-.footer-info { font-size: 10px; color: var(--text-4); }
+.footer-info { font-size: 12px; color: var(--text-4); }
+.selection-info {
+  font-size: 12px; font-weight: 800; color: var(--blue);
+  min-width: 112px; font-variant-numeric: tabular-nums;
+}
 
 /* テーマ切り替えボタン */
 .theme-btn {
@@ -467,7 +471,7 @@ footer {
   width: 30px; height: 30px;
   border: 1px solid var(--border); border-radius: 4px;
   background: var(--surface2); color: var(--text-2);
-  font-size: 14px; cursor: pointer; transition: all 0.12s;
+  font-size: 16px; cursor: pointer; transition: all 0.12s;
 }
 .theme-btn:hover { border-color: var(--blue); color: var(--blue); }
 
@@ -483,9 +487,9 @@ footer {
   border-radius: 8px; padding: 20px; width: 360px;
   box-shadow: 0 8px 32px rgba(15,23,42,0.18);
 }
-.modal h3 { font-size: 14px; font-weight: 800; margin-bottom: 14px; color: var(--text); }
+.modal h3 { font-size: 16px; font-weight: 800; margin-bottom: 14px; color: var(--text); }
 .modal-row { margin-bottom: 10px; }
-.modal-label { font-size: 11px; color: var(--text-3); margin-bottom: 4px; font-weight: 700; }
+.modal-label { font-size: 12px; color: var(--text-3); margin-bottom: 4px; font-weight: 700; }
 .modal-input {
   width: 100%; background: var(--surface2); border: 1px solid var(--border);
   color: var(--text); padding: 6px 8px; border-radius: 4px; font-size: 12px;
@@ -611,6 +615,7 @@ select.modal-input { cursor: pointer; }
       <button class="btn" onclick="loadJSON()">↑ JSON読込</button>
       <button class="btn" onclick="duplicateSelectedSteps()">選択複製</button>
       <button class="btn" onclick="clearStepSelection()">選択解除</button>
+      <span class="selection-info" id="selectedTotal">選択 0.0s</span>
       <span class="footer-info" id="stepCount">0 要素</span>
       <button class="btn btn-danger" onclick="clearAll()">クリア</button>
     </footer>
@@ -1006,7 +1011,10 @@ function updateSummary() {
   document.getElementById('stdMin').textContent    = stdMin.toFixed(3);
   document.getElementById('dailyHour').textContent = `${dh.toFixed(2)} h`;
   document.getElementById('dailyInfo').textContent = `${daily}台/日 × ${stdMin.toFixed(3)} min`;
-  const selectedCount = steps.filter(s=>selectedStepIds.has(s.stepId)).length;
+  const selectedSteps = steps.filter(s=>selectedStepIds.has(s.stepId));
+  const selectedCount = selectedSteps.length;
+  const selectedTotal = selectedSteps.reduce((sum,s)=>sum+calcStepSec(s),0);
+  document.getElementById('selectedTotal').textContent = `選択 ${selectedTotal.toFixed(1)}s`;
   document.getElementById('stepCount').textContent = `${steps.length} 要素${selectedCount?` / 選択 ${selectedCount}`:''}`;
 
   const ts = {va:0,sv:0,nva:0};
