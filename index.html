@@ -281,6 +281,10 @@ body.dark .type-pill.nva { background: rgba(255,77,77,0.12); color: var(--nva); 
 .step-drag { color: var(--text-4); font-size: 11px; padding: 0 4px; flex-shrink: 0; cursor: grab; }
 .step-num  { font-size: 10px; color: var(--text-4); min-width: 20px; flex-shrink: 0; font-variant-numeric: tabular-nums; }
 .step-icon { font-size: 14px; min-width: 20px; text-align: center; flex-shrink: 0; }
+.step-select {
+  width: 14px; height: 14px; flex-shrink: 0;
+  accent-color: var(--blue); cursor: pointer;
+}
 
 .step-title-input {
   flex: 1; min-width: 0;
@@ -337,10 +341,11 @@ body.dark .step-time-input { border-color: var(--border); }
 .step-time-calc { font-size: 13px; font-weight: 700; color: var(--green); min-width: 44px; text-align: right; font-variant-numeric: tabular-nums; }
 .step-unit { font-size: 10px; color: var(--text-3); }
 
-.step-del {
+.step-copy, .step-del {
   background: none; border: none; color: var(--text-4);
-  cursor: pointer; font-size: 13px; padding: 4px 5px; border-radius: 4px; flex-shrink: 0;
+  cursor: pointer; font-size: 11px; padding: 4px 5px; border-radius: 4px; flex-shrink: 0;
 }
+.step-copy:hover { color: var(--blue); background: var(--blue-bg); }
 .step-del:hover { color: var(--red); background: #fee2e2; }
 body.dark .step-del:hover { background: rgba(220,38,38,0.15); }
 
@@ -596,6 +601,8 @@ select.modal-input { cursor: pointer; }
       <button class="btn btn-green" onclick="exportCSV()">↓ CSV</button>
       <button class="btn btn-primary" onclick="exportJSON()">↓ JSON</button>
       <button class="btn" onclick="loadJSON()">↑ JSON読込</button>
+      <button class="btn" onclick="duplicateSelectedSteps()">選択複製</button>
+      <button class="btn" onclick="clearStepSelection()">選択解除</button>
       <span class="footer-info" id="stepCount">0 要素</span>
       <button class="btn btn-danger" onclick="clearAll()">クリア</button>
     </footer>
@@ -765,6 +772,7 @@ let paretoChart = null;
 let donutChart  = null;
 let catChart    = null;
 let ganttChart  = null;
+const selectedStepIds = new Set();
 const libCollapsed = {};
 
 function loadLibrary() {
@@ -895,6 +903,8 @@ function renderSteps() {
 
     card.innerHTML = `
       <span class="step-drag">⠿</span>
+      <input class="step-select" type="checkbox" ${selectedStepIds.has(s.stepId)?'checked':''}
+        title="選択" onclick="event.stopPropagation()" onchange="toggleStepSelection(${i},this.checked)">
       <span class="step-num">${String(i+1).padStart(2,'0')}</span>
       <span class="step-icon">${s.icon}</span>
       <input class="step-title-input" type="text"
@@ -907,6 +917,7 @@ function renderSteps() {
       ${ieHtml}
       <span class="type-badge ${t}" onclick="event.stopPropagation();toggleType(${i})">${TYPE_LABELS[t]}</span>
       ${timeHtml}
+      <button class="step-copy" title="複製" onclick="event.stopPropagation();duplicateStep(${i})">複製</button>
       <button class="step-del" onclick="event.stopPropagation();deleteStep(${i})">✕</button>`;
 
     card.addEventListener('dragstart', e=>{ dragSrcIdx=i; card.classList.add('dragging'); e.dataTransfer.effectAllowed='move'; });
@@ -922,6 +933,38 @@ function renderSteps() {
 }
 
 function escHtml(s) { return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function cloneStep(s) {
+  return { ...s, stepId:Date.now()+Math.random() };
+}
+function toggleStepSelection(i,checked) {
+  const id = steps[i]?.stepId;
+  if (id == null) return;
+  if (checked) selectedStepIds.add(id); else selectedStepIds.delete(id);
+  updateSummary();
+}
+function clearStepSelection() {
+  selectedStepIds.clear();
+  renderSteps();
+  updateSummary();
+}
+function duplicateStep(i) {
+  if (!steps[i]) return;
+  steps.splice(i+1,0,cloneStep(steps[i]));
+  renderSteps();
+  updateSummary();
+}
+function duplicateSelectedSteps() {
+  if (!selectedStepIds.size) { alert('複製する要素を選択してください'); return; }
+  const selected = steps.map((s,i)=>({s,i})).filter(x=>selectedStepIds.has(x.s.stepId));
+  if (!selected.length) { selectedStepIds.clear(); renderSteps(); updateSummary(); return; }
+  const insertAt = selected[selected.length-1].i + 1;
+  const copies = selected.map(x=>cloneStep(x.s));
+  steps.splice(insertAt,0,...copies);
+  selectedStepIds.clear();
+  copies.forEach(s=>selectedStepIds.add(s.stepId));
+  renderSteps();
+  updateSummary();
+}
 function toggleType(i)      { steps[i].type=cycleType(steps[i].type||'sv'); renderSteps(); updateSummary(); }
 function updateTitle(i,v)   { steps[i].title=v; }
 function updateNote(i,v)    { steps[i].note=v; }
@@ -932,7 +975,7 @@ function updateIeClass(i,v) {
 }
 function updateTime(i,v)    { steps[i].customSec=Math.max(0.1,parseFloat(v)||0.1); updateSummary(); }
 function updateDist(i,v)    { steps[i].distanceVal=parseFloat(v)||0; updateSummary(); renderSteps(); }
-function deleteStep(i)      { steps.splice(i,1); renderSteps(); updateSummary(); }
+function deleteStep(i)      { if (steps[i]) selectedStepIds.delete(steps[i].stepId); steps.splice(i,1); renderSteps(); updateSummary(); }
 
 // ===== 集計 =====
 function updateSummary() {
@@ -948,7 +991,8 @@ function updateSummary() {
   document.getElementById('stdMin').textContent    = stdMin.toFixed(3);
   document.getElementById('dailyHour').textContent = `${dh.toFixed(2)} h`;
   document.getElementById('dailyInfo').textContent = `${daily}台/日 × ${stdMin.toFixed(3)} min`;
-  document.getElementById('stepCount').textContent = `${steps.length} 要素`;
+  const selectedCount = steps.filter(s=>selectedStepIds.has(s.stepId)).length;
+  document.getElementById('stepCount').textContent = `${steps.length} 要素${selectedCount?` / 選択 ${selectedCount}`:''}`;
 
   const ts = {va:0,sv:0,nva:0};
   steps.forEach(s=>{ts[s.type||'sv']+=calcStepSec(s);});
@@ -1368,6 +1412,7 @@ function handleJSONLoad(e){
       document.getElementById('processName').value=data.processName||'';
       document.getElementById('dailyCount').value=data.dailyCount||100;
       document.getElementById('allowance').value=data.allowancePct||10;
+      selectedStepIds.clear();
       steps=data.steps.map(s=>{const lib=library.find(x=>x.name===s.name)||{};
         return{...lib,...s,stepId:Date.now()+Math.random(),type:s.type||lib.defaultType||'sv',ieClass:s.ieClass||inferIeClass({...lib,...s}),customSec:s.customSec||null};});
       renderSteps();updateSummary();saveSession();
@@ -1378,6 +1423,7 @@ function handleJSONLoad(e){
 function clearAll(){
   if(steps.length>0&&!confirm('工程をクリアしますか？'))return;
   steps=[];
+  selectedStepIds.clear();
   document.getElementById('processName').value='';
   document.getElementById('dailyCount').value=100;
   document.getElementById('allowance').value=10;
@@ -1409,6 +1455,7 @@ function loadSession() {
     document.getElementById('processName').value = data.processName || '';
     document.getElementById('dailyCount').value  = data.dailyCount  || 100;
     document.getElementById('allowance').value   = data.allowance   || 10;
+    selectedStepIds.clear();
     steps = (data.steps || []).map(s => ({ ...s, stepId: Date.now() + Math.random(), ieClass:s.ieClass||inferIeClass(s) }));
     return true;
   } catch(e) { return false; }
