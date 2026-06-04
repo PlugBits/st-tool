@@ -453,6 +453,11 @@ body.dark .step-del:hover { background: rgba(220,38,38,0.15); }
   display: flex; flex-direction: column; gap: 8px;
   box-shadow: var(--shadow);
 }
+.chart-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
 .chart-title {
   font-size: 14px; font-weight: 800; color: var(--text-2); letter-spacing: 0.04em;
 }
@@ -463,6 +468,7 @@ body.dark .step-del:hover { background: rgba(220,38,38,0.15); }
   display: flex; align-items: center; gap: 6px; flex-shrink: 0;
 }
 .chart-legend { display: flex; gap: 10px; flex-wrap: wrap; }
+.gantt-legend { margin-bottom: 10px; }
 .legend-item  { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--text-3); }
 .legend-dot   { width: 9px; height: 9px; border-radius: 2px; flex-shrink: 0; }
 .chart-wrap   { position: relative; }
@@ -518,6 +524,10 @@ footer {
   border: 1px solid var(--border); border-radius: 4px;
   background: var(--surface2); color: var(--text-2);
   height: 30px; padding: 3px 6px; font-size: 12px; font-weight: 800;
+}
+
+@media (max-width: 900px) {
+  .chart-pair { grid-template-columns: 1fr; }
 }
 
 /* テーマ切り替えボタン */
@@ -633,11 +643,21 @@ select.modal-input { cursor: pointer; }
             </div>
           </div>
 
-          <div class="chart-card">
-            <div class="chart-title" data-i18n="donutTitle">動作分類の内訳（時間比率）</div>
-            <div class="chart-wrap" style="height:200px">
-              <canvas id="donutChart"></canvas>
-              <div id="donutEmpty" class="chart-empty"><div style="font-size:28px;opacity:0.18">🥧</div><div data-i18n="emptyAddSteps">工程エディタで要素を追加してください</div></div>
+          <div class="chart-pair">
+            <div class="chart-card">
+              <div class="chart-title" data-i18n="donutTitle">動作分類の内訳（時間比率）</div>
+              <div class="chart-wrap" style="height:200px">
+                <canvas id="donutChart"></canvas>
+                <div id="donutEmpty" class="chart-empty"><div style="font-size:28px;opacity:0.18">🥧</div><div data-i18n="emptyAddSteps">工程エディタで要素を追加してください</div></div>
+              </div>
+            </div>
+
+            <div class="chart-card">
+              <div class="chart-title" data-i18n="ieDonutTitle">IE分類の内訳（時間比率）</div>
+              <div class="chart-wrap" style="height:200px">
+                <canvas id="ieDonutChart"></canvas>
+                <div id="ieDonutEmpty" class="chart-empty"><div style="font-size:28px;opacity:0.18">🥧</div><div data-i18n="emptyAddSteps">工程エディタで要素を追加してください</div></div>
+              </div>
             </div>
           </div>
 
@@ -665,7 +685,7 @@ select.modal-input { cursor: pointer; }
                 </select>
               </div>
             </div>
-            <div class="chart-legend">
+            <div class="chart-legend gantt-legend">
               <div class="legend-item"><div class="legend-dot" style="background:var(--va)"></div><span data-i18n="typeVa">主要</span></div>
               <div class="legend-item"><div class="legend-dot" style="background:var(--sv)"></div><span data-i18n="typeSv">補助</span></div>
               <div class="legend-item"><div class="legend-dot" style="background:var(--nva)"></div><span data-i18n="typeNva">ムダ</span></div>
@@ -718,6 +738,8 @@ select.modal-input { cursor: pointer; }
         <div class="stat-value" id="dailyHour" style="font-size:20px">0.00 h</div>
         <div class="stat-sub" id="dailyInfo"></div>
       </div>
+      <div class="props-header" style="border-top:1px solid var(--border)" data-i18n="ieBreakdown">IE分類内訳</div>
+      <div id="ieBreakdown"></div>
       <div class="props-header" style="border-top:1px solid var(--border)" data-i18n="categoryBreakdown">カテゴリ内訳</div>
       <div id="breakdown"></div>
     </div>
@@ -789,7 +811,7 @@ const I18N = {
     duplicateSelected:'選択複製', groupSelected:'グループ化', ungroup:'解除', clearSelection:'選択解除',
     clearAll:'クリア', summary:'集計', netTime:'正味時間（1サイクル）', seconds:'秒',
     standardTime:'標準時間（余裕込み）', vaRate:'付加価値率 (VA%)', vaRateFormula:'主要時間 ÷ 合計時間',
-    dailyWorkload:'日次工数', categoryBreakdown:'カテゴリ内訳', customModalTitle:'カスタム作業要素を追加',
+    dailyWorkload:'日次工数', ieBreakdown:'IE分類内訳', categoryBreakdown:'カテゴリ内訳', customModalTitle:'カスタム作業要素を追加',
     category:'カテゴリ', iconEmoji:'アイコン（絵文字）', motionName:'動作名', customNamePh:'例：専用治具をセットする',
     standardSec:'標準時間（秒）', distanceParam:'距離パラメータ', fixedTime:'なし（固定時間）',
     distanceCm:'距離（cm）', motionClassification:'動作分類',
@@ -811,6 +833,7 @@ const I18N = {
     vaSec:'主要時間(秒)', svSec:'補助時間(秒)', nvaSec:'ムダ時間(秒)', title:'タイトル', libraryMotion:'ライブラリ動作',
     valueCode:'価値分類コード', ieClass:'IE分類', distanceCsv:'距離(cm)', note:'メモ', displayUnit:'表示単位',
     startSec:'開始(秒)', endSec:'終了(秒)', categoryCsv:'カテゴリ', totalSecCsv:'合計(秒)', processNo:'工程No.',
+    ieDonutTitle:'IE分類の内訳（時間比率）', duplicateGroup:'複製', groupCopySuffix:'コピー',
   },
   en: {
     appTitle:'Standard Time Design Tool', brandSub:'Standard Time Design Tool', searchMotion:'Search motions...',
@@ -825,7 +848,7 @@ const I18N = {
     duplicateSelected:'Duplicate selected', groupSelected:'Group', ungroup:'Ungroup', clearSelection:'Clear selection',
     clearAll:'Clear', summary:'Summary', netTime:'Net time (1 cycle)', seconds:'sec',
     standardTime:'Standard time (with allowance)', vaRate:'Value-added rate (VA%)', vaRateFormula:'Main time / total time',
-    dailyWorkload:'Daily workload', categoryBreakdown:'Category breakdown', customModalTitle:'Add Custom Work Element',
+    dailyWorkload:'Daily workload', ieBreakdown:'IE breakdown', categoryBreakdown:'Category breakdown', customModalTitle:'Add Custom Work Element',
     category:'Category', iconEmoji:'Icon (emoji)', motionName:'Motion name', customNamePh:'Example: Set dedicated jig',
     standardSec:'Standard time (sec)', distanceParam:'Distance parameter', fixedTime:'None (fixed time)',
     distanceCm:'Distance (cm)', motionClassification:'Motion classification',
@@ -847,6 +870,7 @@ const I18N = {
     vaSec:'Main time (sec)', svSec:'Support time (sec)', nvaSec:'Waste time (sec)', title:'Title', libraryMotion:'Library motion',
     valueCode:'Value class code', ieClass:'IE class', distanceCsv:'Distance (cm)', note:'Memo', displayUnit:'Display unit',
     startSec:'Start (sec)', endSec:'End (sec)', categoryCsv:'Category', totalSecCsv:'Total (sec)', processNo:'Process No.',
+    ieDonutTitle:'IE Classification Breakdown (time ratio)', duplicateGroup:'Duplicate', groupCopySuffix:'copy',
   }
 };
 const TYPE_LABELS_BY_LANG = {
@@ -881,6 +905,14 @@ function typeBgColors() {
     va:  c.va  + 'cc',
     sv:  c.sv  + 'cc',
     nva: c.nva + 'cc',
+  };
+}
+function ieColors() {
+  return {
+    transport:'#2563eb',
+    work:'#16a34a',
+    wait:'#dc2626',
+    inspect:'#7c3aed',
   };
 }
 const CATEGORY_LABELS_EN = {
@@ -1005,6 +1037,7 @@ let dragSrcIdx  = null;
 let dragGroupId = null;
 let paretoChart = null;
 let donutChart  = null;
+let ieDonutChart = null;
 let catChart    = null;
 let ganttChart  = null;
 const selectedStepIds = new Set();
@@ -1123,7 +1156,7 @@ function renderLib() {
 
 // ===== ステップ =====
 function addStep(item) {
-  steps.push({ ...item, stepId:Date.now()+Math.random(), title:'', note:'',
+  steps.push({ ...item, stepId:Date.now()+Math.random(), title:motionLabel(item), note:'',
     distanceVal: item.param==='distance'?30:null,
     customSec:   item.param==='distance'?null:item.sec,
     type: item.defaultType||'sv',
@@ -1175,6 +1208,7 @@ function renderGroupHeader(el, groupId) {
     <input class="group-name-input" value="${escHtml(group.name)}"
       onclick="event.stopPropagation()" onchange="updateGroupName('${groupId}',this.value)">
     <span class="group-meta">${indexes.length}${t('elements')} / ${groupSec(groupId).toFixed(1)}s</span>
+    <button class="group-action" onclick="event.stopPropagation();duplicateGroup('${groupId}')">${t('duplicateGroup')}</button>
     <button class="group-action" onclick="event.stopPropagation();ungroup('${groupId}')">${t('ungroup')}</button>`;
   header.addEventListener('dragstart', e=>{ dragGroupId=groupId; header.classList.add('dragging'); e.dataTransfer.effectAllowed='move'; });
   header.addEventListener('dragend', ()=>{ dragGroupId=null; header.classList.remove('dragging'); document.querySelectorAll('.group-card,.step-card').forEach(c=>c.classList.remove('drag-over')); });
@@ -1285,6 +1319,20 @@ function clearStepSelection() {
 function duplicateStep(i) {
   if (!steps[i]) return;
   steps.splice(i+1,0,cloneStep(steps[i]));
+  renderSteps();
+  updateSummary();
+}
+function duplicateGroup(id) {
+  const indexes = groupStepIndexes(id);
+  const group = groupById(id);
+  if (!group || !indexes.length) return;
+  const newId = 'grp_' + Date.now() + '_' + Math.random().toString(36).slice(2,7);
+  const newName = `${group.name} ${t('groupCopySuffix')}`;
+  const copies = indexes.map(i=>({ ...steps[i], stepId:Date.now()+Math.random(), groupId:newId }));
+  groups.push({id:newId,name:newName,collapsed:false});
+  steps.splice(indexes[indexes.length-1]+1,0,...copies);
+  selectedStepIds.clear();
+  copies.forEach(s=>selectedStepIds.add(s.stepId));
   renderSteps();
   updateSummary();
 }
@@ -1412,6 +1460,30 @@ function updateSummary() {
     segs.appendChild(d);
   });
 
+  // IE分類内訳
+  const ieTotals = {};
+  IE_ORDER.forEach(k=>{ ieTotals[k]={ie:k,count:0,sec:0}; });
+  steps.forEach(s=>{
+    const ie = s.ieClass || inferIeClass(s);
+    if (!ieTotals[ie]) ieTotals[ie]={ie,count:0,sec:0};
+    ieTotals[ie].count++;
+    ieTotals[ie].sec += calcStepSec(s);
+  });
+  const ieMaxSec = Math.max(...Object.values(ieTotals).map(x=>x.sec),0.001);
+  const ieBd=document.getElementById('ieBreakdown'); ieBd.innerHTML='';
+  const IC = ieColors();
+  Object.values(ieTotals).filter(item=>item.sec>0).sort((a,b)=>b.sec-a.sec).forEach(item=>{
+    const d=document.createElement('div'); d.className='cat-item';
+    d.innerHTML=`<div class="cat-row">
+        <span class="cat-icon" style="color:${IC[item.ie]||'var(--blue)'}">■</span>
+        <span class="cat-name">${IE_LABELS[item.ie]}</span>
+        <span class="cat-count">×${item.count}</span>
+        <span class="cat-time">${item.sec.toFixed(1)}s</span>
+      </div>
+      <div class="cat-bar-wrap"><div class="cat-bar" style="background:${IC[item.ie]||'var(--blue)'};width:${item.sec/ieMaxSec*100}%"></div></div>`;
+    ieBd.appendChild(d);
+  });
+
   // カテゴリ内訳
   const cats={};
   steps.forEach(s=>{ if(!cats[s.cat]) cats[s.cat]={icon:s.icon,cat:s.cat,count:0,sec:0};
@@ -1433,7 +1505,7 @@ function updateSummary() {
 }
 
 // ===== 分析グラフ =====
-function renderAnalysis() { renderParetoChart(); renderDonutChart(); renderCatChart(); }
+function renderAnalysis() { renderParetoChart(); renderDonutChart(); renderIeDonutChart(); renderCatChart(); }
 
 function setVis(cvs,emp,has) {
   document.getElementById(cvs).style.display=has?'block':'none';
@@ -1539,6 +1611,48 @@ function renderDonutChart() {
                 text:`${lbl}  ${ds.data[i].toFixed(1)}s  (${tot>0?(ds.data[i]/tot*100).toFixed(0):0}%)`,
                 fillStyle:ds.backgroundColor[i],strokeStyle:ds.backgroundColor[i],
                 lineWidth:0,hidden:false,index:i}));}}},
+        tooltip:{backgroundColor:df.tooltipBg,borderColor:df.tooltipBdr,borderWidth:1,
+          titleColor:df.tooltipTitle,bodyColor:df.tooltipBody,
+          callbacks:{label:ctx=>{const v=ctx.parsed;const pct=tot>0?(v/tot*100).toFixed(1):0;return` ${v.toFixed(1)}${t('seconds')}  (${pct}%)`;}}}},
+    },
+  });
+}
+
+function renderIeDonutChart() {
+  setVis('ieDonutChart','ieDonutEmpty',steps.length>0);
+  if (!steps.length) { if(ieDonutChart){ieDonutChart.destroy();ieDonutChart=null;} return; }
+  const C  = ieColors();
+  const df = chartDefaults();
+  const ts={transport:0,work:0,wait:0,inspect:0};
+  steps.forEach(s=>{
+    const ie = s.ieClass || inferIeClass(s);
+    if (ts[ie] == null) ts[ie] = 0;
+    ts[ie] += calcStepSec(s);
+  });
+  const tot=IE_ORDER.reduce((sum,k)=>sum+ts[k],0);
+  if(ieDonutChart){ieDonutChart.destroy();ieDonutChart=null;}
+  ieDonutChart=new Chart(document.getElementById('ieDonutChart'),{
+    type:'doughnut',
+    data:{
+      labels:IE_ORDER.map(k=>IE_LABELS[k]),
+      datasets:[{data:IE_ORDER.map(k=>+ts[k].toFixed(2)),
+        backgroundColor:IE_ORDER.map(k=>C[k]),
+        borderColor:IE_ORDER.map(k=>C[k]),
+        borderWidth:0,hoverOffset:5}],
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,cutout:'60%',
+      animation:{duration:650,easing:'easeOutQuart'},
+      plugins:{
+        legend:{display:true,position:'right',
+          labels:{color:df.legendColor,font:{size:11},padding:12,boxWidth:10,
+            generateLabels:chart=>{
+              const ds=chart.data.datasets[0];
+              return chart.data.labels.map((lbl,i)=>({
+                text:`${lbl}  ${ds.data[i].toFixed(1)}s  (${tot>0?(ds.data[i]/tot*100).toFixed(0):0}%)`,
+                fillStyle:ds.backgroundColor[i],strokeStyle:ds.backgroundColor[i],
+                lineWidth:0,hidden:false,index:i}));
+            }}},
         tooltip:{backgroundColor:df.tooltipBg,borderColor:df.tooltipBdr,borderWidth:1,
           titleColor:df.tooltipTitle,bodyColor:df.tooltipBody,
           callbacks:{label:ctx=>{const v=ctx.parsed;const pct=tot>0?(v/tot*100).toFixed(1):0;return` ${v.toFixed(1)}${t('seconds')}  (${pct}%)`;}}}},
@@ -1745,7 +1859,7 @@ function renderGanttChart() {
   if (!steps.length) { if(ganttChart){ganttChart.destroy();ganttChart=null;} return; }
   const rows = ganttRows();
   const wrap = document.getElementById('ganttChart').parentElement;
-  wrap.style.height = `${Math.max(320, rows.length*34 + 88)}px`;
+  wrap.style.height = `${Math.max(320, rows.length*34 + 104)}px`;
   const C = typeBgColors();
   const df = chartDefaults();
   const total = rows.length ? rows[rows.length-1].end : 0;
@@ -1771,7 +1885,7 @@ function renderGanttChart() {
       responsive:true,
       maintainAspectRatio:false,
       animation:false,
-      layout:{padding:{left:220,top:18}},
+      layout:{padding:{left:220,top:32}},
       plugins:{
         legend:{display:false},
         tooltip:{backgroundColor:df.tooltipBg,borderColor:df.tooltipBdr,borderWidth:1,
