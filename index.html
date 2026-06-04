@@ -300,6 +300,12 @@ body.dark .type-pill.nva { background: rgba(255,77,77,0.12); color: var(--nva); 
 .group-card.dragging { opacity: 0.5; }
 .group-card.drag-over { border-color: var(--blue-dark); box-shadow: var(--shadow-md); }
 .group-drag { color: var(--text-3); font-size: 13px; flex-shrink: 0; }
+.group-toggle {
+  border: none; background: transparent; color: var(--text-2);
+  width: 22px; height: 22px; display: inline-grid; place-items: center;
+  border-radius: 4px; cursor: pointer; font-size: 12px; flex-shrink: 0;
+}
+.group-toggle:hover { background: var(--surface); color: var(--blue); }
 .group-name-input {
   flex: 1; min-width: 0; border: none; border-bottom: 1px solid transparent;
   background: transparent; color: var(--text); font-size: 14px; font-weight: 900;
@@ -940,6 +946,7 @@ function calcStepSec(s) {
 
 function groupById(id) { return groups.find(g=>g.id===id); }
 function groupName(id) { return groupById(id)?.name || 'グループ'; }
+function groupCollapsed(id) { return !!groupById(id)?.collapsed; }
 function groupStepIndexes(id) {
   const out=[];
   steps.forEach((s,i)=>{ if(s.groupId===id) out.push(i); });
@@ -967,8 +974,11 @@ function renderGroupHeader(el, groupId) {
   const header = document.createElement('div');
   header.className = 'group-card';
   header.draggable = true;
+  const collapsed = groupCollapsed(groupId);
   header.innerHTML = `
     <span class="group-drag">⠿</span>
+    <button class="group-toggle" title="${collapsed?'展開':'折り畳み'}"
+      onclick="event.stopPropagation();toggleGroupCollapsed('${groupId}')">${collapsed?'▶':'▼'}</button>
     <input class="group-name-input" value="${escHtml(group.name)}"
       onclick="event.stopPropagation()" onchange="updateGroupName('${groupId}',this.value)">
     <span class="group-meta">${indexes.length}要素 / ${groupSec(groupId).toFixed(1)}s</span>
@@ -996,6 +1006,7 @@ function renderSteps() {
       renderGroupHeader(el, s.groupId);
       renderedGroups.add(s.groupId);
     }
+    if (s.groupId && groupCollapsed(s.groupId)) return;
     const sec = calcStepSec(s);
     const t   = s.type||'sv';
     const card = document.createElement('div');
@@ -1109,7 +1120,7 @@ function groupSelectedSteps() {
   const name = prompt('グループ名を入力してください', `グループ ${groups.length+1}`);
   if (!name) return;
   const id = 'grp_' + Date.now() + '_' + Math.random().toString(36).slice(2,7);
-  groups.push({id,name:name.trim()||`グループ ${groups.length+1}`});
+  groups.push({id,name:name.trim()||`グループ ${groups.length+1}`,collapsed:false});
   indexes.forEach(i=>steps[i].groupId=id);
   selectedStepIds.clear();
   cleanupGroups();
@@ -1137,6 +1148,13 @@ function updateGroupName(id,value) {
   g.name = (value||'').trim() || 'グループ';
   saveSession();
   if (document.getElementById('tab-gantt')?.classList.contains('active')) renderGanttChart();
+}
+function toggleGroupCollapsed(id) {
+  const g = groupById(id);
+  if (!g) return;
+  g.collapsed = !g.collapsed;
+  renderSteps();
+  updateSummary();
 }
 function moveGroupBefore(groupId,targetIndex) {
   if (!groupId) return;
@@ -1709,7 +1727,7 @@ function exportJSON() {
   dl(JSON.stringify({processName:name,dailyCount:daily,allowancePct:allow,
     totalSec:+tot.toFixed(1),stdSec:+(tot*(1+allow/100)).toFixed(1),
     vaRatePct:tot>0?+(ts.va/tot*100).toFixed(1):null,
-    groups:groups.map(g=>({id:g.id,name:g.name})),
+    groups:groups.map(g=>({id:g.id,name:g.name,collapsed:!!g.collapsed})),
     steps:steps.map((s,i)=>({no:i+1,cat:s.cat,icon:s.icon,name:s.name,title:s.title||'',
       type:s.type||'sv',typeLabel:TYPE_LABELS[s.type||'sv'],
       ieClass:s.ieClass||inferIeClass(s),ieLabel:IE_LABELS[s.ieClass||inferIeClass(s)],
@@ -1736,7 +1754,7 @@ function handleJSONLoad(e){
       document.getElementById('dailyCount').value=data.dailyCount||100;
       document.getElementById('allowance').value=data.allowancePct||10;
       selectedStepIds.clear();
-      groups=(data.groups||[]).map(g=>({id:g.id,name:g.name||'グループ'}));
+      groups=(data.groups||[]).map(g=>({id:g.id,name:g.name||'グループ',collapsed:!!g.collapsed}));
       steps=data.steps.map(s=>{const lib=library.find(x=>x.name===s.name)||{};
         return{...lib,...s,stepId:Date.now()+Math.random(),type:s.type||lib.defaultType||'sv',ieClass:s.ieClass||inferIeClass({...lib,...s}),groupId:s.groupId||null,customSec:s.customSec||null};});
       cleanupGroups();
@@ -1765,7 +1783,7 @@ function saveSession() {
     processName: document.getElementById('processName').value,
     dailyCount:  document.getElementById('dailyCount').value,
     allowance:   document.getElementById('allowance').value,
-    groups: groups.map(g => ({ id:g.id, name:g.name })),
+    groups: groups.map(g => ({ id:g.id, name:g.name, collapsed:!!g.collapsed })),
     steps: steps.map(s => ({
       ...s,
       // stepId は再生成するので保存不要だが含めて問題なし
@@ -1783,7 +1801,7 @@ function loadSession() {
     document.getElementById('dailyCount').value  = data.dailyCount  || 100;
     document.getElementById('allowance').value   = data.allowance   || 10;
     selectedStepIds.clear();
-    groups = (data.groups || []).map(g => ({ id:g.id, name:g.name||'グループ' }));
+    groups = (data.groups || []).map(g => ({ id:g.id, name:g.name||'グループ', collapsed:!!g.collapsed }));
     steps = (data.steps || []).map(s => ({ ...s, stepId: Date.now() + Math.random(), groupId:s.groupId||null, ieClass:s.ieClass||inferIeClass(s) }));
     cleanupGroups();
     return true;
