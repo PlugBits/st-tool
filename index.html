@@ -275,6 +275,7 @@ body.dark .type-pill.nva { background: rgba(255,77,77,0.12); color: var(--nva); 
 .step-card.type-va  { border-left-color: var(--va); }
 .step-card.type-sv  { border-left-color: var(--sv); }
 .step-card.type-nva { border-left-color: var(--nva); }
+.step-card.selected { border-color: var(--blue); background: var(--blue-bg); }
 .step-card.dragging  { opacity: 0.45; }
 .step-card.drag-over { border-color: var(--blue); background: var(--blue-bg); }
 
@@ -287,7 +288,7 @@ body.dark .type-pill.nva { background: rgba(255,77,77,0.12); color: var(--nva); 
 }
 
 .step-title-input {
-  flex: 1; min-width: 0;
+  flex: 1; min-width: 120px;
   background: transparent; border: none;
   border-bottom: 1px solid transparent;
   color: var(--text); font-size: 13px; font-weight: 600;
@@ -297,7 +298,7 @@ body.dark .type-pill.nva { background: rgba(255,77,77,0.12); color: var(--nva); 
 .step-title-input::placeholder { color: var(--text-4); font-weight: 400; font-size: 12px; }
 
 .step-memo-input {
-  width: 160px; flex-shrink: 0;
+  width: 220px; flex-shrink: 0; margin-left: auto;
   background: transparent; border: none;
   border-bottom: 1px solid var(--border);
   color: var(--text-3); font-size: 11px;
@@ -312,6 +313,7 @@ body.dark .type-pill.nva { background: rgba(255,77,77,0.12); color: var(--nva); 
   padding: 2px 7px; border-radius: 10px;
   cursor: pointer; user-select: none; flex-shrink: 0;
   white-space: nowrap; transition: filter 0.12s;
+  width: 42px; text-align: center;
 }
 .type-badge.va  { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
 .type-badge.sv  { background: #fef3c7; color: #b45309; border: 1px solid #fcd34d; }
@@ -322,7 +324,10 @@ body.dark .type-badge.sv  { background: rgba(255,209,102,0.15); color: var(--sv)
 body.dark .type-badge.nva { background: rgba(255,77,77,0.15); color: var(--nva); border-color: rgba(255,77,77,0.4); }
 
 /* 距離・時間入力 */
-.step-dist-wrap, .step-time-wrap { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
+.step-dist-wrap, .step-time-wrap { display: flex; align-items: center; gap: 2px; flex-shrink: 0; justify-content: flex-end; }
+.step-dist-wrap { width: 78px; }
+.step-time-wrap { width: 70px; }
+.step-dist-empty { visibility: hidden; }
 .step-dist-input, .step-time-input {
   border: 1px solid var(--border);
   background: var(--surface2);
@@ -338,12 +343,13 @@ body.dark .type-badge.nva { background: rgba(255,77,77,0.15); color: var(--nva);
 .step-time-input:focus { outline: none; border-color: var(--green); }
 body.dark .step-dist-input { border-color: var(--border); }
 body.dark .step-time-input { border-color: var(--border); }
-.step-time-calc { font-size: 13px; font-weight: 700; color: var(--green); min-width: 44px; text-align: right; font-variant-numeric: tabular-nums; }
+.step-time-calc { font-size: 13px; font-weight: 700; color: var(--green); min-width: 52px; text-align: right; font-variant-numeric: tabular-nums; }
 .step-unit { font-size: 10px; color: var(--text-3); }
 
 .step-copy, .step-del {
   background: none; border: none; color: var(--text-4);
-  cursor: pointer; font-size: 11px; padding: 4px 5px; border-radius: 4px; flex-shrink: 0;
+  cursor: pointer; font-size: 13px; padding: 4px 5px; border-radius: 4px; flex-shrink: 0;
+  width: 26px; height: 26px; display: inline-grid; place-items: center;
 }
 .step-copy:hover { color: var(--blue); background: var(--blue-bg); }
 .step-del:hover { color: var(--red); background: #fee2e2; }
@@ -879,7 +885,7 @@ function renderSteps() {
     const sec = calcStepSec(s);
     const t   = s.type||'sv';
     const card = document.createElement('div');
-    card.className = `step-card type-${t}`;
+    card.className = `step-card type-${t}${selectedStepIds.has(s.stepId)?' selected':''}`;
     card.draggable = true;
 
     const distHtml = s.param==='distance' ? `
@@ -887,7 +893,7 @@ function renderSteps() {
         <input class="step-dist-input" type="number" value="${s.distanceVal}" min="1" step="5"
           onclick="event.stopPropagation()" onchange="updateDist(${i},this.value)">
         <span class="step-unit">cm</span>
-      </div>` : '';
+      </div>` : '<div class="step-dist-wrap step-dist-empty"><span class="step-dist-input">0</span><span class="step-unit">cm</span></div>';
 
     const timeHtml = s.param==='distance'
       ? `<div class="step-time-wrap"><span class="step-time-calc">${sec.toFixed(1)}</span><span class="step-unit">s</span></div>`
@@ -917,7 +923,7 @@ function renderSteps() {
       ${ieHtml}
       <span class="type-badge ${t}" onclick="event.stopPropagation();toggleType(${i})">${TYPE_LABELS[t]}</span>
       ${timeHtml}
-      <button class="step-copy" title="複製" onclick="event.stopPropagation();duplicateStep(${i})">複製</button>
+      <button class="step-copy" title="複製" onclick="event.stopPropagation();duplicateStep(${i})">⧉</button>
       <button class="step-del" onclick="event.stopPropagation();deleteStep(${i})">✕</button>`;
 
     card.addEventListener('dragstart', e=>{ dragSrcIdx=i; card.classList.add('dragging'); e.dataTransfer.effectAllowed='move'; });
@@ -928,6 +934,12 @@ function renderSteps() {
       if (dragSrcIdx===null||dragSrcIdx===i) return;
       steps.splice(i,0,steps.splice(dragSrcIdx,1)[0]);
       dragSrcIdx=null; renderSteps(); updateSummary(); });
+    card.addEventListener('click', e=>{
+      if (!e.ctrlKey && !e.metaKey) return;
+      if (e.target.closest('input,select,button,textarea')) return;
+      e.preventDefault();
+      toggleStepSelection(i,!selectedStepIds.has(s.stepId));
+    });
     el.appendChild(card);
   });
 }
@@ -940,6 +952,7 @@ function toggleStepSelection(i,checked) {
   const id = steps[i]?.stepId;
   if (id == null) return;
   if (checked) selectedStepIds.add(id); else selectedStepIds.delete(id);
+  renderSteps();
   updateSummary();
 }
 function clearStepSelection() {
