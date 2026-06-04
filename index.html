@@ -1675,10 +1675,12 @@ const ganttAxisTablePlugin = {
       name:{x: 130, w: Math.max(72, left - 138)},
     };
     ctx.save();
-    ctx.font = '700 10px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+    ctx.font = '700 11px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
     ctx.fillStyle = df.tickColor;
     ctx.textBaseline = 'middle';
-    ctx.fillText('No.', cols.no.x, top - 14);
+    ctx.textAlign = 'center';
+    ctx.fillText('No.', cols.no.x + cols.no.w / 2, top - 14);
+    ctx.textAlign = 'left';
     ctx.fillText(t('ieClass'), cols.cls.x, top - 14);
     ctx.fillText(t('processDefault'), cols.name.x, top - 14);
     ctx.strokeStyle = df.gridColor;
@@ -1689,12 +1691,12 @@ const ganttAxisTablePlugin = {
       ctx.lineTo(x, bottom);
       ctx.stroke();
     });
-    ctx.font = '10px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+    ctx.font = '12px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
     rows.forEach((row,i)=>{
       const y = scales.y.getPixelForValue(i);
       ctx.fillStyle = df.tickColor;
-      ctx.textAlign = 'right';
-      ctx.fillText(row.noText, cols.no.x + cols.no.w - 6, y);
+      ctx.textAlign = 'center';
+      ctx.fillText(row.noText, cols.no.x + cols.no.w / 2, y);
       ctx.textAlign = 'left';
       ctx.fillText(IE_LABELS[row.ieClass], cols.cls.x, y);
       ctx.fillText(fitCanvasText(ctx,row.label,cols.name.w), cols.name.x, y);
