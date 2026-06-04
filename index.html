@@ -1719,7 +1719,7 @@ function renderDonutChart() {
               return chart.data.labels.map((lbl,i)=>({
                 text:`${lbl}  ${ds.data[i].toFixed(1)}s  (${tot>0?(ds.data[i]/tot*100).toFixed(0):0}%)`,
                 fillStyle:ds.backgroundColor[i],strokeStyle:ds.backgroundColor[i],
-                lineWidth:0,hidden:false,index:i}));}}},
+                fontColor:df.legendColor,lineWidth:0,hidden:false,index:i}));}}},
         tooltip:{backgroundColor:df.tooltipBg,borderColor:df.tooltipBdr,borderWidth:1,
           titleColor:df.tooltipTitle,bodyColor:df.tooltipBody,
           callbacks:{label:ctx=>{const v=ctx.parsed;const pct=tot>0?(v/tot*100).toFixed(1):0;return` ${v.toFixed(1)}${t('seconds')}  (${pct}%)`;}}}},
@@ -1760,7 +1760,7 @@ function renderIeDonutChart() {
               return chart.data.labels.map((lbl,i)=>({
                 text:`${lbl}  ${ds.data[i].toFixed(1)}s  (${tot>0?(ds.data[i]/tot*100).toFixed(0):0}%)`,
                 fillStyle:ds.backgroundColor[i],strokeStyle:ds.backgroundColor[i],
-                lineWidth:0,hidden:false,index:i}));
+                fontColor:df.legendColor,lineWidth:0,hidden:false,index:i}));
             }}},
         tooltip:{backgroundColor:df.tooltipBg,borderColor:df.tooltipBdr,borderWidth:1,
           titleColor:df.tooltipTitle,bodyColor:df.tooltipBody,
@@ -1794,7 +1794,7 @@ function renderCatChart() {
       interaction:{mode:'index',intersect:false},
       plugins:{
         legend:{display:true,position:'top',
-          labels:{color:df.legendColor,font:{size:10},padding:10,boxWidth:9}},
+          labels:{color:df.legendColor,fontColor:df.legendColor,font:{size:10},padding:10,boxWidth:9}},
         tooltip:{backgroundColor:df.tooltipBg,borderColor:df.tooltipBdr,borderWidth:1,
           titleColor:df.tooltipTitle,bodyColor:df.tooltipBody,
           callbacks:{label:ctx=>` ${ctx.dataset.label}: ${ctx.parsed.x.toFixed(1)}s`}}},
