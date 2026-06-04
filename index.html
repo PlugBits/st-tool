@@ -6,8 +6,6 @@
 <title>標準時間設計ツール</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; }
 
@@ -501,6 +499,50 @@ footer {
 }
 .modal-btn-primary:hover { filter: brightness(1.1); }
 select.modal-input { cursor: pointer; }
+
+/* ===== Print / PDF ===== */
+.print-root { display: none; }
+
+@media print {
+  @page { size: A4 landscape; margin: 9mm; }
+  html, body {
+    width: auto; height: auto; overflow: visible;
+    background: #fff !important; color: #172033 !important;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .app-shell, .modal-overlay, #jsonFileInput { display: none !important; }
+  .print-root { display: block; }
+  .print-page {
+    break-after: page;
+    page-break-after: always;
+    padding: 0;
+  }
+  .print-page:last-child { break-after: auto; page-break-after: auto; }
+  .print-title { font-size: 18px; font-weight: 900; margin: 0 0 3mm; }
+  .print-sub { font-size: 9px; color: #64748b; margin-bottom: 4mm; }
+  .print-section-title { font-size: 12px; font-weight: 900; color: #334155; margin: 4mm 0 2mm; }
+  .print-kpis { display: grid; grid-template-columns: repeat(5,1fr); gap: 2mm; margin-bottom: 4mm; }
+  .print-kpi { border: 1px solid #d7dee9; background: #f8fafc; padding: 2.5mm; border-radius: 2mm; }
+  .print-kpi b { display: block; font-size: 16px; color: #2563eb; line-height: 1.1; }
+  .print-kpi span { font-size: 8px; color: #64748b; }
+  .print-table { width: 100%; border-collapse: collapse; font-size: 8.5px; }
+  .print-table th, .print-table td { border: 1px solid #d7dee9; padding: 1.2mm 1.6mm; text-align: left; vertical-align: top; }
+  .print-table th { background: #eef2f6; color: #475569; font-weight: 900; }
+  .print-table .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .print-table tr { break-inside: avoid; page-break-inside: avoid; }
+  .print-bars { display: grid; gap: 1.2mm; }
+  .print-bar-row { display: grid; grid-template-columns: 68mm 1fr 25mm; gap: 2mm; align-items: center; font-size: 8.5px; break-inside: avoid; }
+  .print-bar-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .print-bar-track { height: 4.5mm; border: 1px solid #d7dee9; background: #f8fafc; }
+  .print-bar-fill { height: 100%; }
+  .print-bar-value { text-align: right; color: #64748b; font-variant-numeric: tabular-nums; }
+  .print-gantt { display: grid; gap: 0.8mm; }
+  .print-gantt-row { display: grid; grid-template-columns: 10mm 16mm 56mm 1fr 17mm; gap: 2mm; align-items: center; min-height: 5mm; font-size: 8px; break-inside: avoid; }
+  .print-gantt-no, .print-gantt-sec { text-align: right; color: #64748b; font-variant-numeric: tabular-nums; }
+  .print-gantt-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .print-gantt-track { position: relative; height: 4.2mm; border: 1px solid #d7dee9; background: repeating-linear-gradient(90deg,#eef2f6 0,#eef2f6 1px,#fff 1px,#fff 10mm); }
+  .print-gantt-fill { position: absolute; top: 0.7mm; bottom: 0.7mm; border-radius: 1mm; }
+}
 </style>
 </head>
 <body>
@@ -650,6 +692,8 @@ select.modal-input { cursor: pointer; }
   </div>
 
 </div>
+
+<div class="print-root" id="printRoot"></div>
 
 <!-- カスタム要素モーダル -->
 <div class="modal-overlay" id="customModal">
@@ -1490,51 +1534,61 @@ function exportJSON() {
       sec:+calcStepSec(s).toFixed(1),note:s.note})),
     exportedAt:new Date().toISOString()},null,2),`${name}_ST.json`,'application/json');
 }
-function waitFrame() {
-  return new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+function printBar(widthPct,color,label,value) {
+  return `<div class="print-bar-row"><div class="print-bar-label">${escHtml(label)}</div><div class="print-bar-track"><div class="print-bar-fill" style="width:${Math.max(1,widthPct)}%;background:${color}"></div></div><div class="print-bar-value">${escHtml(value)}</div></div>`;
 }
-function settleCharts() {
-  [paretoChart,donutChart,catChart,ganttChart].forEach(chart=>{ if(chart) chart.update('none'); });
-}
-async function exportPDF() {
-  if(!steps.length){alert('工程が空です');return;}
-  if(!window.html2canvas || !window.jspdf?.jsPDF){alert('PDF出力ライブラリの読み込みに失敗しました');return;}
+function buildPrintView() {
   const summary=processSummary();
-  const activePane=document.querySelector('.tab-pane.active');
-  const activeName=activePane ? activePane.id.replace('tab-','') : 'editor';
-  const captureTarget=document.querySelector('.workspace');
-  const pdf=new window.jspdf.jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
-  const pages=['editor','analysis','gantt'];
-  for(let i=0;i<pages.length;i++){
-    switchTab(pages[i]);
-    await waitFrame();
-    if (pages[i]==='analysis') renderAnalysis();
-    if (pages[i]==='gantt') renderGanttChart();
-    settleCharts();
-    await waitFrame();
-    const canvas=await html2canvas(captureTarget,{
-      scale:2,
-      backgroundColor:getComputedStyle(document.body).backgroundColor,
-      onclone:doc=>{
-        const footer=doc.querySelector('.workspace > footer');
-        if(footer) footer.style.display='none';
-      },
-    });
-    const img=canvas.toDataURL('image/png');
-    const imgW=canvas.width;
-    const imgH=canvas.height;
-    const pageW=297;
-    const pageH=210;
-    const scale=Math.min(pageW/imgW,pageH/imgH);
-    const w=imgW*scale;
-    const h=imgH*scale;
-    const x=(pageW-w)/2;
-    const y=(pageH-h)/2;
-    if(i>0) pdf.addPage('a4','landscape');
-    pdf.addImage(img,'PNG',x,y,w,h);
-  }
-  switchTab(activeName);
-  pdf.save(`${fileSafeName(summary.name)}_report.pdf`);
+  const C=typeColors();
+  const sRows=stepRows();
+  const pRows=paretoRows();
+  const cRows=categoryRows();
+  const gRows=ganttRows();
+  const maxPareto=Math.max(...pRows.map(r=>r.sec),0.001);
+  const totalGantt=Math.max(gRows.length?gRows[gRows.length-1].end:0,0.001);
+  const stepHtml=sRows.map(r=>`<tr><td class="num">${r.no}</td><td>${escHtml(r.ieLabel)}</td><td>${escHtml(r.title)}</td><td>${escHtml(r.typeLabel)}</td><td class="num">${r.distance}</td><td class="num">${r.sec.toFixed(1)}</td><td>${escHtml(r.note)}</td></tr>`).join('');
+  const paretoHtml=pRows.map(r=>printBar(r.sec/maxPareto*100,C[r.type],`${String(r.rank).padStart(2,'0')} ${r.name} [${r.typeLabel}] x${r.count}`,`${r.sec.toFixed(1)}s / ${r.cumulativePercent.toFixed(1)}%`)).join('');
+  const catHtml=cRows.map(r=>`<tr><td>${escHtml(r.cat)}</td><td class="num">${r.count}</td><td class="num">${r.va.toFixed(1)}</td><td class="num">${r.sv.toFixed(1)}</td><td class="num">${r.nva.toFixed(1)}</td><td class="num">${r.total.toFixed(1)}</td></tr>`).join('');
+  const ganttHtml=gRows.map(r=>{
+    const left=r.start/totalGantt*100;
+    const width=Math.max(0.8,r.sec/totalGantt*100);
+    return `<div class="print-gantt-row"><div class="print-gantt-no">${r.noText}</div><div>${IE_LABELS[r.ieClass]}</div><div class="print-gantt-name">${escHtml(r.label)}</div><div class="print-gantt-track"><div class="print-gantt-fill" style="left:${left}%;width:${width}%;background:${C[r.type]}"></div></div><div class="print-gantt-sec">${r.sec.toFixed(1)}s</div></div>`;
+  }).join('');
+  return `
+    <section class="print-page">
+      <h1 class="print-title">${escHtml(summary.name)}</h1>
+      <div class="print-sub">工程一覧 / ${new Date().toLocaleString()}</div>
+      <div class="print-kpis">
+        <div class="print-kpi"><b>${summary.total.toFixed(1)}</b><span>正味時間 秒</span></div>
+        <div class="print-kpi"><b>${summary.std.toFixed(1)}</b><span>標準時間 秒</span></div>
+        <div class="print-kpi"><b>${summary.vaRate!=null?summary.vaRate.toFixed(1):'-'}%</b><span>付加価値率</span></div>
+        <div class="print-kpi"><b>${summary.daily}</b><span>日次数量</span></div>
+        <div class="print-kpi"><b>${summary.allow}%</b><span>余裕率</span></div>
+      </div>
+      <div class="print-section-title">工程一覧</div>
+      <table class="print-table"><thead><tr><th>No</th><th>IE分類</th><th>工程</th><th>価値分類</th><th>距離cm</th><th>秒</th><th>メモ</th></tr></thead><tbody>${stepHtml}</tbody></table>
+    </section>
+    <section class="print-page">
+      <h1 class="print-title">分析</h1>
+      <div class="print-sub">パレート / カテゴリ別時間</div>
+      <div class="print-section-title">パレート図（要素別集計）</div>
+      <div class="print-bars">${paretoHtml}</div>
+      <div class="print-section-title">カテゴリ別時間</div>
+      <table class="print-table"><thead><tr><th>カテゴリ</th><th>件数</th><th>主要 秒</th><th>補助 秒</th><th>ムダ 秒</th><th>合計 秒</th></tr></thead><tbody>${catHtml}</tbody></table>
+    </section>
+    <section class="print-page">
+      <h1 class="print-title">連続動作チャート</h1>
+      <div class="print-sub">工程No. / IE分類 / 工程 / 時間軸 秒</div>
+      <div class="print-gantt">${ganttHtml}</div>
+    </section>`;
+}
+function preparePrintView() {
+  document.getElementById('printRoot').innerHTML = buildPrintView();
+}
+function exportPDF() {
+  if(!steps.length){alert('工程が空です');return;}
+  preparePrintView();
+  window.print();
 }
 function dl(content,filename,mime){
   dlBlob(new Blob([content],{type:mime}),filename);
@@ -1544,6 +1598,7 @@ function dlBlob(blob,filename){
   const a=Object.assign(document.createElement('a'),{href:url,download:filename});
   a.click();URL.revokeObjectURL(url);
 }
+window.addEventListener('beforeprint',()=>{ if(steps.length) preparePrintView(); });
 function loadJSON(){document.getElementById('jsonFileInput').click();}
 function handleJSONLoad(e){
   const file=e.target.files[0];if(!file)return;
