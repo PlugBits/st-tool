@@ -1201,9 +1201,9 @@ function renderSteps() {
     }
     if (s.groupId && groupCollapsed(s.groupId)) return;
     const sec = calcStepSec(s);
-    const t   = s.type||'sv';
+    const type = s.type||'sv';
     const card = document.createElement('div');
-    card.className = `step-card type-${t}${selectedStepIds.has(s.stepId)?' selected':''}${s.groupId?' in-group':''}`;
+    card.className = `step-card type-${type}${selectedStepIds.has(s.stepId)?' selected':''}${s.groupId?' in-group':''}`;
     card.draggable = !s.groupId;
 
     const distHtml = s.param==='distance' ? `
@@ -1239,7 +1239,7 @@ function renderSteps() {
         onclick="event.stopPropagation()" onchange="updateNote(${i},this.value)">
       ${distHtml}
       ${ieHtml}
-      <span class="type-badge ${t}" onclick="event.stopPropagation();toggleType(${i})">${TYPE_LABELS[t]}</span>
+      <span class="type-badge ${type}" onclick="event.stopPropagation();toggleType(${i})">${TYPE_LABELS[type]}</span>
       ${timeHtml}
       <button class="step-copy" title="${t('duplicateSelected')}" onclick="event.stopPropagation();duplicateStep(${i})">⧉</button>
       <button class="step-del" onclick="event.stopPropagation();deleteStep(${i})">✕</button>`;
