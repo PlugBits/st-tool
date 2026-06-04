@@ -514,6 +514,11 @@ footer {
   background: var(--surface2); color: var(--text-2);
   height: 30px; padding: 3px 6px; font-size: 12px; font-weight: 800;
 }
+.language-select {
+  border: 1px solid var(--border); border-radius: 4px;
+  background: var(--surface2); color: var(--text-2);
+  height: 30px; padding: 3px 6px; font-size: 12px; font-weight: 800;
+}
 
 /* テーマ切り替えボタン */
 .theme-btn {
@@ -566,39 +571,43 @@ select.modal-input { cursor: pointer; }
       <div class="brand-icon">⏱</div>
       <div>
         <div class="brand-text">ST Designer</div>
-        <div class="brand-sub">標準時間設計ツール</div>
+        <div class="brand-sub" data-i18n="brandSub">標準時間設計ツール</div>
       </div>
     </div>
     <div class="lib-search">
-      <input type="text" id="libSearch" placeholder="動作を検索…" oninput="renderLib()">
+      <input type="text" id="libSearch" placeholder="動作を検索…" data-i18n-placeholder="searchMotion" oninput="renderLib()">
     </div>
     <div class="sidebar-scroll" id="motionLib"></div>
-    <button class="add-custom-btn" onclick="openCustomModal()">＋ カスタム要素を追加</button>
+    <button class="add-custom-btn" onclick="openCustomModal()" data-i18n="addCustom">＋ カスタム要素を追加</button>
   </div>
 
   <!-- ===== 中央 ===== -->
   <div class="workspace">
     <div class="topbar">
-      <input type="text" id="processName" placeholder="工程名…" value="部品取り付け工程">
-      <span class="topbar-label">日次数量</span>
+      <input type="text" id="processName" placeholder="工程名…" data-i18n-placeholder="processNamePh" value="部品取り付け工程">
+      <span class="topbar-label" data-i18n="dailyQty">日次数量</span>
       <input type="number" id="dailyCount" value="100" min="1" oninput="updateSummary()">
-      <span class="topbar-label">台</span>
-      <span class="topbar-label">余裕率</span>
+      <span class="topbar-label" data-i18n="units">台</span>
+      <span class="topbar-label" data-i18n="allowance">余裕率</span>
       <input type="number" id="allowance" value="10" min="0" max="50" style="width:46px" oninput="updateSummary()">
       <span class="topbar-label">%</span>
       <div class="topbar-actions">
-        <button class="btn" onclick="exportCSV()">↓ CSV ZIP</button>
-        <button class="btn btn-primary" onclick="exportJSON()">↓ JSON</button>
-        <button class="btn" onclick="loadJSON()">↑ JSON読込</button>
-        <button class="theme-btn" onclick="toggleTheme()" title="テーマ切り替え">🌓</button>
+        <button class="btn" onclick="exportCSV()" data-i18n="exportCsv">↓ CSV ZIP</button>
+        <button class="btn btn-primary" onclick="exportJSON()" data-i18n="exportJson">↓ JSON</button>
+        <button class="btn" onclick="loadJSON()" data-i18n="loadJson">↑ JSON読込</button>
+        <select class="language-select" id="languageSelect" onchange="setLanguage(this.value)" title="Language">
+          <option value="ja">日本語</option>
+          <option value="en">English</option>
+        </select>
+        <button class="theme-btn" onclick="toggleTheme()" title="テーマ切り替え" data-i18n-title="themeToggle">🌓</button>
       </div>
     </div>
 
     <div style="display:flex;flex-direction:column;overflow:hidden;flex:1">
       <div class="tab-bar">
-        <button class="tab-btn active" onclick="switchTab('editor')">工程エディタ</button>
-        <button class="tab-btn" onclick="switchTab('analysis')">分析</button>
-        <button class="tab-btn" onclick="switchTab('gantt')">連続動作チャート</button>
+        <button class="tab-btn active" onclick="switchTab('editor')" data-i18n="tabEditor">工程エディタ</button>
+        <button class="tab-btn" onclick="switchTab('analysis')" data-i18n="tabAnalysis">分析</button>
+        <button class="tab-btn" onclick="switchTab('gantt')" data-i18n="tabGantt">連続動作チャート</button>
       </div>
 
       <!-- エディタ -->
@@ -611,32 +620,32 @@ select.modal-input { cursor: pointer; }
         <div class="analysis-wrap">
 
           <div class="chart-card">
-            <div class="chart-title">パレート図（要素別集計・時間降順）</div>
+            <div class="chart-title" data-i18n="paretoTitle">パレート図（要素別集計・時間降順）</div>
             <div class="chart-legend">
-              <div class="legend-item"><div class="legend-dot" style="background:var(--va)"></div>主要 (VA)</div>
-              <div class="legend-item"><div class="legend-dot" style="background:var(--sv)"></div>補助 (SV)</div>
-              <div class="legend-item"><div class="legend-dot" style="background:var(--nva)"></div>ムダ (NVA)</div>
-              <div class="legend-item"><div class="legend-dot" style="background:var(--blue);border-radius:50%"></div>累積%</div>
+              <div class="legend-item"><div class="legend-dot" style="background:var(--va)"></div><span data-i18n="legendVa">主要 (VA)</span></div>
+              <div class="legend-item"><div class="legend-dot" style="background:var(--sv)"></div><span data-i18n="legendSv">補助 (SV)</span></div>
+              <div class="legend-item"><div class="legend-dot" style="background:var(--nva)"></div><span data-i18n="legendNva">ムダ (NVA)</span></div>
+              <div class="legend-item"><div class="legend-dot" style="background:var(--blue);border-radius:50%"></div><span data-i18n="cumulativePct">累積%</span></div>
             </div>
             <div class="chart-wrap" style="height:270px">
               <canvas id="paretoChart"></canvas>
-              <div id="paretoEmpty" class="chart-empty"><div style="font-size:28px;opacity:0.18">📊</div><div>工程エディタで要素を追加してください</div></div>
+              <div id="paretoEmpty" class="chart-empty"><div style="font-size:28px;opacity:0.18">📊</div><div data-i18n="emptyAddSteps">工程エディタで要素を追加してください</div></div>
             </div>
           </div>
 
           <div class="chart-card">
-            <div class="chart-title">動作分類の内訳（時間比率）</div>
+            <div class="chart-title" data-i18n="donutTitle">動作分類の内訳（時間比率）</div>
             <div class="chart-wrap" style="height:200px">
               <canvas id="donutChart"></canvas>
-              <div id="donutEmpty" class="chart-empty"><div style="font-size:28px;opacity:0.18">🥧</div><div>工程エディタで要素を追加してください</div></div>
+              <div id="donutEmpty" class="chart-empty"><div style="font-size:28px;opacity:0.18">🥧</div><div data-i18n="emptyAddSteps">工程エディタで要素を追加してください</div></div>
             </div>
           </div>
 
           <div class="chart-card">
-            <div class="chart-title">カテゴリ別時間内訳</div>
+            <div class="chart-title" data-i18n="catTitle">カテゴリ別時間内訳</div>
             <div class="chart-wrap" style="height:200px">
               <canvas id="catChart"></canvas>
-              <div id="catEmpty" class="chart-empty"><div style="font-size:28px;opacity:0.18">📋</div><div>工程エディタで要素を追加してください</div></div>
+              <div id="catEmpty" class="chart-empty"><div style="font-size:28px;opacity:0.18">📋</div><div data-i18n="emptyAddSteps">工程エディタで要素を追加してください</div></div>
             </div>
           </div>
 
@@ -648,23 +657,23 @@ select.modal-input { cursor: pointer; }
         <div class="analysis-wrap">
           <div class="chart-card">
             <div class="chart-title-row">
-              <div class="chart-title">連続動作チャート（ガントチャート型）</div>
+              <div class="chart-title" data-i18n="ganttTitle">連続動作チャート（ガントチャート型）</div>
               <div class="chart-toolbar">
-                <select class="chart-select" id="ganttMode" onchange="renderGanttChart()" title="連続動作チャートの表示単位">
-                  <option value="element">要素単位</option>
-                  <option value="group">グループ単位</option>
+                <select class="chart-select" id="ganttMode" onchange="renderGanttChart()" title="連続動作チャートの表示単位" data-i18n-title="ganttModeTitle">
+                  <option value="element" data-i18n="ganttElement">要素単位</option>
+                  <option value="group" data-i18n="ganttGroup">グループ単位</option>
                 </select>
               </div>
             </div>
             <div class="chart-legend">
-              <div class="legend-item"><div class="legend-dot" style="background:var(--va)"></div>主要</div>
-              <div class="legend-item"><div class="legend-dot" style="background:var(--sv)"></div>補助</div>
-              <div class="legend-item"><div class="legend-dot" style="background:var(--nva)"></div>ムダ</div>
-              <div class="legend-item"><div class="legend-dot" style="background:var(--blue);border-radius:50%"></div>終点→始点</div>
+              <div class="legend-item"><div class="legend-dot" style="background:var(--va)"></div><span data-i18n="typeVa">主要</span></div>
+              <div class="legend-item"><div class="legend-dot" style="background:var(--sv)"></div><span data-i18n="typeSv">補助</span></div>
+              <div class="legend-item"><div class="legend-dot" style="background:var(--nva)"></div><span data-i18n="typeNva">ムダ</span></div>
+              <div class="legend-item"><div class="legend-dot" style="background:var(--blue);border-radius:50%"></div><span data-i18n="connector">終点→始点</span></div>
             </div>
             <div class="chart-wrap gantt-wrap">
               <canvas id="ganttChart"></canvas>
-              <div id="ganttEmpty" class="chart-empty"><div style="font-size:28px;opacity:0.18">▦</div><div>工程エディタで要素を追加してください</div></div>
+              <div id="ganttEmpty" class="chart-empty"><div style="font-size:28px;opacity:0.18">▦</div><div data-i18n="emptyAddSteps">工程エディタで要素を追加してください</div></div>
             </div>
           </div>
         </div>
@@ -673,43 +682,43 @@ select.modal-input { cursor: pointer; }
 
     <!-- フッター -->
     <footer>
-      <button class="btn" onclick="duplicateSelectedSteps()">選択複製</button>
-      <button class="btn" onclick="groupSelectedSteps()">グループ化</button>
-      <button class="btn" onclick="ungroupSelectedSteps()">解除</button>
-      <button class="btn" onclick="clearStepSelection()">選択解除</button>
+      <button class="btn" onclick="duplicateSelectedSteps()" data-i18n="duplicateSelected">選択複製</button>
+      <button class="btn" onclick="groupSelectedSteps()" data-i18n="groupSelected">グループ化</button>
+      <button class="btn" onclick="ungroupSelectedSteps()" data-i18n="ungroup">解除</button>
+      <button class="btn" onclick="clearStepSelection()" data-i18n="clearSelection">選択解除</button>
       <span class="selection-info" id="selectedTotal">選択 0.0s</span>
       <span class="footer-info" id="stepCount">0 要素</span>
-      <button class="btn btn-danger" onclick="clearAll()">クリア</button>
+      <button class="btn btn-danger" onclick="clearAll()" data-i18n="clearAll">クリア</button>
     </footer>
   </div>
 
   <!-- ===== 右パネル ===== -->
   <div class="properties">
-    <div class="props-header">集計</div>
+    <div class="props-header" data-i18n="summary">集計</div>
     <div class="props-scroll">
       <div class="stat-block">
-        <div class="stat-label">正味時間（1サイクル）</div>
+        <div class="stat-label" data-i18n="netTime">正味時間（1サイクル）</div>
         <div class="stat-value" id="totalSec">0.0</div>
-        <div class="stat-sub">秒</div>
+        <div class="stat-sub" data-i18n="seconds">秒</div>
       </div>
       <div class="stat-block">
-        <div class="stat-label">標準時間（余裕込み）</div>
+        <div class="stat-label" data-i18n="standardTime">標準時間（余裕込み）</div>
         <div class="stat-value" id="stdSec" style="color:var(--sv)">0.0</div>
-        <div class="stat-sub">秒 = <span id="stdMin">0.000</span> min</div>
+        <div class="stat-sub"><span data-i18n="seconds">秒</span> = <span id="stdMin">0.000</span> min</div>
       </div>
       <div class="stat-block">
-        <div class="stat-label">付加価値率 (VA%)</div>
+        <div class="stat-label" data-i18n="vaRate">付加価値率 (VA%)</div>
         <div class="stat-value" id="vaRate" style="font-size:22px">—</div>
-        <div class="stat-sub">主要時間 ÷ 合計時間</div>
+        <div class="stat-sub" data-i18n="vaRateFormula">主要時間 ÷ 合計時間</div>
         <div class="va-bar-wrap"><div class="va-bar" id="vaBar" style="width:0%"></div></div>
         <div class="va-segs" id="vaSegs"></div>
       </div>
       <div class="stat-block">
-        <div class="stat-label">日次工数</div>
+        <div class="stat-label" data-i18n="dailyWorkload">日次工数</div>
         <div class="stat-value" id="dailyHour" style="font-size:20px">0.00 h</div>
         <div class="stat-sub" id="dailyInfo"></div>
       </div>
-      <div class="props-header" style="border-top:1px solid var(--border)">カテゴリ内訳</div>
+      <div class="props-header" style="border-top:1px solid var(--border)" data-i18n="categoryBreakdown">カテゴリ内訳</div>
       <div id="breakdown"></div>
     </div>
   </div>
@@ -719,45 +728,45 @@ select.modal-input { cursor: pointer; }
 <!-- カスタム要素モーダル -->
 <div class="modal-overlay" id="customModal">
   <div class="modal">
-    <h3>カスタム作業要素を追加</h3>
+    <h3 data-i18n="customModalTitle">カスタム作業要素を追加</h3>
     <div class="modal-row">
-      <div class="modal-label">カテゴリ</div>
+      <div class="modal-label" data-i18n="category">カテゴリ</div>
       <select class="modal-input" id="customCategory">
-        <option>移動系</option><option>把握・操作系</option><option>固定系</option>
-        <option>溶接・接合系</option><option>機械・設定操作系</option>
-        <option>処理系</option><option>確認・検査系</option><option>カスタム</option>
+        <option value="移動系">移動系</option><option value="把握・操作系">把握・操作系</option><option value="固定系">固定系</option>
+        <option value="溶接・接合系">溶接・接合系</option><option value="機械・設定操作系">機械・設定操作系</option>
+        <option value="処理系">処理系</option><option value="確認・検査系">確認・検査系</option><option value="カスタム">カスタム</option>
       </select>
     </div>
     <div class="modal-row">
-      <div class="modal-label">アイコン（絵文字）</div>
+      <div class="modal-label" data-i18n="iconEmoji">アイコン（絵文字）</div>
       <input class="modal-input" id="customIcon" type="text" value="⚙️" maxlength="2">
     </div>
     <div class="modal-row">
-      <div class="modal-label">動作名</div>
-      <input class="modal-input" id="customName" type="text" placeholder="例：専用治具をセットする">
+      <div class="modal-label" data-i18n="motionName">動作名</div>
+      <input class="modal-input" id="customName" type="text" placeholder="例：専用治具をセットする" data-i18n-placeholder="customNamePh">
     </div>
     <div class="modal-row">
-      <div class="modal-label">標準時間（秒）</div>
+      <div class="modal-label" data-i18n="standardSec">標準時間（秒）</div>
       <input class="modal-input" id="customTime" type="number" value="3" min="0.1" step="0.1">
     </div>
     <div class="modal-row">
-      <div class="modal-label">距離パラメータ</div>
+      <div class="modal-label" data-i18n="distanceParam">距離パラメータ</div>
       <select class="modal-input" id="customParam">
-        <option value="none">なし（固定時間）</option>
-        <option value="distance">距離（cm）</option>
+        <option value="none" data-i18n="fixedTime">なし（固定時間）</option>
+        <option value="distance" data-i18n="distanceCm">距離（cm）</option>
       </select>
     </div>
     <div class="modal-row">
-      <div class="modal-label">動作分類</div>
+      <div class="modal-label" data-i18n="motionClassification">動作分類</div>
       <select class="modal-input" id="customDefaultType">
-        <option value="va">主要（VA）— 製品に直接付加価値を与える</option>
-        <option value="sv" selected>補助（SV）— 主要動作を支援する</option>
-        <option value="nva">ムダ（NVA）— 付加価値のない動作</option>
+        <option value="va" data-i18n="customVa">主要（VA）— 製品に直接付加価値を与える</option>
+        <option value="sv" selected data-i18n="customSv">補助（SV）— 主要動作を支援する</option>
+        <option value="nva" data-i18n="customNva">ムダ（NVA）— 付加価値のない動作</option>
       </select>
     </div>
     <div class="modal-footer">
-      <button class="btn" onclick="closeCustomModal()">キャンセル</button>
-      <button class="modal-btn-primary" onclick="saveCustom()">追加</button>
+      <button class="btn" onclick="closeCustomModal()" data-i18n="cancel">キャンセル</button>
+      <button class="modal-btn-primary" onclick="saveCustom()" data-i18n="add">追加</button>
     </div>
   </div>
 </div>
@@ -766,10 +775,97 @@ select.modal-input { cursor: pointer; }
 
 <script>
 // ===== 定数 =====
-const TYPE_LABELS = { va:'主要', sv:'補助', nva:'ムダ' };
+const I18N = {
+  ja: {
+    appTitle:'標準時間設計ツール', brandSub:'標準時間設計ツール', searchMotion:'動作を検索…',
+    addCustom:'＋ カスタム要素を追加', processNamePh:'工程名…', dailyQty:'日次数量', units:'台',
+    allowance:'余裕率', exportCsv:'↓ CSV ZIP', exportJson:'↓ JSON', loadJson:'↑ JSON読込',
+    themeToggle:'テーマ切り替え', tabEditor:'工程エディタ', tabAnalysis:'分析', tabGantt:'連続動作チャート',
+    paretoTitle:'パレート図（要素別集計・時間降順）', donutTitle:'動作分類の内訳（時間比率）',
+    catTitle:'カテゴリ別時間内訳', ganttTitle:'連続動作チャート（ガントチャート型）',
+    legendVa:'主要 (VA)', legendSv:'補助 (SV)', legendNva:'ムダ (NVA)', cumulativePct:'累積%',
+    emptyAddSteps:'工程エディタで要素を追加してください', ganttModeTitle:'連続動作チャートの表示単位',
+    ganttElement:'要素単位', ganttGroup:'グループ単位', connector:'終点→始点',
+    duplicateSelected:'選択複製', groupSelected:'グループ化', ungroup:'解除', clearSelection:'選択解除',
+    clearAll:'クリア', summary:'集計', netTime:'正味時間（1サイクル）', seconds:'秒',
+    standardTime:'標準時間（余裕込み）', vaRate:'付加価値率 (VA%)', vaRateFormula:'主要時間 ÷ 合計時間',
+    dailyWorkload:'日次工数', categoryBreakdown:'カテゴリ内訳', customModalTitle:'カスタム作業要素を追加',
+    category:'カテゴリ', iconEmoji:'アイコン（絵文字）', motionName:'動作名', customNamePh:'例：専用治具をセットする',
+    standardSec:'標準時間（秒）', distanceParam:'距離パラメータ', fixedTime:'なし（固定時間）',
+    distanceCm:'距離（cm）', motionClassification:'動作分類',
+    customVa:'主要（VA）— 製品に直接付加価値を与える', customSv:'補助（SV）— 主要動作を支援する',
+    customNva:'ムダ（NVA）— 付加価値のない動作', cancel:'キャンセル', add:'追加',
+    typeVa:'主要', typeSv:'補助', typeNva:'ムダ', ieTransport:'運搬', ieWork:'作業', ieWait:'待機', ieInspect:'検査',
+    selected:'選択', elements:'要素', selectedCount:'選択', group:'グループ', expand:'展開', collapse:'折り畳み',
+    groupDefault:'グループ', memoPh:'メモ…', buildSteps:'左のライブラリからクリックして工程を組み立ててください',
+    noSteps:'工程が空です', zipLoadFailed:'CSV ZIP出力ライブラリの読み込みに失敗しました',
+    selectToDuplicate:'複製する要素を選択してください', selectToGroup:'グループ化する連続した複数要素を選択してください',
+    groupContiguous:'グループ化は連続した要素のみ対応しています', groupNamePrompt:'グループ名を入力してください',
+    selectToUngroup:'解除するグループ内要素を選択してください', customNameRequired:'動作名を入力してください',
+    jsonLoadFailed:'JSONの読み込みに失敗しました', clearConfirm:'工程をクリアしますか？',
+    processDefault:'工程', processDefaultName:'部品取り付け工程', dailyInfoUnit:'台/日', min:'min',
+    paretoTime:'時間(秒)', timeAxis:'時間 (秒)', cumulativeAxis:'累積 (%)', timeSec:'時間(秒)',
+    percent:'構成比(%)', cumulativePercent:'累積比(%)', rank:'順位', workElement:'作業要素', valueClass:'価値分類',
+    count:'件数', total:'合計', item:'項目', value:'値', processName:'工程名', dailyCount:'日次数量',
+    allowancePct:'余裕率(%)', netSec:'正味時間(秒)', standardSecCsv:'標準時間(秒)', vaRatePct:'付加価値率(%)',
+    vaSec:'主要時間(秒)', svSec:'補助時間(秒)', nvaSec:'ムダ時間(秒)', title:'タイトル', libraryMotion:'ライブラリ動作',
+    valueCode:'価値分類コード', ieClass:'IE分類', distanceCsv:'距離(cm)', note:'メモ', displayUnit:'表示単位',
+    startSec:'開始(秒)', endSec:'終了(秒)', categoryCsv:'カテゴリ', totalSecCsv:'合計(秒)', processNo:'工程No.',
+  },
+  en: {
+    appTitle:'Standard Time Design Tool', brandSub:'Standard Time Design Tool', searchMotion:'Search motions...',
+    addCustom:'+ Add custom element', processNamePh:'Process name...', dailyQty:'Daily qty', units:'pcs',
+    allowance:'Allowance', exportCsv:'↓ CSV ZIP', exportJson:'↓ JSON', loadJson:'↑ Load JSON',
+    themeToggle:'Toggle theme', tabEditor:'Process Editor', tabAnalysis:'Analysis', tabGantt:'Continuous Motion Chart',
+    paretoTitle:'Pareto Chart (by element, descending time)', donutTitle:'Motion Classification Breakdown (time ratio)',
+    catTitle:'Category Time Breakdown', ganttTitle:'Continuous Motion Chart (Gantt style)',
+    legendVa:'Main (VA)', legendSv:'Support (SV)', legendNva:'Waste (NVA)', cumulativePct:'Cumulative %',
+    emptyAddSteps:'Add elements in the Process Editor', ganttModeTitle:'Chart display unit',
+    ganttElement:'Element view', ganttGroup:'Group view', connector:'End to start',
+    duplicateSelected:'Duplicate selected', groupSelected:'Group', ungroup:'Ungroup', clearSelection:'Clear selection',
+    clearAll:'Clear', summary:'Summary', netTime:'Net time (1 cycle)', seconds:'sec',
+    standardTime:'Standard time (with allowance)', vaRate:'Value-added rate (VA%)', vaRateFormula:'Main time / total time',
+    dailyWorkload:'Daily workload', categoryBreakdown:'Category breakdown', customModalTitle:'Add Custom Work Element',
+    category:'Category', iconEmoji:'Icon (emoji)', motionName:'Motion name', customNamePh:'Example: Set dedicated jig',
+    standardSec:'Standard time (sec)', distanceParam:'Distance parameter', fixedTime:'None (fixed time)',
+    distanceCm:'Distance (cm)', motionClassification:'Motion classification',
+    customVa:'Main (VA) - Directly adds value to the product', customSv:'Support (SV) - Supports main work',
+    customNva:'Waste (NVA) - Non-value-added motion', cancel:'Cancel', add:'Add',
+    typeVa:'Main', typeSv:'Support', typeNva:'Waste', ieTransport:'Transport', ieWork:'Work', ieWait:'Wait', ieInspect:'Inspection',
+    selected:'Selected', elements:'elements', selectedCount:'selected', group:'Group', expand:'Expand', collapse:'Collapse',
+    groupDefault:'Group', memoPh:'Memo...', buildSteps:'Click motions from the library to build the process',
+    noSteps:'The process is empty', zipLoadFailed:'Failed to load the CSV ZIP export library',
+    selectToDuplicate:'Select elements to duplicate', selectToGroup:'Select two or more contiguous elements to group',
+    groupContiguous:'Only contiguous elements can be grouped', groupNamePrompt:'Enter a group name',
+    selectToUngroup:'Select elements inside a group to ungroup', customNameRequired:'Enter a motion name',
+    jsonLoadFailed:'Failed to load JSON', clearConfirm:'Clear the process?',
+    processDefault:'Process', processDefaultName:'Part installation process', dailyInfoUnit:'pcs/day', min:'min',
+    paretoTime:'Time (sec)', timeAxis:'Time (sec)', cumulativeAxis:'Cumulative (%)', timeSec:'Time (sec)',
+    percent:'Share (%)', cumulativePercent:'Cumulative (%)', rank:'Rank', workElement:'Work element', valueClass:'Value class',
+    count:'Count', total:'Total', item:'Item', value:'Value', processName:'Process name', dailyCount:'Daily quantity',
+    allowancePct:'Allowance (%)', netSec:'Net time (sec)', standardSecCsv:'Standard time (sec)', vaRatePct:'VA rate (%)',
+    vaSec:'Main time (sec)', svSec:'Support time (sec)', nvaSec:'Waste time (sec)', title:'Title', libraryMotion:'Library motion',
+    valueCode:'Value class code', ieClass:'IE class', distanceCsv:'Distance (cm)', note:'Memo', displayUnit:'Display unit',
+    startSec:'Start (sec)', endSec:'End (sec)', categoryCsv:'Category', totalSecCsv:'Total (sec)', processNo:'Process No.',
+  }
+};
+const TYPE_LABELS_BY_LANG = {
+  ja:{ va:'主要', sv:'補助', nva:'ムダ' },
+  en:{ va:'Main', sv:'Support', nva:'Waste' },
+};
+const IE_LABELS_BY_LANG = {
+  ja:{ transport:'運搬', work:'作業', wait:'待機', inspect:'検査' },
+  en:{ transport:'Transport', work:'Work', wait:'Wait', inspect:'Inspection' },
+};
+let currentLang = localStorage.getItem('st_lang') || 'ja';
+let TYPE_LABELS = TYPE_LABELS_BY_LANG[currentLang] || TYPE_LABELS_BY_LANG.ja;
 const TYPE_ORDER  = ['va','sv','nva'];
-const IE_LABELS = { transport:'運搬', work:'作業', wait:'待機', inspect:'検査' };
+let IE_LABELS = IE_LABELS_BY_LANG[currentLang] || IE_LABELS_BY_LANG.ja;
 const IE_ORDER = ['transport','work','wait','inspect'];
+
+function t(key) {
+  return (I18N[currentLang] && I18N[currentLang][key]) || I18N.ja[key] || key;
+}
 
 function typeColors() {
   const s = getComputedStyle(document.documentElement);
@@ -786,6 +882,68 @@ function typeBgColors() {
     sv:  c.sv  + 'cc',
     nva: c.nva + 'cc',
   };
+}
+const CATEGORY_LABELS_EN = {
+  '移動系':'Movement',
+  '把握・操作系':'Grasp / Handling',
+  '固定系':'Fastening',
+  '溶接・接合系':'Welding / Joining',
+  '機械・設定操作系':'Machine / Setup',
+  '処理系':'Processing',
+  '確認・検査系':'Check / Inspection',
+  'カスタム':'Custom',
+};
+const MOTION_LABELS_EN = {
+  w1:'Walk',
+  w2:'Reach out',
+  w3:'Turn body / turn around',
+  g1:'Pick up part',
+  g2:'Place part',
+  g3:'Assemble / fit part',
+  g4:'Lift part',
+  g5:'Regrip / change orientation',
+  g6:'Press-fit / push in part',
+  g7:'Rotate / screw in part',
+  f1:'Loosen screw / clamp',
+  f2:'Hand-tighten bolt / screw',
+  f3:'Final-tighten bolt / screw with tool',
+  f4:'Fix with clamp / vise',
+  f5:'Release clamp / vise',
+  f6:'Insert pin / key',
+  f7:'Remove pin / key',
+  wl1:'Spot weld',
+  wl2:'Arc weld',
+  wl3:'Brazing',
+  wl4:'Apply adhesive / press bond',
+  wl5:'Rivet / caulk',
+  m1:'Press switch / button',
+  m2:'Step on pedal',
+  m3:'Open / close door',
+  m4:'Press machine start',
+  m5:'Wait for machine processing to finish',
+  m6:'Set jig / tool',
+  m7:'Remove tool / jig',
+  p1:'Clean with air',
+  p2:'Apply lubricant / sealant',
+  p3:'Paint / coat',
+  p4:'Wash / degrease',
+  p5:'Heat / heat treat',
+  c1:'Visual inspection',
+  c2:'Measure dimension / torque',
+  c3:'Apply label / sticker',
+  c4:'Mark / stamp',
+  c5:'Fill in record / checklist',
+  c6:'Search / check (waste)',
+};
+function categoryLabel(cat) {
+  return currentLang === 'en' ? (CATEGORY_LABELS_EN[cat] || cat) : cat;
+}
+function motionLabel(item) {
+  if (currentLang === 'en' && item?.id && MOTION_LABELS_EN[item.id]) return MOTION_LABELS_EN[item.id];
+  return item?.name || '';
+}
+function stepLabel(s) {
+  return s.title || motionLabel(s);
 }
 function cycleType(t) { return TYPE_ORDER[(TYPE_ORDER.indexOf(t)+1)%TYPE_ORDER.length]; }
 function inferIeClass(item) {
@@ -872,6 +1030,36 @@ function toggleTheme() {
   if (active && active.id === 'tab-analysis') renderAnalysis();
   if (active && active.id === 'tab-gantt') renderGanttChart();
 }
+function setLanguage(lang) {
+  const prevLang = currentLang;
+  currentLang = I18N[lang] ? lang : 'ja';
+  localStorage.setItem('st_lang', currentLang);
+  const processInput = document.getElementById('processName');
+  if (processInput && processInput.value === I18N[prevLang]?.processDefaultName) processInput.value = t('processDefaultName');
+  applyLanguage();
+}
+function applyLanguage() {
+  TYPE_LABELS = TYPE_LABELS_BY_LANG[currentLang] || TYPE_LABELS_BY_LANG.ja;
+  IE_LABELS = IE_LABELS_BY_LANG[currentLang] || IE_LABELS_BY_LANG.ja;
+  document.documentElement.lang = currentLang;
+  document.title = t('appTitle');
+  const langSelect = document.getElementById('languageSelect');
+  if (langSelect) langSelect.value = currentLang;
+  const processInput = document.getElementById('processName');
+  if (processInput && (processInput.value === I18N.ja.processDefaultName || processInput.value === I18N.en.processDefaultName)) {
+    processInput.value = t('processDefaultName');
+  }
+  document.querySelectorAll('[data-i18n]').forEach(el=>{ el.textContent = t(el.dataset.i18n); });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el=>{ el.placeholder = t(el.dataset.i18nPlaceholder); });
+  document.querySelectorAll('[data-i18n-title]').forEach(el=>{ el.title = t(el.dataset.i18nTitle); });
+  document.querySelectorAll('#customCategory option').forEach(opt=>{ opt.textContent = categoryLabel(opt.value); });
+  renderLib();
+  renderSteps();
+  updateSummary();
+  const active = document.querySelector('.tab-pane.active');
+  if (active && active.id === 'tab-analysis') renderAnalysis();
+  if (active && active.id === 'tab-gantt') renderGanttChart();
+}
 
 // ===== タブ =====
 function switchTab(name) {
@@ -889,7 +1077,12 @@ function renderLib() {
   const q  = document.getElementById('libSearch').value.toLowerCase();
   const el = document.getElementById('motionLib');
   el.innerHTML = '';
-  const filtered = q ? library.filter(x=>x.name.toLowerCase().includes(q)||x.cat.toLowerCase().includes(q)) : library;
+  const filtered = q ? library.filter(x=>
+    x.name.toLowerCase().includes(q) ||
+    x.cat.toLowerCase().includes(q) ||
+    motionLabel(x).toLowerCase().includes(q) ||
+    categoryLabel(x.cat).toLowerCase().includes(q)
+  ) : library;
   const groups = {};
   filtered.forEach(item => { (groups[item.cat]=groups[item.cat]||[]).push(item); });
 
@@ -901,7 +1094,7 @@ function renderLib() {
     const hdr = document.createElement('div');
     hdr.className = 'lib-group-header';
     hdr.innerHTML = `<span class="lib-group-chevron ${isOpen?'open':''}">▶</span>
-      <span class="lib-group-name">${cat}</span>
+      <span class="lib-group-name">${categoryLabel(cat)}</span>
       <span class="lib-group-count">${items.length}</span>`;
     hdr.addEventListener('click', () => { libCollapsed[cat]=!libCollapsed[cat]; renderLib(); });
 
@@ -914,7 +1107,7 @@ function renderLib() {
       const btn = document.createElement('button');
       btn.className = 'motion-btn';
       btn.innerHTML = `<span class="motion-icon">${item.icon}</span>
-        <span class="motion-name">${item.name}</span>
+        <span class="motion-name">${motionLabel(item)}</span>
         <span class="motion-time">${tl}</span>
         <span class="type-pill ${dt}">${TYPE_LABELS[dt]}</span>
         ${item.param==='distance'?'<span style="font-size:9px;color:var(--sv)">📐</span>':''}
@@ -945,7 +1138,7 @@ function calcStepSec(s) {
 }
 
 function groupById(id) { return groups.find(g=>g.id===id); }
-function groupName(id) { return groupById(id)?.name || 'グループ'; }
+function groupName(id) { return groupById(id)?.name || t('groupDefault'); }
 function groupCollapsed(id) { return !!groupById(id)?.collapsed; }
 function groupStepIndexes(id) {
   const out=[];
@@ -977,12 +1170,12 @@ function renderGroupHeader(el, groupId) {
   const collapsed = groupCollapsed(groupId);
   header.innerHTML = `
     <span class="group-drag">⠿</span>
-    <button class="group-toggle" title="${collapsed?'展開':'折り畳み'}"
+    <button class="group-toggle" title="${collapsed?t('expand'):t('collapse')}"
       onclick="event.stopPropagation();toggleGroupCollapsed('${groupId}')">${collapsed?'▶':'▼'}</button>
     <input class="group-name-input" value="${escHtml(group.name)}"
       onclick="event.stopPropagation()" onchange="updateGroupName('${groupId}',this.value)">
-    <span class="group-meta">${indexes.length}要素 / ${groupSec(groupId).toFixed(1)}s</span>
-    <button class="group-action" onclick="event.stopPropagation();ungroup('${groupId}')">解除</button>`;
+    <span class="group-meta">${indexes.length}${t('elements')} / ${groupSec(groupId).toFixed(1)}s</span>
+    <button class="group-action" onclick="event.stopPropagation();ungroup('${groupId}')">${t('ungroup')}</button>`;
   header.addEventListener('dragstart', e=>{ dragGroupId=groupId; header.classList.add('dragging'); e.dataTransfer.effectAllowed='move'; });
   header.addEventListener('dragend', ()=>{ dragGroupId=null; header.classList.remove('dragging'); document.querySelectorAll('.group-card,.step-card').forEach(c=>c.classList.remove('drag-over')); });
   header.addEventListener('dragover', e=>{ e.preventDefault(); header.classList.add('drag-over'); });
@@ -997,7 +1190,7 @@ function renderSteps() {
   if (!steps.length) {
     el.innerHTML = `<div class="step-empty">
       <div class="step-empty-icon">＋</div>
-      <div class="step-empty-text">左のライブラリからクリックして工程を組み立ててください</div>
+      <div class="step-empty-text">${t('buildSteps')}</div>
     </div>`; return;
   }
   const renderedGroups = new Set();
@@ -1028,27 +1221,27 @@ function renderSteps() {
            <span class="step-unit">s</span>
          </div>`;
     const ie = s.ieClass || inferIeClass(s);
-    const ieHtml = `<select class="ie-select" title="IE分類" onclick="event.stopPropagation()" onchange="updateIeClass(${i},this.value)">
+    const ieHtml = `<select class="ie-select" title="${t('ieClass')}" onclick="event.stopPropagation()" onchange="updateIeClass(${i},this.value)">
       ${IE_ORDER.map(k=>`<option value="${k}" ${k===ie?'selected':''}>${IE_LABELS[k]}</option>`).join('')}
     </select>`;
 
     card.innerHTML = `
       <span class="step-drag">⠿</span>
       <input class="step-select" type="checkbox" ${selectedStepIds.has(s.stepId)?'checked':''}
-        title="選択" onclick="event.stopPropagation()" onchange="toggleStepSelection(${i},this.checked)">
+        title="${t('selected')}" onclick="event.stopPropagation()" onchange="toggleStepSelection(${i},this.checked)">
       <span class="step-num">${String(i+1).padStart(2,'0')}</span>
       <span class="step-icon">${s.icon}</span>
       <input class="step-title-input" type="text"
-        placeholder="${escHtml(s.name)}" value="${escHtml(s.title)}"
+        placeholder="${escHtml(motionLabel(s))}" value="${escHtml(s.title)}"
         onclick="event.stopPropagation()" onchange="updateTitle(${i},this.value)">
       <input class="step-memo-input" type="text"
-        placeholder="メモ…" value="${escHtml(s.note)}"
+        placeholder="${t('memoPh')}" value="${escHtml(s.note)}"
         onclick="event.stopPropagation()" onchange="updateNote(${i},this.value)">
       ${distHtml}
       ${ieHtml}
       <span class="type-badge ${t}" onclick="event.stopPropagation();toggleType(${i})">${TYPE_LABELS[t]}</span>
       ${timeHtml}
-      <button class="step-copy" title="複製" onclick="event.stopPropagation();duplicateStep(${i})">⧉</button>
+      <button class="step-copy" title="${t('duplicateSelected')}" onclick="event.stopPropagation();duplicateStep(${i})">⧉</button>
       <button class="step-del" onclick="event.stopPropagation();deleteStep(${i})">✕</button>`;
 
     card.addEventListener('dragstart', e=>{
@@ -1096,7 +1289,7 @@ function duplicateStep(i) {
   updateSummary();
 }
 function duplicateSelectedSteps() {
-  if (!selectedStepIds.size) { alert('複製する要素を選択してください'); return; }
+  if (!selectedStepIds.size) { alert(t('selectToDuplicate')); return; }
   const selected = steps.map((s,i)=>({s,i})).filter(x=>selectedStepIds.has(x.s.stepId));
   if (!selected.length) { selectedStepIds.clear(); renderSteps(); updateSummary(); return; }
   const insertAt = selected[selected.length-1].i + 1;
@@ -1115,12 +1308,12 @@ function selectedIndexesAreContiguous(indexes) {
 }
 function groupSelectedSteps() {
   const indexes = selectedIndexes();
-  if (indexes.length < 2) { alert('グループ化する連続した複数要素を選択してください'); return; }
-  if (!selectedIndexesAreContiguous(indexes)) { alert('グループ化は連続した要素のみ対応しています'); return; }
-  const name = prompt('グループ名を入力してください', `グループ ${groups.length+1}`);
+  if (indexes.length < 2) { alert(t('selectToGroup')); return; }
+  if (!selectedIndexesAreContiguous(indexes)) { alert(t('groupContiguous')); return; }
+  const name = prompt(t('groupNamePrompt'), `${t('groupDefault')} ${groups.length+1}`);
   if (!name) return;
   const id = 'grp_' + Date.now() + '_' + Math.random().toString(36).slice(2,7);
-  groups.push({id,name:name.trim()||`グループ ${groups.length+1}`,collapsed:false});
+  groups.push({id,name:name.trim()||`${t('groupDefault')} ${groups.length+1}`,collapsed:false});
   indexes.forEach(i=>steps[i].groupId=id);
   selectedStepIds.clear();
   cleanupGroups();
@@ -1135,7 +1328,7 @@ function ungroup(id) {
 }
 function ungroupSelectedSteps() {
   const ids = new Set(steps.filter(s=>selectedStepIds.has(s.stepId)&&s.groupId).map(s=>s.groupId));
-  if (!ids.size) { alert('解除するグループ内要素を選択してください'); return; }
+  if (!ids.size) { alert(t('selectToUngroup')); return; }
   steps.forEach(s=>{ if(ids.has(s.groupId)) s.groupId=null; });
   selectedStepIds.clear();
   cleanupGroups();
@@ -1145,7 +1338,7 @@ function ungroupSelectedSteps() {
 function updateGroupName(id,value) {
   const g = groupById(id);
   if (!g) return;
-  g.name = (value||'').trim() || 'グループ';
+  g.name = (value||'').trim() || t('groupDefault');
   saveSession();
   if (document.getElementById('tab-gantt')?.classList.contains('active')) renderGanttChart();
 }
@@ -1193,12 +1386,12 @@ function updateSummary() {
   document.getElementById('stdSec').textContent    = std.toFixed(1);
   document.getElementById('stdMin').textContent    = stdMin.toFixed(3);
   document.getElementById('dailyHour').textContent = `${dh.toFixed(2)} h`;
-  document.getElementById('dailyInfo').textContent = `${daily}台/日 × ${stdMin.toFixed(3)} min`;
+  document.getElementById('dailyInfo').textContent = `${daily}${t('dailyInfoUnit')} × ${stdMin.toFixed(3)} ${t('min')}`;
   const selectedSteps = steps.filter(s=>selectedStepIds.has(s.stepId));
   const selectedCount = selectedSteps.length;
   const selectedTotal = selectedSteps.reduce((sum,s)=>sum+calcStepSec(s),0);
-  document.getElementById('selectedTotal').textContent = `選択 ${selectedTotal.toFixed(1)}s`;
-  document.getElementById('stepCount').textContent = `${steps.length} 要素${selectedCount?` / 選択 ${selectedCount}`:''}`;
+  document.getElementById('selectedTotal').textContent = `${t('selected')} ${selectedTotal.toFixed(1)}s`;
+  document.getElementById('stepCount').textContent = `${steps.length} ${t('elements')}${selectedCount?` / ${t('selectedCount')} ${selectedCount}`:''}`;
 
   const ts = {va:0,sv:0,nva:0};
   steps.forEach(s=>{ts[s.type||'sv']+=calcStepSec(s);});
@@ -1229,7 +1422,7 @@ function updateSummary() {
     const d=document.createElement('div'); d.className='cat-item';
     d.innerHTML=`<div class="cat-row">
         <span class="cat-icon">${item.icon}</span>
-        <span class="cat-name">${item.cat}</span>
+        <span class="cat-name">${categoryLabel(item.cat)}</span>
         <span class="cat-count">×${item.count}</span>
         <span class="cat-time">${item.sec.toFixed(1)}s</span>
       </div>
@@ -1270,7 +1463,7 @@ function renderParetoChart() {
     const type = s.type||'sv';
     const elementKey = s.id || s.name;
     const key = `${elementKey}__${type}`;
-    if (!grouped[key]) grouped[key] = {label:s.name,sec:0,type,count:0};
+    if (!grouped[key]) grouped[key] = {label:motionLabel(s),sec:0,type,count:0};
     grouped[key].sec += calcStepSec(s);
     grouped[key].count += 1;
   });
@@ -1283,11 +1476,11 @@ function renderParetoChart() {
     data:{
       labels:sorted.map((x,i)=>`${String(i+1).padStart(2,'0')} ${x.label}${x.count>1?` x${x.count}`:''}`),
       datasets:[
-        {type:'bar',label:'時間(秒)',data:sorted.map(x=>+x.sec.toFixed(2)),
+        {type:'bar',label:t('timeSec'),data:sorted.map(x=>+x.sec.toFixed(2)),
           backgroundColor:sorted.map(x=>C[x.type]),
           borderColor:sorted.map(x=>C[x.type]),
           borderWidth:0,yAxisID:'y',order:2},
-        {type:'line',label:'累積%',data:cumPct,
+        {type:'line',label:t('cumulativePct'),data:cumPct,
           borderColor:'rgba(37,99,235,0.9)',backgroundColor:'rgba(37,99,235,0.07)',
           pointBackgroundColor:'rgba(37,99,235,1)',pointRadius:3,borderWidth:2,
           fill:false,yAxisID:'y2',order:1,tension:0.2},
@@ -1301,14 +1494,14 @@ function renderParetoChart() {
         tooltip:{backgroundColor:df.tooltipBg,borderColor:df.tooltipBdr,borderWidth:1,
           titleColor:df.tooltipTitle,bodyColor:df.tooltipBody,
           callbacks:{label:ctx=>ctx.datasetIndex===0
-            ?` ${ctx.parsed.y}秒  [${TYPE_LABELS[sorted[ctx.dataIndex].type]}]`
-            :` 累積 ${ctx.parsed.y}%`}}},
+            ?` ${ctx.parsed.y}${t('seconds')}  [${TYPE_LABELS[sorted[ctx.dataIndex].type]}]`
+            :` ${t('cumulativePct')} ${ctx.parsed.y}%`}}},
       scales:{
         x:{ticks:{color:df.tickColor,font:{size:10},maxRotation:45},grid:{color:df.gridColor}},
-        y:{position:'left',title:{display:true,text:'時間 (秒)',color:df.tickColor,font:{size:10}},
+        y:{position:'left',title:{display:true,text:t('timeAxis'),color:df.tickColor,font:{size:10}},
            ticks:{color:df.tickColor,font:{size:10}},grid:{color:df.gridColor}},
         y2:{position:'right',min:0,max:100,
-            title:{display:true,text:'累積 (%)',color:df.tickColor,font:{size:10}},
+            title:{display:true,text:t('cumulativeAxis'),color:df.tickColor,font:{size:10}},
             ticks:{color:df.tickColor,font:{size:10},callback:v=>v+'%'},
             grid:{drawOnChartArea:false}},
       },
@@ -1328,7 +1521,7 @@ function renderDonutChart() {
   donutChart=new Chart(document.getElementById('donutChart'),{
     type:'doughnut',
     data:{
-      labels:['主要 (VA)','補助 (SV)','ムダ (NVA)'],
+      labels:[t('legendVa'),t('legendSv'),t('legendNva')],
       datasets:[{data:[+ts.va.toFixed(2),+ts.sv.toFixed(2),+ts.nva.toFixed(2)],
         backgroundColor:[C.va,C.sv,C.nva],
         borderColor:[C.va,C.sv,C.nva],
@@ -1348,7 +1541,7 @@ function renderDonutChart() {
                 lineWidth:0,hidden:false,index:i}));}}},
         tooltip:{backgroundColor:df.tooltipBg,borderColor:df.tooltipBdr,borderWidth:1,
           titleColor:df.tooltipTitle,bodyColor:df.tooltipBody,
-          callbacks:{label:ctx=>{const v=ctx.parsed;const pct=tot>0?(v/tot*100).toFixed(1):0;return` ${v.toFixed(1)}秒  (${pct}%)`;}}}},
+          callbacks:{label:ctx=>{const v=ctx.parsed;const pct=tot>0?(v/tot*100).toFixed(1):0;return` ${v.toFixed(1)}${t('seconds')}  (${pct}%)`;}}}},
     },
   });
 }
@@ -1365,11 +1558,11 @@ function renderCatChart() {
   catChart=new Chart(document.getElementById('catChart'),{
     type:'bar',
     data:{
-      labels:sorted.map(x=>x.cat),
+      labels:sorted.map(x=>categoryLabel(x.cat)),
       datasets:[
-        {label:'主要 (VA)', data:sorted.map(x=>+x.va.toFixed(2)),  backgroundColor:C.va,  borderWidth:0},
-        {label:'補助 (SV)', data:sorted.map(x=>+x.sv.toFixed(2)),  backgroundColor:C.sv,  borderWidth:0},
-        {label:'ムダ (NVA)',data:sorted.map(x=>+x.nva.toFixed(2)), backgroundColor:C.nva, borderWidth:0},
+        {label:t('legendVa'), data:sorted.map(x=>+x.va.toFixed(2)),  backgroundColor:C.va,  borderWidth:0},
+        {label:t('legendSv'), data:sorted.map(x=>+x.sv.toFixed(2)),  backgroundColor:C.sv,  borderWidth:0},
+        {label:t('legendNva'),data:sorted.map(x=>+x.nva.toFixed(2)), backgroundColor:C.nva, borderWidth:0},
       ],
     },
     options:{
@@ -1384,7 +1577,7 @@ function renderCatChart() {
           callbacks:{label:ctx=>` ${ctx.dataset.label}: ${ctx.parsed.x.toFixed(1)}s`}}},
       scales:{
         x:{stacked:true,ticks:{color:df.tickColor,font:{size:10}},grid:{color:df.gridColor},
-           title:{display:true,text:'時間 (秒)',color:df.tickColor,font:{size:10}}},
+           title:{display:true,text:t('timeAxis'),color:df.tickColor,font:{size:10}}},
         y:{stacked:true,ticks:{color:df.tickColor,font:{size:10}},grid:{color:df.gridColor}},
       },
     },
@@ -1401,7 +1594,7 @@ function ganttElementRows() {
     return {
       no:i+1,
       noText:String(i+1).padStart(2,'0'),
-      label:s.title||s.name,
+      label:stepLabel(s),
       start,
       end,
       sec,
@@ -1437,7 +1630,7 @@ function ganttGroupRows() {
     rows.push({
       no,
       noText:String(no).padStart(2,'0'),
-      label:groupId?groupName(groupId):(members[0].title||members[0].name),
+      label:groupId?groupName(groupId):stepLabel(members[0]),
       start,
       end,
       sec,
@@ -1485,9 +1678,9 @@ const ganttAxisTablePlugin = {
     ctx.font = '700 10px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
     ctx.fillStyle = df.tickColor;
     ctx.textBaseline = 'middle';
-    ctx.fillText('工程No.', cols.no.x, top - 14);
-    ctx.fillText('分類', cols.cls.x, top - 14);
-    ctx.fillText('工程', cols.name.x, top - 14);
+    ctx.fillText('No.', cols.no.x, top - 14);
+    ctx.fillText(t('ieClass'), cols.cls.x, top - 14);
+    ctx.fillText(t('processDefault'), cols.name.x, top - 14);
     ctx.strokeStyle = df.gridColor;
     ctx.lineWidth = 1;
     [cols.cls.x - 8, cols.name.x - 8, left - 8].forEach(x=>{
@@ -1560,7 +1753,7 @@ function renderGanttChart() {
     data:{
       labels:rows.map(r=>r.noText),
       datasets:[{
-        label:'動作時間',
+        label:t('timeSec'),
         data:rows.map(r=>[+r.start.toFixed(2), +r.end.toFixed(2)]),
         backgroundColor:rows.map(r=>C[r.type]),
         borderColor:rows.map(r=>C[r.type]),
@@ -1591,7 +1784,7 @@ function renderGanttChart() {
       },
       scales:{
         x:{min:0,suggestedMax:Math.max(total,1),
-          title:{display:true,text:'時間 (秒)',color:df.tickColor,font:{size:10}},
+          title:{display:true,text:t('timeAxis'),color:df.tickColor,font:{size:10}},
           ticks:{color:df.tickColor,font:{size:10},callback:v=>`${v}s`},
           grid:{color:df.gridColor}},
         y:{ticks:{display:false},
@@ -1608,7 +1801,7 @@ function openCustomModal()  { document.getElementById('customModal').classList.a
 function closeCustomModal() { document.getElementById('customModal').classList.remove('open'); }
 function saveCustom() {
   const name=document.getElementById('customName').value.trim();
-  if(!name){alert('動作名を入力してください');return;}
+  if(!name){alert(t('customNameRequired'));return;}
   library.push({id:'custom_'+Date.now(),
     cat:document.getElementById('customCategory').value,
     icon:document.getElementById('customIcon').value||'⚙️',
@@ -1631,7 +1824,7 @@ function fileSafeName(name) {
   return (name||'process').replace(/[\\/:*?"<>|]/g,'_').trim() || 'process';
 }
 function processSummary() {
-  const name=document.getElementById('processName').value||'工程';
+  const name=document.getElementById('processName').value||t('processDefault');
   const daily=parseInt(document.getElementById('dailyCount').value)||100;
   const allow=parseFloat(document.getElementById('allowance').value)||0;
   const tot=steps.reduce((s,x)=>s+calcStepSec(x),0);
@@ -1643,7 +1836,7 @@ function stepRows() {
   return steps.map((s,i)=>{
     const t=s.type||'sv';
     const ie=s.ieClass||inferIeClass(s);
-    return {no:i+1,cat:s.cat,title:s.title||s.name,name:s.name,type:t,typeLabel:TYPE_LABELS[t],ie,ieLabel:IE_LABELS[ie],groupId:s.groupId||'',groupName:s.groupId?groupName(s.groupId):'',distance:s.distanceVal||'',sec:calcStepSec(s),note:s.note||''};
+    return {no:i+1,cat:categoryLabel(s.cat),title:stepLabel(s),name:motionLabel(s),type:t,typeLabel:TYPE_LABELS[t],ie,ieLabel:IE_LABELS[ie],groupId:s.groupId||'',groupName:s.groupId?groupName(s.groupId):'',distance:s.distanceVal||'',sec:calcStepSec(s),note:s.note||''};
   });
 }
 function paretoRows() {
@@ -1652,7 +1845,7 @@ function paretoRows() {
     const type=s.type||'sv';
     const elementKey=s.id||s.name;
     const key=`${elementKey}__${type}`;
-    if(!grouped[key]) grouped[key]={name:s.name,type,typeLabel:TYPE_LABELS[type],sec:0,count:0};
+    if(!grouped[key]) grouped[key]={name:motionLabel(s),type,typeLabel:TYPE_LABELS[type],sec:0,count:0};
     grouped[key].sec+=calcStepSec(s);
     grouped[key].count+=1;
   });
@@ -1674,52 +1867,52 @@ function categoryRows() {
   return Object.values(cats).sort((a,b)=>b.total-a.total);
 }
 async function exportCSV() {
-  if(!steps.length){alert('工程が空です');return;}
-  if(!window.JSZip){alert('CSV ZIP出力ライブラリの読み込みに失敗しました');return;}
+  if(!steps.length){alert(t('noSteps'));return;}
+  if(!window.JSZip){alert(t('zipLoadFailed'));return;}
   const summary=processSummary();
   const zip=new JSZip();
   zip.file('summary.csv', csvRows([
-    ['項目','値'],
-    ['工程名',summary.name],
-    ['日次数量',summary.daily],
-    ['余裕率(%)',summary.allow],
-    ['正味時間(秒)',summary.total.toFixed(1)],
-    ['標準時間(秒)',summary.std.toFixed(1)],
-    ['付加価値率(%)',summary.vaRate!=null?summary.vaRate.toFixed(1):''],
-    ['主要時間(秒)',summary.typeSec.va.toFixed(1)],
-    ['補助時間(秒)',summary.typeSec.sv.toFixed(1)],
-    ['ムダ時間(秒)',summary.typeSec.nva.toFixed(1)],
+    [t('item'),t('value')],
+    [t('processName'),summary.name],
+    [t('dailyCount'),summary.daily],
+    [t('allowancePct'),summary.allow],
+    [t('netSec'),summary.total.toFixed(1)],
+    [t('standardSecCsv'),summary.std.toFixed(1)],
+    [t('vaRatePct'),summary.vaRate!=null?summary.vaRate.toFixed(1):''],
+    [t('vaSec'),summary.typeSec.va.toFixed(1)],
+    [t('svSec'),summary.typeSec.sv.toFixed(1)],
+    [t('nvaSec'),summary.typeSec.nva.toFixed(1)],
   ]));
   zip.file('steps.csv', csvRows([
-    ['No','グループ','カテゴリ','タイトル','ライブラリ動作','価値分類','価値分類コード','IE分類','距離(cm)','時間(秒)','メモ'],
+    ['No',t('group'),t('categoryCsv'),t('title'),t('libraryMotion'),t('valueClass'),t('valueCode'),t('ieClass'),t('distanceCsv'),t('timeSec'),t('note')],
     ...stepRows().map(r=>[r.no,r.groupName,r.cat,r.title,r.name,r.typeLabel,r.type.toUpperCase(),r.ieLabel,r.distance,r.sec.toFixed(1),r.note]),
   ]));
   zip.file('pareto.csv', csvRows([
-    ['順位','作業要素','価値分類','件数','時間(秒)','構成比(%)','累積比(%)'],
+    [t('rank'),t('workElement'),t('valueClass'),t('count'),t('timeSec'),t('percent'),t('cumulativePercent')],
     ...paretoRows().map(r=>[r.rank,r.name,r.typeLabel,r.count,r.sec.toFixed(1),r.percent.toFixed(1),r.cumulativePercent.toFixed(1)]),
   ]));
   zip.file('groups.csv', csvRows([
-    ['グループ','要素数','合計時間(秒)'],
+    [t('group'),t('elements'),t('totalSecCsv')],
     ...groups.map(g=>[g.name,groupStepIndexes(g.id).length,groupSec(g.id).toFixed(1)]),
   ]));
   zip.file('gantt_elements.csv', csvRows([
-    ['No','工程No','グループ','IE分類','工程','価値分類','開始(秒)','終了(秒)','時間(秒)'],
+    ['No',t('processNo'),t('group'),t('ieClass'),t('processDefault'),t('valueClass'),t('startSec'),t('endSec'),t('timeSec')],
     ...ganttRows('element').map(r=>[r.no,r.noText,r.groupName,IE_LABELS[r.ieClass],r.label,TYPE_LABELS[r.type],r.start.toFixed(1),r.end.toFixed(1),r.sec.toFixed(1)]),
   ]));
   zip.file('gantt_groups.csv', csvRows([
-    ['No','工程No','表示単位','グループ','要素数','IE分類','工程','価値分類','開始(秒)','終了(秒)','時間(秒)'],
-    ...ganttRows('group').map(r=>[r.no,r.noText,r.unit==='group'?'グループ':'要素',r.groupName,r.count||1,IE_LABELS[r.ieClass],r.label,TYPE_LABELS[r.type],r.start.toFixed(1),r.end.toFixed(1),r.sec.toFixed(1)]),
+    ['No',t('processNo'),t('displayUnit'),t('group'),t('elements'),t('ieClass'),t('processDefault'),t('valueClass'),t('startSec'),t('endSec'),t('timeSec')],
+    ...ganttRows('group').map(r=>[r.no,r.noText,r.unit==='group'?t('group'):t('ganttElement'),r.groupName,r.count||1,IE_LABELS[r.ieClass],r.label,TYPE_LABELS[r.type],r.start.toFixed(1),r.end.toFixed(1),r.sec.toFixed(1)]),
   ]));
   zip.file('category.csv', csvRows([
-    ['カテゴリ','件数','主要(秒)','補助(秒)','ムダ(秒)','合計(秒)'],
-    ...categoryRows().map(r=>[r.cat,r.count,r.va.toFixed(1),r.sv.toFixed(1),r.nva.toFixed(1),r.total.toFixed(1)]),
+    [t('categoryCsv'),t('count'),t('vaSec'),t('svSec'),t('nvaSec'),t('totalSecCsv')],
+    ...categoryRows().map(r=>[categoryLabel(r.cat),r.count,r.va.toFixed(1),r.sv.toFixed(1),r.nva.toFixed(1),r.total.toFixed(1)]),
   ]));
   const blob=await zip.generateAsync({type:'blob'});
   dlBlob(blob,`${fileSafeName(summary.name)}_CSV.zip`);
 }
 function exportJSON() {
-  if(!steps.length){alert('工程が空です');return;}
-  const name=document.getElementById('processName').value||'工程';
+  if(!steps.length){alert(t('noSteps'));return;}
+  const name=document.getElementById('processName').value||t('processDefault');
   const daily=parseInt(document.getElementById('dailyCount').value);
   const allow=parseFloat(document.getElementById('allowance').value);
   const tot=steps.reduce((s,x)=>s+calcStepSec(x),0);
@@ -1728,7 +1921,7 @@ function exportJSON() {
     totalSec:+tot.toFixed(1),stdSec:+(tot*(1+allow/100)).toFixed(1),
     vaRatePct:tot>0?+(ts.va/tot*100).toFixed(1):null,
     groups:groups.map(g=>({id:g.id,name:g.name,collapsed:!!g.collapsed})),
-    steps:steps.map((s,i)=>({no:i+1,cat:s.cat,icon:s.icon,name:s.name,title:s.title||'',
+    steps:steps.map((s,i)=>({no:i+1,cat:s.cat,catLabel:categoryLabel(s.cat),icon:s.icon,name:s.name,nameLabel:motionLabel(s),title:s.title||'',
       type:s.type||'sv',typeLabel:TYPE_LABELS[s.type||'sv'],
       ieClass:s.ieClass||inferIeClass(s),ieLabel:IE_LABELS[s.ieClass||inferIeClass(s)],
       groupId:s.groupId||null,groupName:s.groupId?groupName(s.groupId):'',
@@ -1754,17 +1947,17 @@ function handleJSONLoad(e){
       document.getElementById('dailyCount').value=data.dailyCount||100;
       document.getElementById('allowance').value=data.allowancePct||10;
       selectedStepIds.clear();
-      groups=(data.groups||[]).map(g=>({id:g.id,name:g.name||'グループ',collapsed:!!g.collapsed}));
+      groups=(data.groups||[]).map(g=>({id:g.id,name:g.name||t('groupDefault'),collapsed:!!g.collapsed}));
       steps=data.steps.map(s=>{const lib=library.find(x=>x.name===s.name)||{};
         return{...lib,...s,stepId:Date.now()+Math.random(),type:s.type||lib.defaultType||'sv',ieClass:s.ieClass||inferIeClass({...lib,...s}),groupId:s.groupId||null,customSec:s.customSec||null};});
       cleanupGroups();
       renderSteps();updateSummary();saveSession();
-    }catch{alert('JSONの読み込みに失敗しました');}
+    }catch{alert(t('jsonLoadFailed'));}
     e.target.value='';
   };reader.readAsText(file);
 }
 function clearAll(){
-  if(steps.length>0&&!confirm('工程をクリアしますか？'))return;
+  if(steps.length>0&&!confirm(t('clearConfirm')))return;
   steps=[];
   groups=[];
   selectedStepIds.clear();
@@ -1801,7 +1994,7 @@ function loadSession() {
     document.getElementById('dailyCount').value  = data.dailyCount  || 100;
     document.getElementById('allowance').value   = data.allowance   || 10;
     selectedStepIds.clear();
-    groups = (data.groups || []).map(g => ({ id:g.id, name:g.name||'グループ', collapsed:!!g.collapsed }));
+    groups = (data.groups || []).map(g => ({ id:g.id, name:g.name||t('groupDefault'), collapsed:!!g.collapsed }));
     steps = (data.steps || []).map(s => ({ ...s, stepId: Date.now() + Math.random(), groupId:s.groupId||null, ieClass:s.ieClass||inferIeClass(s) }));
     cleanupGroups();
     return true;
@@ -1820,10 +2013,9 @@ initTheme(); loadLibrary();
 DEFAULT_LIBRARY.forEach(item => { libCollapsed[item.cat] = true; });
 // カスタム要素のカテゴリも畳む
 library.filter(x => x.custom).forEach(x => { libCollapsed[x.cat] = true; });
-renderLib();
 // セッション復元 → なければ空で開始
 loadSession();
-renderSteps(); updateSummary();
+applyLanguage();
 </script>
 </body>
 </html>
