@@ -6,7 +6,7 @@
 <title>標準時間設計ツール</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/gitbrent/pptxgenjs/dist/pptxgen.bundle.js"></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; }
 
@@ -1548,10 +1548,14 @@ function addPptBar(slide,x,y,w,h,pct,color,label,value) {
 function addPptTable(slide,rows,x,y,w,h) {
   slide.addTable(rows,{x,y,w,h,border:{type:'solid',color:'D7DEE9',pt:0.5},fontSize:6.5,color:'172033',margin:0.03,fill:'FFFFFF',autoFit:false});
 }
+function getPptxCtor() {
+  return window.pptxgen || window.PptxGenJS || null;
+}
 async function exportPPTX() {
   if(!steps.length){alert('工程が空です');return;}
-  if(typeof pptxgen === 'undefined'){alert('PPTX出力ライブラリの読み込みに失敗しました');return;}
-  const deck = new pptxgen();
+  const PptxCtor = getPptxCtor();
+  if(!PptxCtor){alert('PPTX出力ライブラリの読み込みに失敗しました');return;}
+  const deck = new PptxCtor();
   deck.layout = 'LAYOUT_WIDE';
   deck.author = 'ST Designer';
   deck.subject = 'Standard time analysis';
