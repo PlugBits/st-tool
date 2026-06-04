@@ -40,106 +40,112 @@
   }
 
   header {
-    padding: 12px 20px;
+    padding: 10px 20px;
     border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    background: var(--surface);
-    flex-shrink: 0;
+    display: flex; align-items: center; gap: 16px;
+    background: var(--surface); flex-shrink: 0;
   }
-  .logo { font-family: var(--mono); font-size: 10px; color: var(--accent); letter-spacing: 0.15em; }
+  .logo  { font-family: var(--mono); font-size: 10px; color: var(--accent); letter-spacing: 0.15em; }
   .title { font-size: 14px; font-weight: 700; }
-  .header-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+  .header-right { margin-left: auto; }
 
   main {
     display: grid;
-    grid-template-columns: 260px 1fr 260px;
+    grid-template-columns: 240px 1fr 256px;
     overflow: hidden;
   }
 
-  /* ===== 左パネル ===== */
+  /* ========== 左パネル ========== */
   .panel-left {
     background: var(--surface);
     border-right: 1px solid var(--border);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
+    display: flex; flex-direction: column; overflow: hidden;
   }
   .panel-header {
-    padding: 10px 14px;
-    font-family: var(--mono);
-    font-size: 10px;
-    color: var(--accent);
+    padding: 9px 13px;
+    font-family: var(--mono); font-size: 10px; color: var(--accent);
     letter-spacing: 0.1em;
     border-bottom: 1px solid var(--border);
     background: var(--surface2);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    display: flex; align-items: center; justify-content: space-between;
     flex-shrink: 0;
   }
+  .lib-search {
+    padding: 7px 9px; background: var(--surface2);
+    border-bottom: 1px solid var(--border); flex-shrink: 0;
+  }
+  .lib-search input {
+    width: 100%; background: var(--bg); border: 1px solid var(--border);
+    color: var(--text); font-family: var(--sans); font-size: 12px;
+    padding: 5px 8px; border-radius: 4px;
+  }
+  .lib-search input:focus { outline: none; border-color: var(--accent); }
+
   .panel-scroll { overflow-y: auto; flex: 1; }
   .panel-scroll::-webkit-scrollbar { width: 3px; }
   .panel-scroll::-webkit-scrollbar-thumb { background: var(--border); }
-  .lib-search {
-    padding: 8px 10px;
-    background: var(--surface2);
-    border-bottom: 1px solid var(--border);
-    flex-shrink: 0;
-  }
-  .lib-search input {
-    width: 100%;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    color: var(--text);
-    font-family: var(--sans);
-    font-size: 12px;
-    padding: 5px 8px;
-    border-radius: 4px;
-  }
-  .lib-search input:focus { outline: none; border-color: var(--accent); }
-  .group-label {
-    padding: 8px 14px 4px;
-    font-family: var(--mono);
-    font-size: 9px;
-    color: var(--text-dim);
-    letter-spacing: 0.1em;
-  }
-  .motion-btn {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    padding: 6px 12px;
+
+  /* カテゴリ折りたたみ */
+  .lib-group { border-bottom: 1px solid rgba(42,48,66,0.5); }
+
+  .lib-group-header {
+    display: flex; align-items: center; gap: 6px;
+    padding: 7px 12px 7px 10px;
     cursor: pointer;
-    border: none;
-    background: none;
-    width: 100%;
-    text-align: left;
-    color: var(--text);
+    user-select: none;
+    background: var(--surface2);
+    transition: background 0.1s;
+  }
+  .lib-group-header:hover { background: rgba(0,229,255,0.05); }
+
+  .lib-group-chevron {
+    font-size: 9px; color: var(--text-dim);
+    transition: transform 0.2s; flex-shrink: 0;
+  }
+  .lib-group-chevron.open { transform: rotate(90deg); }
+
+  .lib-group-name {
+    font-family: var(--mono); font-size: 9px;
+    color: var(--text-dim); letter-spacing: 0.08em; flex: 1;
+  }
+  .lib-group-count {
+    font-family: var(--mono); font-size: 9px; color: var(--border);
+  }
+
+  .lib-group-items { display: none; }
+  .lib-group-items.open { display: block; }
+
+  .motion-btn {
+    display: flex; align-items: center; gap: 7px;
+    padding: 6px 10px 6px 14px;
+    cursor: pointer; border: none; background: none;
+    width: 100%; text-align: left; color: var(--text);
     transition: background 0.1s;
   }
   .motion-btn:hover { background: rgba(0,229,255,0.06); }
   .motion-icon { font-size: 13px; min-width: 18px; text-align: center; }
-  .motion-name { font-size: 11px; flex: 1; }
-  .motion-time { font-family: var(--mono); font-size: 10px; color: var(--text-dim); }
+  .motion-name { font-size: 11px; flex: 1; text-align: left; line-height: 1.3; }
+  .motion-time { font-family: var(--mono); font-size: 10px; color: var(--text-dim); white-space: nowrap; }
+
   .lib-type-badge {
     font-family: var(--mono); font-size: 8px; font-weight: 600;
-    padding: 1px 4px; border-radius: 2px; flex-shrink: 0;
+    padding: 1px 4px; border-radius: 2px; flex-shrink: 0; white-space: nowrap;
   }
-  .lib-type-badge.va  { background: rgba(0,208,132,0.15); color: var(--type-va); border: 1px solid rgba(0,208,132,0.3); }
-  .lib-type-badge.sv  { background: rgba(255,209,102,0.15); color: var(--type-sv); border: 1px solid rgba(255,209,102,0.3); }
-  .lib-type-badge.nva { background: rgba(255,77,77,0.15); color: var(--type-nva); border: 1px solid rgba(255,77,77,0.3); }
+  .lib-type-badge.va  { background: rgba(0,208,132,0.15);  color: var(--type-va);  border: 1px solid rgba(0,208,132,0.3); }
+  .lib-type-badge.sv  { background: rgba(255,209,102,0.15); color: var(--type-sv);  border: 1px solid rgba(255,209,102,0.3); }
+  .lib-type-badge.nva { background: rgba(255,77,77,0.15);   color: var(--type-nva); border: 1px solid rgba(255,77,77,0.3); }
+
   .add-custom-btn {
-    margin: 10px; padding: 7px;
+    margin: 8px; padding: 6px;
     background: transparent; border: 1px dashed var(--border);
-    color: var(--text-dim); border-radius: 6px; cursor: pointer;
-    font-size: 11px; width: calc(100% - 20px); transition: all 0.15s;
+    color: var(--text-dim); border-radius: 5px; cursor: pointer;
+    font-size: 11px; width: calc(100% - 16px); transition: all 0.15s;
   }
   .add-custom-btn:hover { border-color: var(--accent); color: var(--accent); }
 
-  /* ===== 中央パネル ===== */
+  /* ========== 中央パネル ========== */
   .panel-center { display: flex; flex-direction: column; overflow: hidden; }
+
   .tab-bar {
     display: flex; background: var(--surface2);
     border-bottom: 1px solid var(--border); flex-shrink: 0;
@@ -152,11 +158,12 @@
   }
   .tab-btn:hover { color: var(--text); }
   .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
   .tab-content { display: none; flex: 1; overflow: hidden; flex-direction: column; }
   .tab-content.active { display: flex; }
 
   .editor-toolbar {
-    padding: 8px 14px; border-bottom: 1px solid var(--border);
+    padding: 7px 12px; border-bottom: 1px solid var(--border);
     display: flex; align-items: center; gap: 8px;
     background: var(--surface2); flex-shrink: 0; flex-wrap: wrap;
   }
@@ -168,190 +175,166 @@
   .input-field:focus { outline: none; border-color: var(--accent); }
   .label-sm { font-size: 11px; color: var(--text-dim); white-space: nowrap; }
 
-  /* ===== ステップリスト ===== */
-  .step-list { flex: 1; overflow-y: auto; padding: 8px; }
+  /* ========== ステップリスト ========== */
+  .step-list { flex: 1; overflow-y: auto; padding: 6px 8px; }
   .step-list::-webkit-scrollbar { width: 3px; }
   .step-list::-webkit-scrollbar-thumb { background: var(--border); }
+
   .step-empty {
     display: flex; flex-direction: column; align-items: center;
     justify-content: center; height: 200px; color: var(--text-dim); gap: 8px;
   }
 
-  /* ステップカード */
+  /* ステップ：1行カード */
   .step-card {
+    display: flex; align-items: center; gap: 7px;
+    padding: 0 8px 0 0;
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 6px;
-    margin-bottom: 5px;
     border-left-width: 3px;
+    border-radius: 5px;
+    margin-bottom: 4px;
+    height: 40px;           /* 固定高さ・1行 */
+    transition: border-color 0.15s;
+    cursor: grab;
   }
+  .step-card:hover { border-color: rgba(0,229,255,0.35); }
   .step-card.type-va  { border-left-color: var(--type-va); }
   .step-card.type-sv  { border-left-color: var(--type-sv); }
   .step-card.type-nva { border-left-color: var(--type-nva); }
-  .step-card.dragging { opacity: 0.4; }
+  .step-card.dragging  { opacity: 0.4; }
   .step-card.drag-over { border-color: var(--accent); background: rgba(0,229,255,0.04); }
 
-  /* ヘッダー行（常に表示） */
-  .step-header {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    padding: 7px 10px;
-    cursor: grab;
-  }
-  .step-header:active { cursor: grabbing; }
+  .step-drag { color: var(--text-dim); font-size: 11px; padding: 0 3px; flex-shrink: 0; cursor: grab; }
+  .step-num  { font-family: var(--mono); font-size: 10px; color: var(--text-dim); min-width: 20px; flex-shrink: 0; }
+  .step-icon { font-size: 14px; min-width: 20px; text-align: center; flex-shrink: 0; }
 
-  .step-drag { color: var(--text-dim); font-size: 11px; padding: 0 1px; flex-shrink: 0; }
-  .step-num  { font-family: var(--mono); font-size: 10px; color: var(--text-dim); min-width: 18px; flex-shrink: 0; }
-  .step-icon { font-size: 13px; min-width: 18px; text-align: center; flex-shrink: 0; }
-
-  /* ユーザー定義タイトル（太め・目立つ） */
+  /* タイトル入力（flex:1 で残り幅を全部使う） */
   .step-title-input {
-    flex: 1;
-    background: transparent;
-    border: none;
+    flex: 1; min-width: 0;
+    background: transparent; border: none;
     border-bottom: 1px solid transparent;
-    color: var(--text);
-    font-family: var(--sans);
-    font-size: 13px;
-    font-weight: 500;
-    padding: 1px 4px;
-    min-width: 0;
+    color: var(--text); font-family: var(--sans);
+    font-size: 13px; font-weight: 500;
+    padding: 0 4px; height: 100%;
     cursor: text;
   }
   .step-title-input:focus { outline: none; border-bottom-color: var(--accent); background: rgba(0,229,255,0.03); }
   .step-title-input::placeholder { color: var(--text-dim); font-weight: 400; font-size: 12px; }
 
+  /* メモ：タイトルの右に幅広インライン */
+  .step-memo-input {
+    width: 180px;
+    background: transparent; border: none;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-dim); font-family: var(--sans);
+    font-size: 11px; padding: 0 4px; height: 22px;
+    flex-shrink: 0;
+  }
+  .step-memo-input:focus { outline: none; border-bottom-color: var(--accent); color: var(--text); background: rgba(0,229,255,0.03); }
+  .step-memo-input::placeholder { color: rgba(107,122,153,0.5); }
+
+  /* 距離入力 */
+  .step-dist-wrap { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
+  .step-dist-input {
+    background: var(--bg); border: 1px solid var(--border);
+    color: var(--yellow); font-family: var(--mono); font-size: 13px; font-weight: 600;
+    padding: 3px 5px; border-radius: 3px;
+    width: 58px; text-align: center; height: 28px;
+  }
+  .step-dist-input:focus { outline: none; border-color: var(--yellow); }
+  .step-dist-unit { font-family: var(--mono); font-size: 11px; color: var(--text-dim); }
+
   /* 分類バッジ */
   .type-badge {
     font-family: var(--mono); font-size: 9px; font-weight: 700;
-    padding: 2px 6px; border-radius: 3px; cursor: pointer;
-    user-select: none; flex-shrink: 0; transition: all 0.15s;
+    padding: 3px 7px; border-radius: 3px;
+    cursor: pointer; user-select: none; flex-shrink: 0;
+    transition: filter 0.15s; white-space: nowrap;
   }
-  .type-badge.va  { background: rgba(0,208,132,0.2); color: var(--type-va); border: 1px solid rgba(0,208,132,0.5); }
-  .type-badge.sv  { background: rgba(255,209,102,0.2); color: var(--type-sv); border: 1px solid rgba(255,209,102,0.5); }
-  .type-badge.nva { background: rgba(255,77,77,0.2); color: var(--type-nva); border: 1px solid rgba(255,77,77,0.5); }
+  .type-badge.va  { background: rgba(0,208,132,0.2);  color: var(--type-va);  border: 1px solid rgba(0,208,132,0.5); }
+  .type-badge.sv  { background: rgba(255,209,102,0.2); color: var(--type-sv);  border: 1px solid rgba(255,209,102,0.5); }
+  .type-badge.nva { background: rgba(255,77,77,0.2);   color: var(--type-nva); border: 1px solid rgba(255,77,77,0.5); }
   .type-badge:hover { filter: brightness(1.3); }
 
-  /* 時間表示・編集 */
-  .step-time-edit {
-    display: flex; align-items: center; gap: 3px; flex-shrink: 0;
-  }
+  /* 時間入力 */
+  .step-time-wrap { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
   .step-time-input {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    color: var(--green);
-    font-family: var(--mono); font-size: 12px;
-    padding: 2px 5px; border-radius: 3px;
-    width: 56px; text-align: right;
+    background: var(--bg); border: 1px solid var(--border);
+    color: var(--green); font-family: var(--mono); font-size: 13px; font-weight: 600;
+    padding: 3px 5px; border-radius: 3px;
+    width: 58px; text-align: right; height: 28px;
   }
   .step-time-input:focus { outline: none; border-color: var(--green); }
-  .step-time-unit { font-family: var(--mono); font-size: 10px; color: var(--text-dim); }
-
-  /* 距離入力（距離パラメータがある場合） */
-  .step-dist-wrap { display: flex; align-items: center; gap: 3px; flex-shrink: 0; }
-  .step-dist-input {
-    background: var(--bg); border: 1px solid var(--border);
-    color: var(--yellow); font-family: var(--mono); font-size: 11px;
-    padding: 2px 4px; border-radius: 3px; width: 50px; text-align: center;
+  .step-time-calc {
+    font-family: var(--mono); font-size: 13px; font-weight: 600;
+    color: var(--green); min-width: 48px; text-align: right;
   }
-  .step-dist-input:focus { outline: none; border-color: var(--yellow); }
-  .step-dist-unit { font-family: var(--mono); font-size: 10px; color: var(--text-dim); }
+  .step-time-unit { font-family: var(--mono); font-size: 11px; color: var(--text-dim); }
 
-  /* 折りたたみトグル */
-  .step-collapse-btn {
-    background: none; border: none; color: var(--text-dim);
-    cursor: pointer; font-size: 11px; padding: 2px 4px;
-    flex-shrink: 0; transition: transform 0.2s;
-  }
-  .step-collapse-btn.open { transform: rotate(180deg); }
   .step-del {
     background: none; border: none; color: var(--text-dim);
-    cursor: pointer; font-size: 12px; padding: 2px 4px; border-radius: 3px;
-    flex-shrink: 0;
+    cursor: pointer; font-size: 13px; padding: 4px 5px; border-radius: 3px; flex-shrink: 0;
   }
   .step-del:hover { color: #ff4444; }
 
-  /* 展開エリア（メモ・ライブラリ動作名） */
-  .step-body {
-    padding: 0 10px 9px 52px;
-    display: none;
-    flex-direction: column;
-    gap: 5px;
-  }
-  .step-body.open { display: flex; }
-  .step-body-row { display: flex; align-items: center; gap: 6px; }
-  .step-body-label { font-size: 10px; color: var(--text-dim); min-width: 60px; }
-  .step-memo-input {
-    flex: 1;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    color: var(--text-dim);
-    font-family: var(--sans); font-size: 12px;
-    padding: 5px 8px; border-radius: 4px;
-    resize: vertical; min-height: 32px;
-  }
-  .step-memo-input:focus { outline: none; border-color: var(--accent); color: var(--text); }
-  .step-src-name { font-size: 10px; color: var(--text-dim); font-style: italic; }
-
-  /* ===== パレート ===== */
+  /* ========== パレート ========== */
   .pareto-wrap {
     flex: 1; padding: 14px; overflow-y: auto;
     display: flex; flex-direction: column; gap: 10px;
   }
   .pareto-legend { display: flex; gap: 14px; flex-wrap: wrap; }
   .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-dim); }
-  .legend-dot { width: 10px; height: 10px; border-radius: 2px; }
+  .legend-dot  { width: 10px; height: 10px; border-radius: 2px; }
   .pareto-card {
     background: var(--surface); border: 1px solid var(--border);
     border-radius: 8px; padding: 14px; flex: 1; min-height: 300px; position: relative;
   }
 
-  /* ===== 右パネル ===== */
+  /* ========== 右パネル ========== */
   .panel-right {
-    background: var(--surface);
-    border-left: 1px solid var(--border);
+    background: var(--surface); border-left: 1px solid var(--border);
     display: flex; flex-direction: column; overflow: hidden;
   }
-  .summary-block { padding: 12px 14px; border-bottom: 1px solid var(--border); }
-  .sum-label { font-family: var(--mono); font-size: 9px; color: var(--text-dim); letter-spacing: 0.1em; margin-bottom: 4px; }
+  .summary-block { padding: 11px 13px; border-bottom: 1px solid var(--border); }
+  .sum-label { font-family: var(--mono); font-size: 9px; color: var(--text-dim); letter-spacing: 0.1em; margin-bottom: 3px; }
   .sum-value { font-family: var(--mono); font-size: 24px; font-weight: 600; color: var(--accent); line-height: 1; }
-  .sum-unit  { font-family: var(--mono); font-size: 10px; color: var(--text-dim); margin-top: 3px; }
-  .va-rate-bar-wrap { height: 6px; background: var(--border); border-radius: 3px; margin-top: 7px; overflow: hidden; }
+  .sum-unit  { font-family: var(--mono); font-size: 10px; color: var(--text-dim); margin-top: 2px; }
+  .va-rate-bar-wrap { height: 5px; background: var(--border); border-radius: 3px; margin-top: 6px; overflow: hidden; }
   .va-rate-bar { height: 100%; border-radius: 3px; transition: width 0.4s; background: linear-gradient(90deg, var(--type-va), rgba(0,208,132,0.4)); }
-  .va-rate-segments { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+  .va-rate-segments { display: flex; gap: 6px; margin-top: 5px; flex-wrap: wrap; }
   .va-seg { font-family: var(--mono); font-size: 9px; display: flex; align-items: center; gap: 3px; }
   .va-seg-dot { width: 6px; height: 6px; border-radius: 1px; }
-  .breakdown-item { padding: 6px 10px; border-bottom: 1px solid rgba(42,48,66,0.5); }
-  .bd-row { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; }
-  .bd-icon { font-size: 11px; min-width: 16px; }
+  .breakdown-item { padding: 5px 10px; border-bottom: 1px solid rgba(42,48,66,0.5); }
+  .bd-row { display: flex; align-items: center; gap: 5px; margin-bottom: 3px; }
+  .bd-icon { font-size: 11px; min-width: 15px; }
   .bd-name { font-size: 11px; flex: 1; color: var(--text-dim); }
-  .bd-count { font-family: var(--mono); font-size: 10px; color: var(--text-dim); min-width: 24px; text-align: center; }
-  .bd-time  { font-family: var(--mono); font-size: 11px; color: var(--text); min-width: 44px; text-align: right; }
+  .bd-count { font-family: var(--mono); font-size: 10px; color: var(--text-dim); min-width: 22px; text-align: center; }
+  .bd-time  { font-family: var(--mono); font-size: 11px; color: var(--text); min-width: 42px; text-align: right; }
   .bd-bar-wrap { height: 2px; background: var(--border); border-radius: 1px; }
   .bd-bar { height: 100%; background: var(--accent); border-radius: 1px; transition: width 0.3s; }
 
-  /* ===== フッター ===== */
+  /* ========== フッター ========== */
   footer {
-    height: 44px; background: var(--surface2);
+    height: 42px; background: var(--surface2);
     border-top: 1px solid var(--border);
-    display: flex; align-items: center; gap: 8px; padding: 0 14px; flex-shrink: 0;
+    display: flex; align-items: center; gap: 8px; padding: 0 12px; flex-shrink: 0;
   }
   .btn {
-    padding: 5px 14px; border-radius: 4px; border: none; cursor: pointer;
+    padding: 5px 13px; border-radius: 4px; border: none; cursor: pointer;
     font-family: var(--mono); font-size: 11px; font-weight: 600; transition: all 0.15s;
   }
-  .btn-csv  { background: var(--green); color: #0f1117; }
-  .btn-csv:hover  { filter: brightness(1.1); }
-  .btn-json { background: var(--accent); color: #0f1117; }
-  .btn-json:hover { filter: brightness(1.1); }
-  .btn-ghost  { background: transparent; border: 1px solid var(--border); color: var(--text-dim); }
+  .btn-csv   { background: var(--green); color: #0f1117; }
+  .btn-csv:hover   { filter: brightness(1.1); }
+  .btn-json  { background: var(--accent); color: #0f1117; }
+  .btn-json:hover  { filter: brightness(1.1); }
+  .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--text-dim); }
   .btn-ghost:hover { border-color: var(--text-dim); color: var(--text); }
   .btn-danger { background: transparent; border: 1px solid transparent; color: var(--text-dim); margin-left: auto; }
   .btn-danger:hover { border-color: #ff4444; color: #ff4444; }
   .footer-info { font-family: var(--mono); font-size: 10px; color: var(--text-dim); }
 
-  /* ===== モーダル ===== */
+  /* ========== モーダル ========== */
   .modal-overlay {
     display: none; position: fixed; inset: 0;
     background: rgba(0,0,0,0.7); z-index: 100;
@@ -491,7 +474,8 @@
       <div class="modal-label">カテゴリ</div>
       <select class="modal-input" id="customCategory">
         <option>移動系</option><option>把握・操作系</option><option>固定系</option>
-        <option>機械・設定操作系</option><option>処理系</option><option>確認・検査系</option><option>カスタム</option>
+        <option>溶接・接合系</option><option>機械・設定操作系</option>
+        <option>処理系</option><option>確認・検査系</option><option>カスタム</option>
       </select>
     </div>
     <div class="modal-row">
@@ -499,7 +483,7 @@
       <input class="modal-input" id="customIcon" type="text" value="⚙️" maxlength="2">
     </div>
     <div class="modal-row">
-      <div class="modal-label">動作名（ライブラリ表示名）</div>
+      <div class="modal-label">動作名</div>
       <input class="modal-input" id="customName" type="text" placeholder="例：専用治具をセットする">
     </div>
     <div class="modal-row">
@@ -531,7 +515,6 @@
 <input type="file" id="jsonFileInput" accept=".json" style="display:none" onchange="handleJSONLoad(event)">
 
 <script>
-// ===== 定数 =====
 const TYPE_LABELS = { va: '主要', sv: '補助', nva: 'ムダ' };
 const TYPE_ORDER  = ['va', 'sv', 'nva'];
 const TYPE_COLORS = {
@@ -539,76 +522,64 @@ const TYPE_COLORS = {
   sv:  'rgba(255,209,102,0.85)',
   nva: 'rgba(255,77,77,0.85)',
 };
+function cycleType(t) { return TYPE_ORDER[(TYPE_ORDER.indexOf(t) + 1) % TYPE_ORDER.length]; }
 
-function cycleType(t) {
-  return TYPE_ORDER[(TYPE_ORDER.indexOf(t) + 1) % TYPE_ORDER.length];
-}
-
-// ===== ライブラリ定義 =====
-// VA（主要）= 製品に物理的変化・付加価値を直接与える動作
-// SV（補助）= 主要を成立させるための準備・位置決め・操作
-// NVA（ムダ）= 付加価値ゼロ（待ち・歩き・探し・持ち替えなど）
 const DEFAULT_LIBRARY = [
-  // 移動系 — すべて非付加価値
-  { id:'w1', cat:'移動系', icon:'🚶', name:'歩く',                 sec:1.5,  param:'distance', secPerUnit:0.015, defaultType:'nva' },
-  { id:'w2', cat:'移動系', icon:'🤚', name:'手を伸ばす',           sec:1.0,  param:'distance', secPerUnit:0.02,  defaultType:'sv'  },
-  { id:'w3', cat:'移動系', icon:'↩️', name:'体を向ける・振り向く', sec:1.5,  param:'none',                      defaultType:'nva' },
+  { id:'w1',  cat:'移動系', icon:'🚶', name:'歩く',                          sec:1.5,  param:'distance', secPerUnit:0.015, defaultType:'nva' },
+  { id:'w2',  cat:'移動系', icon:'🤚', name:'手を伸ばす',                    sec:1.0,  param:'distance', secPerUnit:0.02,  defaultType:'sv'  },
+  { id:'w3',  cat:'移動系', icon:'↩️', name:'体を向ける・振り向く',          sec:1.5,  param:'none',                      defaultType:'nva' },
 
-  // 把握・操作系
-  { id:'g1', cat:'把握・操作系', icon:'✋', name:'部品をつかむ',               sec:1.0, param:'none', defaultType:'sv'  },
-  { id:'g2', cat:'把握・操作系', icon:'📥', name:'部品を置く',                 sec:1.0, param:'none', defaultType:'sv'  },
-  { id:'g3', cat:'把握・操作系', icon:'🔥', name:'部品を組み付ける・はめる',   sec:2.0, param:'none', defaultType:'va'  },
-  { id:'g4', cat:'把握・操作系', icon:'⬆️', name:'部品を持ち上げる',           sec:2.0, param:'none', defaultType:'sv'  },
-  { id:'g5', cat:'把握・操作系', icon:'🔄', name:'持ち替え・向きを変える',     sec:1.5, param:'none', defaultType:'nva' },
-  { id:'g6', cat:'把握・操作系', icon:'🤜', name:'部品を圧入・押し込む',       sec:2.0, param:'none', defaultType:'va'  },
-  { id:'g7', cat:'把握・操作系', icon:'🔁', name:'部品を回転・ねじ込む',       sec:1.5, param:'none', defaultType:'va'  },
+  { id:'g1',  cat:'把握・操作系', icon:'✋', name:'部品をつかむ',            sec:1.0, param:'none', defaultType:'sv'  },
+  { id:'g2',  cat:'把握・操作系', icon:'📥', name:'部品を置く',              sec:1.0, param:'none', defaultType:'sv'  },
+  { id:'g3',  cat:'把握・操作系', icon:'🔥', name:'部品を組み付ける・はめる', sec:2.0, param:'none', defaultType:'va'  },
+  { id:'g4',  cat:'把握・操作系', icon:'⬆️', name:'部品を持ち上げる',        sec:2.0, param:'none', defaultType:'sv'  },
+  { id:'g5',  cat:'把握・操作系', icon:'🔄', name:'持ち替え・向きを変える',  sec:1.5, param:'none', defaultType:'nva' },
+  { id:'g6',  cat:'把握・操作系', icon:'🤜', name:'部品を圧入・押し込む',    sec:2.0, param:'none', defaultType:'va'  },
+  { id:'g7',  cat:'把握・操作系', icon:'🔁', name:'部品を回転・ねじ込む',    sec:1.5, param:'none', defaultType:'va'  },
 
-  // 固定系
-  { id:'f1', cat:'固定系', icon:'🔓', name:'ねじ・クランプを緩める（取外し）', sec:2.0, param:'none', defaultType:'sv'  },
-  { id:'f2', cat:'固定系', icon:'🔩', name:'ボルト・ねじを手締めする',         sec:3.0, param:'none', defaultType:'va'  },
-  { id:'f3', cat:'固定系', icon:'🔧', name:'ボルト・ねじを工具で本締めする',   sec:4.0, param:'none', defaultType:'va'  },
-  { id:'f4', cat:'固定系', icon:'🗜️', name:'クランプ・バイスで固定する',       sec:3.0, param:'none', defaultType:'va'  },
-  { id:'f5', cat:'固定系', icon:'🗜️', name:'クランプ・バイスを解除する',       sec:2.0, param:'none', defaultType:'sv'  },
-  { id:'f6', cat:'固定系', icon:'📌', name:'ピン・キーを挿入する',             sec:2.0, param:'none', defaultType:'va'  },
-  { id:'f7', cat:'固定系', icon:'📍', name:'ピン・キーを抜く',                 sec:2.0, param:'none', defaultType:'sv'  },
+  { id:'f1',  cat:'固定系', icon:'🔓', name:'ねじ・クランプを緩める',        sec:2.0, param:'none', defaultType:'sv'  },
+  { id:'f2',  cat:'固定系', icon:'🔩', name:'ボルト・ねじを手締めする',      sec:3.0, param:'none', defaultType:'va'  },
+  { id:'f3',  cat:'固定系', icon:'🔧', name:'ボルト・ねじを工具で本締めする', sec:4.0, param:'none', defaultType:'va'  },
+  { id:'f4',  cat:'固定系', icon:'🗜️', name:'クランプ・バイスで固定する',    sec:3.0, param:'none', defaultType:'va'  },
+  { id:'f5',  cat:'固定系', icon:'🗜️', name:'クランプ・バイスを解除する',    sec:2.0, param:'none', defaultType:'sv'  },
+  { id:'f6',  cat:'固定系', icon:'📌', name:'ピン・キーを挿入する',          sec:2.0, param:'none', defaultType:'va'  },
+  { id:'f7',  cat:'固定系', icon:'📍', name:'ピン・キーを抜く',              sec:2.0, param:'none', defaultType:'sv'  },
 
-  // 溶接・接合系
-  { id:'w10', cat:'溶接・接合系', icon:'⚡', name:'スポット溶接する',           sec:2.0, param:'none', defaultType:'va' },
-  { id:'w11', cat:'溶接・接合系', icon:'🔦', name:'アーク溶接する',             sec:5.0, param:'distance', secPerUnit:0.05, defaultType:'va' },
-  { id:'w12', cat:'溶接・接合系', icon:'🟡', name:'ろう付けする',               sec:4.0, param:'none', defaultType:'va' },
-  { id:'w13', cat:'溶接・接合系', icon:'💧', name:'接着剤を塗布・圧着する',     sec:4.0, param:'none', defaultType:'va' },
-  { id:'w14', cat:'溶接・接合系', icon:'🔗', name:'リベット・かしめる',         sec:3.0, param:'none', defaultType:'va' },
+  { id:'wl1', cat:'溶接・接合系', icon:'⚡', name:'スポット溶接する',        sec:2.0, param:'none',     defaultType:'va' },
+  { id:'wl2', cat:'溶接・接合系', icon:'🔦', name:'アーク溶接する',          sec:5.0, param:'distance', secPerUnit:0.05, defaultType:'va' },
+  { id:'wl3', cat:'溶接・接合系', icon:'🟡', name:'ろう付けする',            sec:4.0, param:'none',     defaultType:'va' },
+  { id:'wl4', cat:'溶接・接合系', icon:'💧', name:'接着剤を塗布・圧着する',  sec:4.0, param:'none',     defaultType:'va' },
+  { id:'wl5', cat:'溶接・接合系', icon:'🔗', name:'リベット・かしめる',      sec:3.0, param:'none',     defaultType:'va' },
 
-  // 機械・設定操作系
-  { id:'m1', cat:'機械・設定操作系', icon:'🔀', name:'スイッチ・ボタンを押す', sec:0.5,  param:'none', defaultType:'sv'  },
-  { id:'m2', cat:'機械・設定操作系', icon:'🦶', name:'ペダルを踏む',           sec:0.5,  param:'none', defaultType:'sv'  },
-  { id:'m3', cat:'機械・設定操作系', icon:'🚪', name:'ドアを開閉する',         sec:2.0,  param:'none', defaultType:'sv'  },
-  { id:'m4', cat:'機械・設定操作系', icon:'▶️', name:'機械スタートを押す',     sec:0.5,  param:'none', defaultType:'sv'  },
-  { id:'m5', cat:'機械・設定操作系', icon:'⏳', name:'機械加工完了を待つ',     sec:10.0, param:'none', defaultType:'nva' },
-  { id:'m6', cat:'機械・設定操作系', icon:'⚙️', name:'治具・工具をセットする', sec:3.0,  param:'none', defaultType:'sv'  },
-  { id:'m7', cat:'機械・設定操作系', icon:'🔩', name:'工具・治具を外す',       sec:2.0,  param:'none', defaultType:'sv'  },
+  { id:'m1',  cat:'機械・設定操作系', icon:'🔀', name:'スイッチ・ボタンを押す', sec:0.5,  param:'none', defaultType:'sv'  },
+  { id:'m2',  cat:'機械・設定操作系', icon:'🦶', name:'ペダルを踏む',           sec:0.5,  param:'none', defaultType:'sv'  },
+  { id:'m3',  cat:'機械・設定操作系', icon:'🚪', name:'ドアを開閉する',         sec:2.0,  param:'none', defaultType:'sv'  },
+  { id:'m4',  cat:'機械・設定操作系', icon:'▶️', name:'機械スタートを押す',     sec:0.5,  param:'none', defaultType:'sv'  },
+  { id:'m5',  cat:'機械・設定操作系', icon:'⏳', name:'機械加工完了を待つ',     sec:10.0, param:'none', defaultType:'nva' },
+  { id:'m6',  cat:'機械・設定操作系', icon:'⚙️', name:'治具・工具をセットする', sec:3.0,  param:'none', defaultType:'sv'  },
+  { id:'m7',  cat:'機械・設定操作系', icon:'🔩', name:'工具・治具を外す',       sec:2.0,  param:'none', defaultType:'sv'  },
 
-  // 処理系
-  { id:'p1', cat:'処理系', icon:'💨', name:'エアーで清掃する',         sec:2.0, param:'none', defaultType:'sv'  },
-  { id:'p2', cat:'処理系', icon:'🧴', name:'潤滑剤・シール剤を塗布する', sec:3.0, param:'none', defaultType:'va' },
-  { id:'p3', cat:'処理系', icon:'🖌️', name:'塗装・コーティングする',    sec:5.0, param:'none', defaultType:'va' },
-  { id:'p4', cat:'処理系', icon:'🧼', name:'洗浄・脱脂する',           sec:5.0, param:'none', defaultType:'va'  },
-  { id:'p5', cat:'処理系', icon:'🔥', name:'加熱・熱処理する',         sec:8.0, param:'none', defaultType:'va'  },
+  { id:'p1',  cat:'処理系', icon:'💨', name:'エアーで清掃する',               sec:2.0, param:'none', defaultType:'sv'  },
+  { id:'p2',  cat:'処理系', icon:'🧴', name:'潤滑剤・シール剤を塗布する',     sec:3.0, param:'none', defaultType:'va'  },
+  { id:'p3',  cat:'処理系', icon:'🖌️', name:'塗装・コーティングする',         sec:5.0, param:'none', defaultType:'va'  },
+  { id:'p4',  cat:'処理系', icon:'🧼', name:'洗浄・脱脂する',                 sec:5.0, param:'none', defaultType:'va'  },
+  { id:'p5',  cat:'処理系', icon:'🔥', name:'加熱・熱処理する',               sec:8.0, param:'none', defaultType:'va'  },
 
-  // 確認・検査系
-  { id:'c1', cat:'確認・検査系', icon:'👁️', name:'目視検査する',             sec:3.0, param:'none', defaultType:'va'  },
-  { id:'c2', cat:'確認・検査系', icon:'📏', name:'寸法・トルクを測定する',   sec:5.0, param:'none', defaultType:'va'  },
-  { id:'c3', cat:'確認・検査系', icon:'🏷️', name:'ラベル・シールを貼る',     sec:3.0, param:'none', defaultType:'va'  },
-  { id:'c4', cat:'確認・検査系', icon:'✏️', name:'マーキング・刻印する',     sec:2.0, param:'none', defaultType:'va'  },
-  { id:'c5', cat:'確認・検査系', icon:'📋', name:'記録・チェックシートに記入', sec:4.0, param:'none', defaultType:'sv' },
-  { id:'c6', cat:'確認・検査系', icon:'🔍', name:'探す・確認する（ムダ）',   sec:3.0, param:'none', defaultType:'nva' },
+  { id:'c1',  cat:'確認・検査系', icon:'👁️', name:'目視検査する',             sec:3.0, param:'none', defaultType:'va'  },
+  { id:'c2',  cat:'確認・検査系', icon:'📏', name:'寸法・トルクを測定する',   sec:5.0, param:'none', defaultType:'va'  },
+  { id:'c3',  cat:'確認・検査系', icon:'🏷️', name:'ラベル・シールを貼る',     sec:3.0, param:'none', defaultType:'va'  },
+  { id:'c4',  cat:'確認・検査系', icon:'✏️', name:'マーキング・刻印する',     sec:2.0, param:'none', defaultType:'va'  },
+  { id:'c5',  cat:'確認・検査系', icon:'📋', name:'記録・チェックシートに記入', sec:4.0, param:'none', defaultType:'sv' },
+  { id:'c6',  cat:'確認・検査系', icon:'🔍', name:'探す・確認する（ムダ）',   sec:3.0, param:'none', defaultType:'nva' },
 ];
 
-// ===== 状態 =====
-let library = [];
-let steps   = [];
+let library  = [];
+let steps    = [];
 let dragSrcIdx  = null;
 let paretoChart = null;
+
+// カテゴリの折りたたみ状態（初期：すべて展開）
+const libCollapsed = {};
 
 function loadLibrary() {
   const custom = JSON.parse(localStorage.getItem('st_custom_elements') || '[]');
@@ -628,21 +599,41 @@ function switchTab(name) {
   if (name === 'pareto') renderPareto();
 }
 
-// ===== ライブラリ描画 =====
+// ===== ライブラリ描画（カテゴリ折りたたみ付き） =====
 function renderLib() {
   const q  = document.getElementById('libSearch').value.toLowerCase();
   const el = document.getElementById('motionLib');
   el.innerHTML = '';
+
   const filtered = q
     ? library.filter(x => x.name.toLowerCase().includes(q) || x.cat.toLowerCase().includes(q))
     : library;
+
   const groups = {};
   filtered.forEach(item => { (groups[item.cat] = groups[item.cat] || []).push(item); });
 
   for (const [cat, items] of Object.entries(groups)) {
-    const gl = document.createElement('div');
-    gl.className = 'group-label'; gl.textContent = cat;
-    el.appendChild(gl);
+    // 検索中は強制展開
+    const isOpen = q ? true : !libCollapsed[cat];
+
+    const group = document.createElement('div');
+    group.className = 'lib-group';
+
+    const header = document.createElement('div');
+    header.className = 'lib-group-header';
+    header.innerHTML = `
+      <span class="lib-group-chevron ${isOpen ? 'open' : ''}">▶</span>
+      <span class="lib-group-name">${cat}</span>
+      <span class="lib-group-count">${items.length}</span>
+    `;
+    header.addEventListener('click', () => {
+      libCollapsed[cat] = !libCollapsed[cat];
+      renderLib();
+    });
+
+    const itemsEl = document.createElement('div');
+    itemsEl.className = `lib-group-items ${isOpen ? 'open' : ''}`;
+
     items.forEach(item => {
       const dt = item.defaultType || 'sv';
       const timeLabel = item.param === 'distance' ? `${item.secPerUnit}s/cm` : `${item.sec}s`;
@@ -653,12 +644,16 @@ function renderLib() {
         <span class="motion-name">${item.name}</span>
         <span class="motion-time">${timeLabel}</span>
         <span class="lib-type-badge ${dt}">${TYPE_LABELS[dt]}</span>
-        ${item.param === 'distance' ? '<span style="font-size:9px;color:var(--yellow)">📐</span>' : ''}
-        ${item.custom ? '<span style="font-size:9px;color:var(--accent2)">★</span>' : ''}
+        ${item.param === 'distance' ? '<span style="font-size:9px;color:var(--yellow);margin-left:1px">📐</span>' : ''}
+        ${item.custom ? '<span style="font-size:9px;color:var(--accent2);margin-left:1px">★</span>' : ''}
       `;
       btn.onclick = () => addStep(item);
-      el.appendChild(btn);
+      itemsEl.appendChild(btn);
     });
+
+    group.appendChild(header);
+    group.appendChild(itemsEl);
+    el.appendChild(group);
   }
 }
 
@@ -667,26 +662,22 @@ function addStep(item) {
   steps.push({
     ...item,
     stepId:      Date.now() + Math.random(),
-    title:       '',          // ユーザー定義タイトル（空なら動作名を表示）
+    title:       '',
     note:        '',
     distanceVal: item.param === 'distance' ? 30 : null,
-    customSec:   item.param === 'distance' ? null : item.sec,  // 直接編集した時間
+    customSec:   item.param === 'distance' ? null : item.sec,
     type:        item.defaultType || 'sv',
-    collapsed:   false,
   });
   renderSteps();
   updateSummary();
 }
 
-// 実効時間を返す（距離パラメータ優先、なければcustomSec）
-function calcStepSec(step) {
-  if (step.param === 'distance') {
-    return (step.secPerUnit || 0.02) * (step.distanceVal || 0);
-  }
-  return step.customSec !== null && step.customSec !== undefined ? step.customSec : step.sec;
+function calcStepSec(s) {
+  if (s.param === 'distance') return (s.secPerUnit || 0.02) * (s.distanceVal || 0);
+  return s.customSec != null ? s.customSec : s.sec;
 }
 
-// ===== ステップ描画 =====
+// ===== ステップ描画（1行） =====
 function renderSteps() {
   const el = document.getElementById('stepList');
   el.innerHTML = '';
@@ -706,59 +697,49 @@ function renderSteps() {
     const card = document.createElement('div');
     card.className = `step-card type-${t}`;
     card.draggable = true;
-    card.dataset.idx = i;
 
-    // 距離入力HTML
+    // 距離入力（距離パラメータがある動作のみ）
     const distHtml = s.param === 'distance' ? `
       <div class="step-dist-wrap">
         <input class="step-dist-input" type="number" value="${s.distanceVal}" min="1" step="5"
           onclick="event.stopPropagation()"
-          onchange="updateDist(${i}, this.value)" title="距離(cm)">
+          onchange="updateDist(${i},this.value)">
         <span class="step-dist-unit">cm</span>
       </div>` : '';
 
-    // 時間入力HTML（距離パラメータの場合は計算値を表示のみ）
+    // 時間（距離パラメータ→計算値表示のみ、それ以外→編集可）
     const timeHtml = s.param === 'distance'
-      ? `<div class="step-time-edit"><span style="font-family:var(--mono);font-size:12px;color:var(--green)">${sec.toFixed(1)}</span><span class="step-time-unit">s</span></div>`
-      : `<div class="step-time-edit">
-          <input class="step-time-input" type="number" value="${sec}" min="0.1" step="0.1"
-            onclick="event.stopPropagation()"
-            onchange="updateTime(${i}, this.value)" title="時間を直接編集">
-          <span class="step-time-unit">s</span>
-        </div>`;
+      ? `<div class="step-time-wrap"><span class="step-time-calc">${sec.toFixed(1)}</span><span class="step-time-unit">s</span></div>`
+      : `<div class="step-time-wrap">
+           <input class="step-time-input" type="number" value="${sec}" min="0.1" step="0.1"
+             onclick="event.stopPropagation()"
+             onchange="updateTime(${i},this.value)">
+           <span class="step-time-unit">s</span>
+         </div>`;
 
     card.innerHTML = `
-      <div class="step-header">
-        <span class="step-drag">⠿</span>
-        <span class="step-num">${String(i+1).padStart(2,'0')}</span>
-        <span class="step-icon">${s.icon}</span>
-        <input class="step-title-input" type="text"
-          placeholder="${s.name}"
-          value="${escHtml(s.title)}"
-          onclick="event.stopPropagation()"
-          onchange="updateTitle(${i}, this.value)"
-          title="このステップの名前（空欄=動作名）">
-        ${distHtml}
-        <span class="type-badge ${t}" onclick="event.stopPropagation();toggleType(${i})" title="クリックで分類切替">${TYPE_LABELS[t]}</span>
-        ${timeHtml}
-        <button class="step-collapse-btn ${s.collapsed ? '' : 'open'}"
-          onclick="event.stopPropagation();toggleCollapse(${i})" title="折りたたみ">▼</button>
-        <button class="step-del" onclick="event.stopPropagation();deleteStep(${i})">✕</button>
-      </div>
-      <div class="step-body ${s.collapsed ? '' : 'open'}">
-        <div class="step-body-row">
-          <span class="step-body-label">メモ</span>
-          <textarea class="step-memo-input" placeholder="詳細メモ・作業条件など…"
-            onchange="updateNote(${i}, this.value)">${escHtml(s.note)}</textarea>
-        </div>
-        <div class="step-body-row">
-          <span class="step-body-label">ライブラリ動作</span>
-          <span class="step-src-name">${s.name}</span>
-        </div>
-      </div>
+      <span class="step-drag">⠿</span>
+      <span class="step-num">${String(i+1).padStart(2,'0')}</span>
+      <span class="step-icon">${s.icon}</span>
+      <input class="step-title-input" type="text"
+        placeholder="${escHtml(s.name)}"
+        value="${escHtml(s.title)}"
+        onclick="event.stopPropagation()"
+        onchange="updateTitle(${i},this.value)"
+        title="ステップ名（空欄=動作名）">
+      <input class="step-memo-input" type="text"
+        placeholder="メモ…"
+        value="${escHtml(s.note)}"
+        onclick="event.stopPropagation()"
+        onchange="updateNote(${i},this.value)">
+      ${distHtml}
+      <span class="type-badge ${t}"
+        onclick="event.stopPropagation();toggleType(${i})"
+        title="クリックで分類切替">${TYPE_LABELS[t]}</span>
+      ${timeHtml}
+      <button class="step-del" onclick="event.stopPropagation();deleteStep(${i})">✕</button>
     `;
 
-    // ドラッグ
     card.addEventListener('dragstart', e => {
       dragSrcIdx = i; card.classList.add('dragging');
       e.dataTransfer.effectAllowed = 'move';
@@ -768,7 +749,7 @@ function renderSteps() {
       document.querySelectorAll('.step-card').forEach(c => c.classList.remove('drag-over'));
     });
     card.addEventListener('dragover',  e => { e.preventDefault(); card.classList.add('drag-over'); });
-    card.addEventListener('dragleave', ()  => card.classList.remove('drag-over'));
+    card.addEventListener('dragleave', () => card.classList.remove('drag-over'));
     card.addEventListener('drop', e => {
       e.preventDefault();
       if (dragSrcIdx === null || dragSrcIdx === i) return;
@@ -783,33 +764,23 @@ function renderSteps() {
 }
 
 function escHtml(s) {
-  return (s || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
-
-function toggleCollapse(i) {
-  steps[i].collapsed = !steps[i].collapsed;
-  renderSteps();
-}
-
-function toggleType(i) {
-  steps[i].type = cycleType(steps[i].type || 'sv');
-  renderSteps(); updateSummary();
-}
-
+function toggleType(i)      { steps[i].type = cycleType(steps[i].type||'sv'); renderSteps(); updateSummary(); }
 function updateTitle(i, v)  { steps[i].title = v; }
 function updateNote(i, v)   { steps[i].note  = v; }
-function updateTime(i, v)   { steps[i].customSec = Math.max(0.1, parseFloat(v) || 0.1); updateSummary(); }
-function updateDist(i, v)   { steps[i].distanceVal = parseFloat(v) || 0; updateSummary(); renderSteps(); }
-function deleteStep(i)       { steps.splice(i, 1); renderSteps(); updateSummary(); }
+function updateTime(i, v)   { steps[i].customSec = Math.max(0.1, parseFloat(v)||0.1); updateSummary(); }
+function updateDist(i, v)   { steps[i].distanceVal = parseFloat(v)||0; updateSummary(); renderSteps(); }
+function deleteStep(i)      { steps.splice(i,1); renderSteps(); updateSummary(); }
 
 // ===== 集計 =====
 function updateSummary() {
   const totalSec  = steps.reduce((s, x) => s + calcStepSec(x), 0);
-  const allowance = (parseFloat(document.getElementById('allowance').value) || 0) / 100;
+  const allowance = (parseFloat(document.getElementById('allowance').value)||0) / 100;
   const stdSec    = totalSec * (1 + allowance);
   const stdMin    = stdSec / 60;
-  const daily     = parseInt(document.getElementById('dailyCount').value) || 100;
-  const dailyHour = (stdMin * daily) / 60;
+  const daily     = parseInt(document.getElementById('dailyCount').value)||100;
+  const dailyHour = stdMin * daily / 60;
 
   document.getElementById('totalSec').textContent  = totalSec.toFixed(1);
   document.getElementById('stdSec').textContent    = stdSec.toFixed(1);
@@ -818,19 +789,18 @@ function updateSummary() {
   document.getElementById('dailyInfo').textContent = `${daily}台/日 × ${stdMin.toFixed(3)} min`;
   document.getElementById('stepCount').textContent = `${steps.length} 要素`;
 
-  // 付加価値率
-  const typeSec = { va: 0, sv: 0, nva: 0 };
-  steps.forEach(s => { typeSec[s.type || 'sv'] += calcStepSec(s); });
+  const typeSec = { va:0, sv:0, nva:0 };
+  steps.forEach(s => { typeSec[s.type||'sv'] += calcStepSec(s); });
   const vaRate = totalSec > 0 ? typeSec.va / totalSec * 100 : null;
 
-  document.getElementById('vaRate').textContent     = vaRate !== null ? vaRate.toFixed(1) + '%' : '—';
-  document.getElementById('vaRateBar').style.width  = vaRate !== null ? vaRate.toFixed(1) + '%' : '0%';
+  document.getElementById('vaRate').textContent    = vaRate !== null ? vaRate.toFixed(1)+'%' : '—';
+  document.getElementById('vaRateBar').style.width = vaRate !== null ? vaRate.toFixed(1)+'%' : '0%';
 
   const segs = document.getElementById('vaSegments');
   segs.innerHTML = '';
-  [['va','var(--type-va)'],['sv','var(--type-sv)'],['nva','var(--type-nva)']].forEach(([k, col]) => {
-    if (typeSec[k] === 0) return;
-    const pct = (typeSec[k] / totalSec * 100).toFixed(0);
+  [['va','var(--type-va)'],['sv','var(--type-sv)'],['nva','var(--type-nva)']].forEach(([k,col]) => {
+    if (!typeSec[k]) return;
+    const pct = (typeSec[k]/totalSec*100).toFixed(0);
     const d = document.createElement('div');
     d.className = 'va-seg';
     d.innerHTML = `<div class="va-seg-dot" style="background:${col}"></div>
@@ -839,17 +809,15 @@ function updateSummary() {
     segs.appendChild(d);
   });
 
-  // カテゴリ内訳
   const cats = {};
   steps.forEach(s => {
-    if (!cats[s.cat]) cats[s.cat] = { icon: s.icon, cat: s.cat, count: 0, sec: 0 };
+    if (!cats[s.cat]) cats[s.cat] = { icon:s.icon, cat:s.cat, count:0, sec:0 };
     cats[s.cat].count++; cats[s.cat].sec += calcStepSec(s);
   });
-  const maxSec = Math.max(...Object.values(cats).map(x => x.sec), 0.001);
+  const maxSec = Math.max(...Object.values(cats).map(x=>x.sec), 0.001);
   const bdEl = document.getElementById('breakdown');
   bdEl.innerHTML = '';
-  Object.values(cats).sort((a,b) => b.sec - a.sec).forEach(item => {
-    const pct = item.sec / maxSec * 100;
+  Object.values(cats).sort((a,b)=>b.sec-a.sec).forEach(item => {
     const d = document.createElement('div');
     d.className = 'breakdown-item';
     d.innerHTML = `<div class="bd-row">
@@ -858,7 +826,7 @@ function updateSummary() {
         <span class="bd-count">×${item.count}</span>
         <span class="bd-time">${item.sec.toFixed(1)}s</span>
       </div>
-      <div class="bd-bar-wrap"><div class="bd-bar" style="width:${pct}%"></div></div>`;
+      <div class="bd-bar-wrap"><div class="bd-bar" style="width:${item.sec/maxSec*100}%"></div></div>`;
     bdEl.appendChild(d);
   });
 }
@@ -867,7 +835,6 @@ function updateSummary() {
 function renderPareto() {
   const canvas   = document.getElementById('paretoChart');
   const emptyMsg = document.getElementById('paretoEmpty');
-
   if (steps.length === 0) {
     canvas.style.display = 'none'; emptyMsg.style.display = 'flex';
     if (paretoChart) { paretoChart.destroy(); paretoChart = null; }
@@ -876,64 +843,48 @@ function renderPareto() {
   canvas.style.display = 'block'; emptyMsg.style.display = 'none';
 
   const sorted = [...steps]
-    .map(s => ({ label: s.title || s.name, sec: calcStepSec(s), type: s.type || 'sv' }))
-    .sort((a, b) => b.sec - a.sec);
-
-  const total = sorted.reduce((s, x) => s + x.sec, 0);
+    .map(s => ({ label: s.title||s.name, sec: calcStepSec(s), type: s.type||'sv' }))
+    .sort((a,b) => b.sec - a.sec);
+  const total = sorted.reduce((s,x)=>s+x.sec, 0);
   let cum = 0;
-  const cumPct = sorted.map(x => { cum += x.sec; return parseFloat((cum / total * 100).toFixed(1)); });
+  const cumPct = sorted.map(x => { cum += x.sec; return +(cum/total*100).toFixed(1); });
 
   if (paretoChart) { paretoChart.destroy(); paretoChart = null; }
   paretoChart = new Chart(canvas, {
     data: {
-      labels: sorted.map((x, i) => `${String(i+1).padStart(2,'0')} ${x.label}`),
+      labels: sorted.map((x,i) => `${String(i+1).padStart(2,'0')} ${x.label}`),
       datasets: [
-        {
-          type: 'bar', label: '時間(秒)',
-          data: sorted.map(x => parseFloat(x.sec.toFixed(2))),
-          backgroundColor: sorted.map(x => TYPE_COLORS[x.type]),
-          borderColor: sorted.map(x => TYPE_COLORS[x.type].replace('0.85','1')),
-          borderWidth: 1, yAxisID: 'y', order: 2,
-        },
-        {
-          type: 'line', label: '累積%',
-          data: cumPct,
-          borderColor: 'rgba(0,229,255,0.9)',
-          backgroundColor: 'rgba(0,229,255,0.08)',
-          pointBackgroundColor: 'rgba(0,229,255,1)',
-          pointRadius: 3, borderWidth: 2, fill: false,
-          yAxisID: 'y2', order: 1, tension: 0.2,
-        },
+        { type:'bar', label:'時間(秒)', data: sorted.map(x=>+x.sec.toFixed(2)),
+          backgroundColor: sorted.map(x=>TYPE_COLORS[x.type]),
+          borderColor: sorted.map(x=>TYPE_COLORS[x.type].replace('0.85','1')),
+          borderWidth:1, yAxisID:'y', order:2 },
+        { type:'line', label:'累積%', data: cumPct,
+          borderColor:'rgba(0,229,255,0.9)', backgroundColor:'rgba(0,229,255,0.08)',
+          pointBackgroundColor:'rgba(0,229,255,1)', pointRadius:3, borderWidth:2,
+          fill:false, yAxisID:'y2', order:1, tension:0.2 },
       ],
     },
     options: {
-      responsive: true, maintainAspectRatio: false,
-      interaction: { mode: 'index', intersect: false },
+      responsive:true, maintainAspectRatio:false,
+      interaction:{ mode:'index', intersect:false },
       plugins: {
-        legend: { display: false },
+        legend: { display:false },
         tooltip: {
-          backgroundColor: '#1e2330', borderColor: '#2a3042', borderWidth: 1,
-          titleColor: '#e0e6f0', bodyColor: '#6b7a99',
-          callbacks: {
-            label: ctx => ctx.datasetIndex === 0
-              ? ` ${ctx.parsed.y}秒  [${TYPE_LABELS[sorted[ctx.dataIndex].type]}]`
-              : ` 累積 ${ctx.parsed.y}%`,
-          },
+          backgroundColor:'#1e2330', borderColor:'#2a3042', borderWidth:1,
+          titleColor:'#e0e6f0', bodyColor:'#6b7a99',
+          callbacks: { label: ctx => ctx.datasetIndex===0
+            ? ` ${ctx.parsed.y}秒  [${TYPE_LABELS[sorted[ctx.dataIndex].type]}]`
+            : ` 累積 ${ctx.parsed.y}%` },
         },
       },
       scales: {
-        x: { ticks: { color:'#6b7a99', font:{size:10}, maxRotation:45 }, grid: { color:'rgba(42,48,66,0.6)' } },
-        y: {
-          position: 'left',
-          title: { display: true, text: '時間 (秒)', color:'#6b7a99', font:{size:10} },
-          ticks: { color:'#6b7a99', font:{size:10} }, grid: { color:'rgba(42,48,66,0.6)' },
-        },
-        y2: {
-          position: 'right', min: 0, max: 100,
-          title: { display: true, text: '累積 (%)', color:'#00e5ff', font:{size:10} },
-          ticks: { color:'#00e5ff', font:{size:10}, callback: v => v + '%' },
-          grid: { drawOnChartArea: false },
-        },
+        x: { ticks:{color:'#6b7a99',font:{size:10},maxRotation:45}, grid:{color:'rgba(42,48,66,0.6)'} },
+        y: { position:'left', title:{display:true,text:'時間 (秒)',color:'#6b7a99',font:{size:10}},
+             ticks:{color:'#6b7a99',font:{size:10}}, grid:{color:'rgba(42,48,66,0.6)'} },
+        y2:{ position:'right', min:0, max:100,
+             title:{display:true,text:'累積 (%)',color:'#00e5ff',font:{size:10}},
+             ticks:{color:'#00e5ff',font:{size:10},callback:v=>v+'%'},
+             grid:{drawOnChartArea:false} },
       },
     },
   });
@@ -942,88 +893,75 @@ function renderPareto() {
 // ===== カスタム要素 =====
 function openCustomModal()  { document.getElementById('customModal').classList.add('open'); }
 function closeCustomModal() { document.getElementById('customModal').classList.remove('open'); }
-
 function saveCustom() {
   const name = document.getElementById('customName').value.trim();
   if (!name) { alert('動作名を入力してください'); return; }
-  const item = {
-    id: 'custom_' + Date.now(),
+  library.push({
+    id: 'custom_'+Date.now(),
     cat: document.getElementById('customCategory').value,
     icon: document.getElementById('customIcon').value || '⚙️',
     name,
-    sec: parseFloat(document.getElementById('customTime').value) || 3,
+    sec: parseFloat(document.getElementById('customTime').value)||3,
     param: document.getElementById('customParam').value,
     secPerUnit: 0.02,
     defaultType: document.getElementById('customDefaultType').value,
     custom: true,
-  };
-  library.push(item);
-  saveCustomElements();
-  renderLib();
-  closeCustomModal();
+  });
+  saveCustomElements(); renderLib(); closeCustomModal();
   document.getElementById('customName').value = '';
 }
 
-// ===== CSV出力 =====
+// ===== CSV =====
 function exportCSV() {
-  if (steps.length === 0) { alert('工程が空です'); return; }
-  const name     = document.getElementById('processName').value || '工程';
-  const daily    = document.getElementById('dailyCount').value;
-  const allow    = document.getElementById('allowance').value;
-  const totalSec = steps.reduce((s,x) => s + calcStepSec(x), 0);
-  const stdSec   = totalSec * (1 + parseFloat(allow)/100);
-  const typeSec  = { va:0, sv:0, nva:0 };
-  steps.forEach(s => { typeSec[s.type||'sv'] += calcStepSec(s); });
-  const vaRate   = totalSec > 0 ? (typeSec.va/totalSec*100).toFixed(1) : '—';
-
+  if (!steps.length) { alert('工程が空です'); return; }
+  const name  = document.getElementById('processName').value||'工程';
+  const daily = document.getElementById('dailyCount').value;
+  const allow = document.getElementById('allowance').value;
+  const total = steps.reduce((s,x)=>s+calcStepSec(x),0);
+  const std   = total*(1+parseFloat(allow)/100);
+  const ts    = {va:0,sv:0,nva:0};
+  steps.forEach(s=>{ts[s.type||'sv']+=calcStepSec(s);});
+  const vaR = total>0?(ts.va/total*100).toFixed(1):'—';
   let csv = '﻿';
-  csv += `工程名,${name}\n日次数量,${daily}\n余裕率,${allow}%\n`;
-  csv += `正味時間(秒),${totalSec.toFixed(1)}\n標準時間(秒),${stdSec.toFixed(1)}\n付加価値率,${vaRate}%\n`;
-  csv += `主要時間(秒),${typeSec.va.toFixed(1)}\n補助時間(秒),${typeSec.sv.toFixed(1)}\nムダ時間(秒),${typeSec.nva.toFixed(1)}\n\n`;
+  csv += `工程名,${name}\n日次数量,${daily}\n余裕率,${allow}%\n正味時間(秒),${total.toFixed(1)}\n標準時間(秒),${std.toFixed(1)}\n付加価値率,${vaR}%\n主要時間(秒),${ts.va.toFixed(1)}\n補助時間(秒),${ts.sv.toFixed(1)}\nムダ時間(秒),${ts.nva.toFixed(1)}\n\n`;
   csv += 'No,カテゴリ,タイトル,ライブラリ動作,分類,分類コード,距離(cm),時間(秒),メモ\n';
-  steps.forEach((s,i) => {
-    const sec = calcStepSec(s);
-    const t   = s.type || 'sv';
-    const title = s.title || s.name;
-    csv += `${i+1},${s.cat},"${title}","${s.name}",${TYPE_LABELS[t]},${t.toUpperCase()},${s.distanceVal||''},${sec.toFixed(1)},"${s.note}"\n`;
+  steps.forEach((s,i)=>{
+    const t=s.type||'sv';
+    csv+=`${i+1},${s.cat},"${s.title||s.name}","${s.name}",${TYPE_LABELS[t]},${t.toUpperCase()},${s.distanceVal||''},${calcStepSec(s).toFixed(1)},"${s.note}"\n`;
   });
-  dl(csv, `${name}_ST.csv`, 'text/csv;charset=utf-8;');
+  dl(csv,`${name}_ST.csv`,'text/csv;charset=utf-8;');
 }
 
-// ===== JSON保存 =====
+// ===== JSON =====
 function exportJSON() {
-  if (steps.length === 0) { alert('工程が空です'); return; }
-  const name     = document.getElementById('processName').value || '工程';
-  const daily    = parseInt(document.getElementById('dailyCount').value);
-  const allow    = parseFloat(document.getElementById('allowance').value);
-  const totalSec = steps.reduce((s,x) => s + calcStepSec(x), 0);
-  const typeSec  = { va:0, sv:0, nva:0 };
-  steps.forEach(s => { typeSec[s.type||'sv'] += calcStepSec(s); });
-  const data = {
-    processName: name, dailyCount: daily, allowancePct: allow,
-    totalSec: +totalSec.toFixed(1),
-    stdSec: +(totalSec*(1+allow/100)).toFixed(1),
-    vaRatePct: totalSec > 0 ? +(typeSec.va/totalSec*100).toFixed(1) : null,
-    steps: steps.map((s,i) => ({
-      no: i+1, cat: s.cat, icon: s.icon, name: s.name,
-      title: s.title || '', type: s.type||'sv', typeLabel: TYPE_LABELS[s.type||'sv'],
-      distanceVal: s.distanceVal||null, customSec: s.customSec||null,
-      sec: +calcStepSec(s).toFixed(1), note: s.note,
+  if (!steps.length) { alert('工程が空です'); return; }
+  const name  = document.getElementById('processName').value||'工程';
+  const daily = parseInt(document.getElementById('dailyCount').value);
+  const allow = parseFloat(document.getElementById('allowance').value);
+  const total = steps.reduce((s,x)=>s+calcStepSec(x),0);
+  const ts    = {va:0,sv:0,nva:0};
+  steps.forEach(s=>{ts[s.type||'sv']+=calcStepSec(s);});
+  dl(JSON.stringify({
+    processName:name, dailyCount:daily, allowancePct:allow,
+    totalSec:+total.toFixed(1), stdSec:+(total*(1+allow/100)).toFixed(1),
+    vaRatePct:total>0?+(ts.va/total*100).toFixed(1):null,
+    steps: steps.map((s,i)=>({
+      no:i+1, cat:s.cat, icon:s.icon, name:s.name, title:s.title||'',
+      type:s.type||'sv', typeLabel:TYPE_LABELS[s.type||'sv'],
+      distanceVal:s.distanceVal||null, customSec:s.customSec||null,
+      sec:+calcStepSec(s).toFixed(1), note:s.note,
     })),
-    exportedAt: new Date().toISOString(),
-  };
-  dl(JSON.stringify(data, null, 2), `${name}_ST.json`, 'application/json');
+    exportedAt:new Date().toISOString(),
+  },null,2),`${name}_ST.json`,'application/json');
 }
 
 function dl(content, filename, mime) {
-  const blob = new Blob([content], { type: mime });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href = url; a.download = filename; a.click();
-  URL.revokeObjectURL(url);
+  const a = Object.assign(document.createElement('a'), {
+    href: URL.createObjectURL(new Blob([content],{type:mime})), download: filename,
+  });
+  a.click(); URL.revokeObjectURL(a.href);
 }
 
-// ===== JSON読込 =====
 function loadJSON() { document.getElementById('jsonFileInput').click(); }
 function handleJSONLoad(e) {
   const file = e.target.files[0]; if (!file) return;
@@ -1031,29 +969,26 @@ function handleJSONLoad(e) {
   reader.onload = ev => {
     try {
       const data = JSON.parse(ev.target.result);
-      document.getElementById('processName').value = data.processName || '';
-      document.getElementById('dailyCount').value  = data.dailyCount  || 100;
-      document.getElementById('allowance').value   = data.allowancePct || 10;
+      document.getElementById('processName').value = data.processName||'';
+      document.getElementById('dailyCount').value  = data.dailyCount||100;
+      document.getElementById('allowance').value   = data.allowancePct||10;
       steps = data.steps.map(s => {
-        const lib = library.find(x => x.name === s.name) || {};
-        return { ...lib, ...s, stepId: Date.now()+Math.random(),
-          type: s.type || lib.defaultType || 'sv',
-          customSec: s.customSec || null,
-          collapsed: false };
+        const lib = library.find(x=>x.name===s.name)||{};
+        return { ...lib, ...s, stepId:Date.now()+Math.random(),
+          type:s.type||lib.defaultType||'sv', customSec:s.customSec||null };
       });
       renderSteps(); updateSummary();
     } catch { alert('JSONの読み込みに失敗しました'); }
-    e.target.value = '';
+    e.target.value='';
   };
   reader.readAsText(file);
 }
 
 function clearAll() {
-  if (steps.length > 0 && !confirm('工程をクリアしますか？')) return;
-  steps = []; renderSteps(); updateSummary();
+  if (steps.length>0 && !confirm('工程をクリアしますか？')) return;
+  steps=[]; renderSteps(); updateSummary();
 }
 
-// ===== 初期化 =====
 loadLibrary(); renderLib(); renderSteps(); updateSummary();
 </script>
 </body>
