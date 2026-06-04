@@ -1140,18 +1140,66 @@ function handleJSONLoad(e){
       document.getElementById('allowance').value=data.allowancePct||10;
       steps=data.steps.map(s=>{const lib=library.find(x=>x.name===s.name)||{};
         return{...lib,...s,stepId:Date.now()+Math.random(),type:s.type||lib.defaultType||'sv',customSec:s.customSec||null};});
-      renderSteps();updateSummary();
+      renderSteps();updateSummary();saveSession();
     }catch{alert('JSONの読み込みに失敗しました');}
     e.target.value='';
   };reader.readAsText(file);
 }
 function clearAll(){
   if(steps.length>0&&!confirm('工程をクリアしますか？'))return;
-  steps=[];renderSteps();updateSummary();
+  steps=[];
+  document.getElementById('processName').value='';
+  document.getElementById('dailyCount').value=100;
+  document.getElementById('allowance').value=10;
+  try { sessionStorage.removeItem(SESSION_KEY); } catch(e) {}
+  renderSteps();updateSummary();
 }
 
+// ===== セッション保存（工程 + ツールバー値） =====
+const SESSION_KEY = 'st_session';
+
+function saveSession() {
+  const data = {
+    processName: document.getElementById('processName').value,
+    dailyCount:  document.getElementById('dailyCount').value,
+    allowance:   document.getElementById('allowance').value,
+    steps: steps.map(s => ({
+      ...s,
+      // stepId は再生成するので保存不要だが含めて問題なし
+    })),
+  };
+  try { sessionStorage.setItem(SESSION_KEY, JSON.stringify(data)); } catch(e) {}
+}
+
+function loadSession() {
+  try {
+    const raw = sessionStorage.getItem(SESSION_KEY);
+    if (!raw) return false;
+    const data = JSON.parse(raw);
+    document.getElementById('processName').value = data.processName || '';
+    document.getElementById('dailyCount').value  = data.dailyCount  || 100;
+    document.getElementById('allowance').value   = data.allowance   || 10;
+    steps = (data.steps || []).map(s => ({ ...s, stepId: Date.now() + Math.random() }));
+    return true;
+  } catch(e) { return false; }
+}
+
+// ステップ変更があるたびに保存（既存関数をラップ）
+const _origRenderSteps = renderSteps;
+renderSteps = function() { _origRenderSteps(); saveSession(); };
+const _origUpdateSummary = updateSummary;
+updateSummary = function() { _origUpdateSummary(); saveSession(); };
+
 // ===== 初期化 =====
-initTheme();loadLibrary();renderLib();renderSteps();updateSummary();
+initTheme(); loadLibrary();
+// ライブラリはデフォルト全折りたたみ（libCollapsed は既に空 = open なので逆に設定）
+DEFAULT_LIBRARY.forEach(item => { libCollapsed[item.cat] = true; });
+// カスタム要素のカテゴリも畳む
+library.filter(x => x.custom).forEach(x => { libCollapsed[x.cat] = true; });
+renderLib();
+// セッション復元 → なければ空で開始
+loadSession();
+renderSteps(); updateSummary();
 </script>
 </body>
 </html>
