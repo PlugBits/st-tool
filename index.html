@@ -1151,7 +1151,7 @@ function clearAll(){
   document.getElementById('processName').value='';
   document.getElementById('dailyCount').value=100;
   document.getElementById('allowance').value=10;
-  try { sessionStorage.removeItem(SESSION_KEY); } catch(e) {}
+  try { localStorage.removeItem(SESSION_KEY); } catch(e) {}
   renderSteps();updateSummary();
 }
 
@@ -1168,12 +1168,12 @@ function saveSession() {
       // stepId は再生成するので保存不要だが含めて問題なし
     })),
   };
-  try { sessionStorage.setItem(SESSION_KEY, JSON.stringify(data)); } catch(e) {}
+  try { localStorage.setItem(SESSION_KEY, JSON.stringify(data)); } catch(e) {}
 }
 
 function loadSession() {
   try {
-    const raw = sessionStorage.getItem(SESSION_KEY);
+    const raw = localStorage.getItem(SESSION_KEY);
     if (!raw) return false;
     const data = JSON.parse(raw);
     document.getElementById('processName').value = data.processName || '';
