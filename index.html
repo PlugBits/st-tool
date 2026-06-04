@@ -280,6 +280,34 @@ body.dark .type-pill.nva { background: rgba(255,77,77,0.12); color: var(--nva); 
 .step-card.dragging  { opacity: 0.45; }
 .step-card.drag-over { border-color: var(--blue); background: var(--blue-bg); }
 
+.group-card {
+  display: flex; align-items: center; gap: 8px;
+  height: 36px; margin: 7px 0 3px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--blue);
+  border-radius: var(--radius);
+  background: var(--blue-bg);
+  color: var(--text);
+  box-shadow: var(--shadow);
+  cursor: grab;
+}
+.group-card.dragging { opacity: 0.5; }
+.group-card.drag-over { border-color: var(--blue-dark); box-shadow: var(--shadow-md); }
+.group-drag { color: var(--text-3); font-size: 13px; flex-shrink: 0; }
+.group-name-input {
+  flex: 1; min-width: 0; border: none; border-bottom: 1px solid transparent;
+  background: transparent; color: var(--text); font-size: 14px; font-weight: 900;
+}
+.group-name-input:focus { outline: none; border-bottom-color: var(--blue); }
+.group-meta { font-size: 12px; font-weight: 800; color: var(--text-2); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.group-action {
+  border: 1px solid var(--border); background: var(--surface); color: var(--text-2);
+  border-radius: 4px; padding: 3px 8px; font-size: 12px; font-weight: 800; cursor: pointer;
+}
+.group-action:hover { border-color: var(--blue); color: var(--blue); }
+.step-card.in-group { margin-left: 18px; width: calc(100% - 18px); }
+
 .step-drag { color: var(--text-4); font-size: 12px; padding: 0 4px; flex-shrink: 0; cursor: grab; }
 .step-num  { font-size: 12px; color: var(--text-4); min-width: 24px; flex-shrink: 0; font-variant-numeric: tabular-nums; }
 .step-icon { font-size: 16px; min-width: 22px; text-align: center; flex-shrink: 0; }
@@ -464,6 +492,11 @@ footer {
   font-size: 12px; font-weight: 800; color: var(--blue);
   min-width: 112px; font-variant-numeric: tabular-nums;
 }
+.footer-select {
+  border: 1px solid var(--border); border-radius: 4px;
+  background: var(--surface2); color: var(--text-2);
+  height: 30px; padding: 3px 6px; font-size: 12px; font-weight: 800;
+}
 
 /* テーマ切り替えボタン */
 .theme-btn {
@@ -614,7 +647,13 @@ select.modal-input { cursor: pointer; }
       <button class="btn btn-primary" onclick="exportJSON()">↓ JSON</button>
       <button class="btn" onclick="loadJSON()">↑ JSON読込</button>
       <button class="btn" onclick="duplicateSelectedSteps()">選択複製</button>
+      <button class="btn" onclick="groupSelectedSteps()">グループ化</button>
+      <button class="btn" onclick="ungroupSelectedSteps()">解除</button>
       <button class="btn" onclick="clearStepSelection()">選択解除</button>
+      <select class="footer-select" id="ganttMode" onchange="renderGanttChart()" title="連続動作チャートの表示単位">
+        <option value="element">ガント: 要素</option>
+        <option value="group">ガント: グループ</option>
+      </select>
       <span class="selection-info" id="selectedTotal">選択 0.0s</span>
       <span class="footer-info" id="stepCount">0 要素</span>
       <button class="btn btn-danger" onclick="clearAll()">クリア</button>
@@ -780,7 +819,9 @@ const DEFAULT_LIBRARY = [
 
 let library  = [];
 let steps    = [];
+let groups   = [];
 let dragSrcIdx  = null;
+let dragGroupId = null;
 let paretoChart = null;
 let donutChart  = null;
 let catChart    = null;
@@ -870,13 +911,57 @@ function addStep(item) {
     distanceVal: item.param==='distance'?30:null,
     customSec:   item.param==='distance'?null:item.sec,
     type: item.defaultType||'sv',
-    ieClass: item.ieClass||inferIeClass(item) });
+    ieClass: item.ieClass||inferIeClass(item),
+    groupId:null });
   renderSteps(); updateSummary();
 }
 
 function calcStepSec(s) {
   if (s.param==='distance') return (s.secPerUnit||0.02)*(s.distanceVal||0);
   return s.customSec!=null ? s.customSec : s.sec;
+}
+
+function groupById(id) { return groups.find(g=>g.id===id); }
+function groupName(id) { return groupById(id)?.name || 'グループ'; }
+function groupStepIndexes(id) {
+  const out=[];
+  steps.forEach((s,i)=>{ if(s.groupId===id) out.push(i); });
+  return out;
+}
+function groupSec(id) {
+  return groupStepIndexes(id).reduce((sum,i)=>sum+calcStepSec(steps[i]),0);
+}
+function dominantBySec(items,keyFn) {
+  const totals = {};
+  items.forEach(s=>{
+    const key = keyFn(s);
+    totals[key] = (totals[key]||0) + calcStepSec(s);
+  });
+  return Object.entries(totals).sort((a,b)=>b[1]-a[1])[0]?.[0];
+}
+function cleanupGroups() {
+  const used = new Set(steps.map(s=>s.groupId).filter(Boolean));
+  groups = groups.filter(g=>used.has(g.id));
+}
+function renderGroupHeader(el, groupId) {
+  const indexes = groupStepIndexes(groupId);
+  const group = groupById(groupId);
+  if (!group || !indexes.length) return;
+  const header = document.createElement('div');
+  header.className = 'group-card';
+  header.draggable = true;
+  header.innerHTML = `
+    <span class="group-drag">⠿</span>
+    <input class="group-name-input" value="${escHtml(group.name)}"
+      onclick="event.stopPropagation()" onchange="updateGroupName('${groupId}',this.value)">
+    <span class="group-meta">${indexes.length}要素 / ${groupSec(groupId).toFixed(1)}s</span>
+    <button class="group-action" onclick="event.stopPropagation();ungroup('${groupId}')">解除</button>`;
+  header.addEventListener('dragstart', e=>{ dragGroupId=groupId; header.classList.add('dragging'); e.dataTransfer.effectAllowed='move'; });
+  header.addEventListener('dragend', ()=>{ dragGroupId=null; header.classList.remove('dragging'); document.querySelectorAll('.group-card,.step-card').forEach(c=>c.classList.remove('drag-over')); });
+  header.addEventListener('dragover', e=>{ e.preventDefault(); header.classList.add('drag-over'); });
+  header.addEventListener('dragleave', ()=>header.classList.remove('drag-over'));
+  header.addEventListener('drop', e=>{ e.preventDefault(); moveGroupBefore(dragGroupId, indexes[0]); });
+  el.appendChild(header);
 }
 
 function renderSteps() {
@@ -888,12 +973,17 @@ function renderSteps() {
       <div class="step-empty-text">左のライブラリからクリックして工程を組み立ててください</div>
     </div>`; return;
   }
+  const renderedGroups = new Set();
   steps.forEach((s,i) => {
+    if (s.groupId && !renderedGroups.has(s.groupId)) {
+      renderGroupHeader(el, s.groupId);
+      renderedGroups.add(s.groupId);
+    }
     const sec = calcStepSec(s);
     const t   = s.type||'sv';
     const card = document.createElement('div');
-    card.className = `step-card type-${t}${selectedStepIds.has(s.stepId)?' selected':''}`;
-    card.draggable = true;
+    card.className = `step-card type-${t}${selectedStepIds.has(s.stepId)?' selected':''}${s.groupId?' in-group':''}`;
+    card.draggable = !s.groupId;
 
     const distHtml = s.param==='distance' ? `
       <div class="step-dist-wrap">
@@ -933,11 +1023,15 @@ function renderSteps() {
       <button class="step-copy" title="複製" onclick="event.stopPropagation();duplicateStep(${i})">⧉</button>
       <button class="step-del" onclick="event.stopPropagation();deleteStep(${i})">✕</button>`;
 
-    card.addEventListener('dragstart', e=>{ dragSrcIdx=i; card.classList.add('dragging'); e.dataTransfer.effectAllowed='move'; });
+    card.addEventListener('dragstart', e=>{
+      if (s.groupId) { e.preventDefault(); return; }
+      dragSrcIdx=i; card.classList.add('dragging'); e.dataTransfer.effectAllowed='move';
+    });
     card.addEventListener('dragend',   ()=>{ card.classList.remove('dragging'); document.querySelectorAll('.step-card').forEach(c=>c.classList.remove('drag-over')); });
     card.addEventListener('dragover',  e=>{ e.preventDefault(); card.classList.add('drag-over'); });
     card.addEventListener('dragleave', ()=>card.classList.remove('drag-over'));
     card.addEventListener('drop', e=>{ e.preventDefault();
+      if (dragGroupId) { moveGroupBefore(dragGroupId, i); return; }
       if (dragSrcIdx===null||dragSrcIdx===i) return;
       steps.splice(i,0,steps.splice(dragSrcIdx,1)[0]);
       dragSrcIdx=null; renderSteps(); updateSummary(); });
@@ -953,7 +1047,7 @@ function renderSteps() {
 
 function escHtml(s) { return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function cloneStep(s) {
-  return { ...s, stepId:Date.now()+Math.random() };
+  return { ...s, stepId:Date.now()+Math.random(), groupId:null };
 }
 function toggleStepSelection(i,checked) {
   const id = steps[i]?.stepId;
@@ -985,9 +1079,63 @@ function duplicateSelectedSteps() {
   renderSteps();
   updateSummary();
 }
+function selectedIndexes() {
+  return steps.map((s,i)=>selectedStepIds.has(s.stepId)?i:null).filter(i=>i!==null);
+}
+function selectedIndexesAreContiguous(indexes) {
+  return indexes.every((idx,i)=>i===0 || idx===indexes[i-1]+1);
+}
+function groupSelectedSteps() {
+  const indexes = selectedIndexes();
+  if (indexes.length < 2) { alert('グループ化する連続した複数要素を選択してください'); return; }
+  if (!selectedIndexesAreContiguous(indexes)) { alert('グループ化は連続した要素のみ対応しています'); return; }
+  const name = prompt('グループ名を入力してください', `グループ ${groups.length+1}`);
+  if (!name) return;
+  const id = 'grp_' + Date.now() + '_' + Math.random().toString(36).slice(2,7);
+  groups.push({id,name:name.trim()||`グループ ${groups.length+1}`});
+  indexes.forEach(i=>steps[i].groupId=id);
+  selectedStepIds.clear();
+  cleanupGroups();
+  renderSteps();
+  updateSummary();
+}
+function ungroup(id) {
+  steps.forEach(s=>{ if(s.groupId===id) s.groupId=null; });
+  cleanupGroups();
+  renderSteps();
+  updateSummary();
+}
+function ungroupSelectedSteps() {
+  const ids = new Set(steps.filter(s=>selectedStepIds.has(s.stepId)&&s.groupId).map(s=>s.groupId));
+  if (!ids.size) { alert('解除するグループ内要素を選択してください'); return; }
+  steps.forEach(s=>{ if(ids.has(s.groupId)) s.groupId=null; });
+  selectedStepIds.clear();
+  cleanupGroups();
+  renderSteps();
+  updateSummary();
+}
+function updateGroupName(id,value) {
+  const g = groupById(id);
+  if (!g) return;
+  g.name = (value||'').trim() || 'グループ';
+  saveSession();
+  if (document.getElementById('tab-gantt')?.classList.contains('active')) renderGanttChart();
+}
+function moveGroupBefore(groupId,targetIndex) {
+  if (!groupId) return;
+  const moving = steps.filter(s=>s.groupId===groupId);
+  if (!moving.length) return;
+  const remaining = steps.filter(s=>s.groupId!==groupId);
+  const beforeTarget = steps.slice(0,targetIndex).filter(s=>s.groupId!==groupId).length;
+  remaining.splice(beforeTarget,0,...moving);
+  steps = remaining;
+  dragGroupId=null;
+  renderSteps();
+  updateSummary();
+}
 function toggleType(i)      { steps[i].type=cycleType(steps[i].type||'sv'); renderSteps(); updateSummary(); }
-function updateTitle(i,v)   { steps[i].title=v; }
-function updateNote(i,v)    { steps[i].note=v; }
+function updateTitle(i,v)   { steps[i].title=v; saveSession(); if (document.getElementById('tab-gantt')?.classList.contains('active')) renderGanttChart(); }
+function updateNote(i,v)    { steps[i].note=v; saveSession(); }
 function updateIeClass(i,v) {
   steps[i].ieClass=v;
   saveSession();
@@ -995,7 +1143,7 @@ function updateIeClass(i,v) {
 }
 function updateTime(i,v)    { steps[i].customSec=Math.max(0.1,parseFloat(v)||0.1); updateSummary(); }
 function updateDist(i,v)    { steps[i].distanceVal=parseFloat(v)||0; updateSummary(); renderSteps(); }
-function deleteStep(i)      { if (steps[i]) selectedStepIds.delete(steps[i].stepId); steps.splice(i,1); renderSteps(); updateSummary(); }
+function deleteStep(i)      { if (steps[i]) selectedStepIds.delete(steps[i].stepId); steps.splice(i,1); cleanupGroups(); renderSteps(); updateSummary(); }
 
 // ===== 集計 =====
 function updateSummary() {
@@ -1208,7 +1356,7 @@ function renderCatChart() {
   });
 }
 
-function ganttRows() {
+function ganttElementRows() {
   let cursor = 0;
   return steps.map((s,i)=>{
     const sec = calcStepSec(s);
@@ -1224,8 +1372,55 @@ function ganttRows() {
       sec,
       type:s.type||'sv',
       ieClass:s.ieClass||inferIeClass(s),
+      groupId:s.groupId||'',
+      groupName:s.groupId?groupName(s.groupId):'',
+      unit:'element',
     };
   });
+}
+function ganttGroupRows() {
+  let cursor = 0;
+  const rows = [];
+  let i = 0;
+  while (i < steps.length) {
+    const s = steps[i];
+    const groupId = s.groupId || null;
+    const members = [];
+    if (groupId) {
+      while (i < steps.length && steps[i].groupId === groupId) members.push(steps[i++]);
+    } else {
+      members.push(s);
+      i++;
+    }
+    const sec = members.reduce((sum,x)=>sum+calcStepSec(x),0);
+    const start = cursor;
+    const end = cursor + sec;
+    cursor = end;
+    const type = dominantBySec(members,x=>x.type||'sv') || 'sv';
+    const ieClass = dominantBySec(members,x=>x.ieClass||inferIeClass(x)) || inferIeClass(members[0]);
+    const no = rows.length + 1;
+    rows.push({
+      no,
+      noText:String(no).padStart(2,'0'),
+      label:groupId?groupName(groupId):(members[0].title||members[0].name),
+      start,
+      end,
+      sec,
+      type,
+      ieClass,
+      groupId:groupId||'',
+      groupName:groupId?groupName(groupId):'',
+      count:members.length,
+      unit:groupId?'group':'element',
+    });
+  }
+  return rows;
+}
+function currentGanttMode() {
+  return document.getElementById('ganttMode')?.value || 'element';
+}
+function ganttRows(mode=currentGanttMode()) {
+  return mode === 'group' ? ganttGroupRows() : ganttElementRows();
 }
 
 function fitCanvasText(ctx,text,maxWidth) {
@@ -1318,9 +1513,9 @@ const ganttConnectorPlugin = {
 function renderGanttChart() {
   setVis('ganttChart','ganttEmpty',steps.length>0);
   if (!steps.length) { if(ganttChart){ganttChart.destroy();ganttChart=null;} return; }
-  const wrap = document.getElementById('ganttChart').parentElement;
-  wrap.style.height = `${Math.max(320, steps.length*34 + 88)}px`;
   const rows = ganttRows();
+  const wrap = document.getElementById('ganttChart').parentElement;
+  wrap.style.height = `${Math.max(320, rows.length*34 + 88)}px`;
   const C = typeBgColors();
   const df = chartDefaults();
   const total = rows.length ? rows[rows.length-1].end : 0;
@@ -1413,7 +1608,7 @@ function stepRows() {
   return steps.map((s,i)=>{
     const t=s.type||'sv';
     const ie=s.ieClass||inferIeClass(s);
-    return {no:i+1,cat:s.cat,title:s.title||s.name,name:s.name,type:t,typeLabel:TYPE_LABELS[t],ie,ieLabel:IE_LABELS[ie],distance:s.distanceVal||'',sec:calcStepSec(s),note:s.note||''};
+    return {no:i+1,cat:s.cat,title:s.title||s.name,name:s.name,type:t,typeLabel:TYPE_LABELS[t],ie,ieLabel:IE_LABELS[ie],groupId:s.groupId||'',groupName:s.groupId?groupName(s.groupId):'',distance:s.distanceVal||'',sec:calcStepSec(s),note:s.note||''};
   });
 }
 function paretoRows() {
@@ -1461,16 +1656,24 @@ async function exportCSV() {
     ['ムダ時間(秒)',summary.typeSec.nva.toFixed(1)],
   ]));
   zip.file('steps.csv', csvRows([
-    ['No','カテゴリ','タイトル','ライブラリ動作','価値分類','価値分類コード','IE分類','距離(cm)','時間(秒)','メモ'],
-    ...stepRows().map(r=>[r.no,r.cat,r.title,r.name,r.typeLabel,r.type.toUpperCase(),r.ieLabel,r.distance,r.sec.toFixed(1),r.note]),
+    ['No','グループ','カテゴリ','タイトル','ライブラリ動作','価値分類','価値分類コード','IE分類','距離(cm)','時間(秒)','メモ'],
+    ...stepRows().map(r=>[r.no,r.groupName,r.cat,r.title,r.name,r.typeLabel,r.type.toUpperCase(),r.ieLabel,r.distance,r.sec.toFixed(1),r.note]),
   ]));
   zip.file('pareto.csv', csvRows([
     ['順位','作業要素','価値分類','件数','時間(秒)','構成比(%)','累積比(%)'],
     ...paretoRows().map(r=>[r.rank,r.name,r.typeLabel,r.count,r.sec.toFixed(1),r.percent.toFixed(1),r.cumulativePercent.toFixed(1)]),
   ]));
-  zip.file('gantt.csv', csvRows([
-    ['No','工程No','IE分類','工程','価値分類','開始(秒)','終了(秒)','時間(秒)'],
-    ...ganttRows().map(r=>[r.no,r.noText,IE_LABELS[r.ieClass],r.label,TYPE_LABELS[r.type],r.start.toFixed(1),r.end.toFixed(1),r.sec.toFixed(1)]),
+  zip.file('groups.csv', csvRows([
+    ['グループ','要素数','合計時間(秒)'],
+    ...groups.map(g=>[g.name,groupStepIndexes(g.id).length,groupSec(g.id).toFixed(1)]),
+  ]));
+  zip.file('gantt_elements.csv', csvRows([
+    ['No','工程No','グループ','IE分類','工程','価値分類','開始(秒)','終了(秒)','時間(秒)'],
+    ...ganttRows('element').map(r=>[r.no,r.noText,r.groupName,IE_LABELS[r.ieClass],r.label,TYPE_LABELS[r.type],r.start.toFixed(1),r.end.toFixed(1),r.sec.toFixed(1)]),
+  ]));
+  zip.file('gantt_groups.csv', csvRows([
+    ['No','工程No','表示単位','グループ','要素数','IE分類','工程','価値分類','開始(秒)','終了(秒)','時間(秒)'],
+    ...ganttRows('group').map(r=>[r.no,r.noText,r.unit==='group'?'グループ':'要素',r.groupName,r.count||1,IE_LABELS[r.ieClass],r.label,TYPE_LABELS[r.type],r.start.toFixed(1),r.end.toFixed(1),r.sec.toFixed(1)]),
   ]));
   zip.file('category.csv', csvRows([
     ['カテゴリ','件数','主要(秒)','補助(秒)','ムダ(秒)','合計(秒)'],
@@ -1489,9 +1692,11 @@ function exportJSON() {
   dl(JSON.stringify({processName:name,dailyCount:daily,allowancePct:allow,
     totalSec:+tot.toFixed(1),stdSec:+(tot*(1+allow/100)).toFixed(1),
     vaRatePct:tot>0?+(ts.va/tot*100).toFixed(1):null,
+    groups:groups.map(g=>({id:g.id,name:g.name})),
     steps:steps.map((s,i)=>({no:i+1,cat:s.cat,icon:s.icon,name:s.name,title:s.title||'',
       type:s.type||'sv',typeLabel:TYPE_LABELS[s.type||'sv'],
       ieClass:s.ieClass||inferIeClass(s),ieLabel:IE_LABELS[s.ieClass||inferIeClass(s)],
+      groupId:s.groupId||null,groupName:s.groupId?groupName(s.groupId):'',
       distanceVal:s.distanceVal||null,customSec:s.customSec||null,
       sec:+calcStepSec(s).toFixed(1),note:s.note})),
     exportedAt:new Date().toISOString()},null,2),`${name}_ST.json`,'application/json');
@@ -1514,8 +1719,10 @@ function handleJSONLoad(e){
       document.getElementById('dailyCount').value=data.dailyCount||100;
       document.getElementById('allowance').value=data.allowancePct||10;
       selectedStepIds.clear();
+      groups=(data.groups||[]).map(g=>({id:g.id,name:g.name||'グループ'}));
       steps=data.steps.map(s=>{const lib=library.find(x=>x.name===s.name)||{};
-        return{...lib,...s,stepId:Date.now()+Math.random(),type:s.type||lib.defaultType||'sv',ieClass:s.ieClass||inferIeClass({...lib,...s}),customSec:s.customSec||null};});
+        return{...lib,...s,stepId:Date.now()+Math.random(),type:s.type||lib.defaultType||'sv',ieClass:s.ieClass||inferIeClass({...lib,...s}),groupId:s.groupId||null,customSec:s.customSec||null};});
+      cleanupGroups();
       renderSteps();updateSummary();saveSession();
     }catch{alert('JSONの読み込みに失敗しました');}
     e.target.value='';
@@ -1524,6 +1731,7 @@ function handleJSONLoad(e){
 function clearAll(){
   if(steps.length>0&&!confirm('工程をクリアしますか？'))return;
   steps=[];
+  groups=[];
   selectedStepIds.clear();
   document.getElementById('processName').value='';
   document.getElementById('dailyCount').value=100;
@@ -1540,6 +1748,7 @@ function saveSession() {
     processName: document.getElementById('processName').value,
     dailyCount:  document.getElementById('dailyCount').value,
     allowance:   document.getElementById('allowance').value,
+    groups: groups.map(g => ({ id:g.id, name:g.name })),
     steps: steps.map(s => ({
       ...s,
       // stepId は再生成するので保存不要だが含めて問題なし
@@ -1557,7 +1766,9 @@ function loadSession() {
     document.getElementById('dailyCount').value  = data.dailyCount  || 100;
     document.getElementById('allowance').value   = data.allowance   || 10;
     selectedStepIds.clear();
-    steps = (data.steps || []).map(s => ({ ...s, stepId: Date.now() + Math.random(), ieClass:s.ieClass||inferIeClass(s) }));
+    groups = (data.groups || []).map(g => ({ id:g.id, name:g.name||'グループ' }));
+    steps = (data.steps || []).map(s => ({ ...s, stepId: Date.now() + Math.random(), groupId:s.groupId||null, ieClass:s.ieClass||inferIeClass(s) }));
+    cleanupGroups();
     return true;
   } catch(e) { return false; }
 }
