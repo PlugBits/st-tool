@@ -6,514 +6,603 @@
 <title>標準時間設計ツール</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Noto+Sans+JP:wght@400;500;700&display=swap');
+*, *::before, *::after { box-sizing: border-box; }
 
-  :root {
-    --bg: #0f1117;
-    --surface: #181c24;
-    --surface2: #1e2330;
-    --border: #2a3042;
-    --accent: #00e5ff;
-    --accent2: #ff6b35;
-    --text: #e0e6f0;
-    --text-dim: #6b7a99;
-    --green: #00d084;
-    --yellow: #ffd166;
-    --red: #ff4d4d;
-    --mono: 'JetBrains Mono', monospace;
-    --sans: 'Noto Sans JP', sans-serif;
-    --type-va: #00d084;
-    --type-sv: #ffd166;
-    --type-nva: #ff4d4d;
-  }
+html, body {
+  margin: 0; width: 100%; height: 100%;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 13px;
+  color: #172033;
+  background: #eef2f6;
+}
+button, input, select, textarea { font: inherit; }
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+/* ===== Dark theme override ===== */
+body.dark {
+  color: #e0e6f0;
+  background: #0f1117;
+}
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--sans);
-    display: grid;
-    grid-template-rows: auto 1fr auto;
-    height: 100vh;
-    overflow: hidden;
-  }
+/* ===== Variables ===== */
+:root {
+  --white:    #ffffff;
+  --bg:       #eef2f6;
+  --surface:  #ffffff;
+  --surface2: #f8fafc;
+  --border:   #cad3df;
+  --border2:  #d7dee9;
+  --text:     #172033;
+  --text-2:   #475569;
+  --text-3:   #64748b;
+  --text-4:   #94a3b8;
+  --blue:     #2563eb;
+  --blue-bg:  #dbeafe;
+  --blue-dark:#1d4ed8;
+  --green:    #16a34a;
+  --yellow:   #d97706;
+  --red:      #dc2626;
+  --radius:   6px;
+  --shadow:   0 1px 4px rgba(15,23,42,.07);
+  --shadow-md:0 2px 8px rgba(15,23,42,.10);
 
-  header {
-    padding: 10px 20px;
-    border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; gap: 16px;
-    background: var(--surface); flex-shrink: 0;
-  }
-  .logo  { font-family: var(--mono); font-size: 10px; color: var(--accent); letter-spacing: 0.15em; }
-  .title { font-size: 14px; font-weight: 700; }
-  .header-right { margin-left: auto; }
+  /* 分類色 */
+  --va:  #16a34a;
+  --sv:  #d97706;
+  --nva: #dc2626;
+}
 
-  main {
-    display: grid;
-    grid-template-columns: 240px 1fr 256px;
-    overflow: hidden;
-  }
+body.dark {
+  --white:    #181c24;
+  --bg:       #0f1117;
+  --surface:  #181c24;
+  --surface2: #1e2330;
+  --border:   #2a3042;
+  --border2:  #2a3042;
+  --text:     #e0e6f0;
+  --text-2:   #b0bcd4;
+  --text-3:   #6b7a99;
+  --text-4:   #3d4a64;
+  --blue:     #00e5ff;
+  --blue-bg:  rgba(0,229,255,0.12);
+  --blue-dark:#00b8cc;
+  --green:    #00d084;
+  --yellow:   #ffd166;
+  --red:      #ff4d4d;
+  --shadow:   none;
+  --shadow-md:none;
+  --va:  #00d084;
+  --sv:  #ffd166;
+  --nva: #ff4d4d;
+}
 
-  /* ========== 左パネル ========== */
-  .panel-left {
-    background: var(--surface);
-    border-right: 1px solid var(--border);
-    display: flex; flex-direction: column; overflow: hidden;
-  }
-  .panel-header {
-    padding: 9px 13px;
-    font-family: var(--mono); font-size: 10px; color: var(--accent);
-    letter-spacing: 0.1em;
-    border-bottom: 1px solid var(--border);
-    background: var(--surface2);
-    display: flex; align-items: center; justify-content: space-between;
-    flex-shrink: 0;
-  }
-  .lib-search {
-    padding: 7px 9px; background: var(--surface2);
-    border-bottom: 1px solid var(--border); flex-shrink: 0;
-  }
-  .lib-search input {
-    width: 100%; background: var(--bg); border: 1px solid var(--border);
-    color: var(--text); font-family: var(--sans); font-size: 12px;
-    padding: 5px 8px; border-radius: 4px;
-  }
-  .lib-search input:focus { outline: none; border-color: var(--accent); }
+/* ===== Layout ===== */
+.app-shell {
+  display: grid;
+  grid-template-columns: 248px 1fr 256px;
+  height: 100vh;
+  overflow: hidden;
+}
 
-  .panel-scroll { overflow-y: auto; flex: 1; }
-  .panel-scroll::-webkit-scrollbar { width: 3px; }
-  .panel-scroll::-webkit-scrollbar-thumb { background: var(--border); }
+/* ===== 共通パネル ===== */
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  background: var(--surface2);
+  padding: 10px;
+  margin-bottom: 10px;
+}
+.panel-title {
+  font-size: 12px; font-weight: 800; color: var(--text-2);
+  margin-bottom: 8px; letter-spacing: 0.03em;
+}
 
-  /* カテゴリ折りたたみ */
-  .lib-group { border-bottom: 1px solid rgba(42,48,66,0.5); }
+/* ===== 左サイドバー ===== */
+.sidebar {
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.brand {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 14px 12px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.brand-icon {
+  display: grid; place-items: center;
+  width: 34px; height: 34px; border-radius: 7px;
+  background: var(--blue); color: #fff;
+  font-size: 16px; font-weight: 900; flex-shrink: 0;
+}
+.brand-text { font-size: 15px; font-weight: 900; color: var(--text); line-height: 1.2; }
+.brand-sub  { font-size: 10px; font-weight: 600; color: var(--text-3); }
 
-  .lib-group-header {
-    display: flex; align-items: center; gap: 6px;
-    padding: 7px 12px 7px 10px;
-    cursor: pointer;
-    user-select: none;
-    background: var(--surface2);
-    transition: background 0.1s;
-  }
-  .lib-group-header:hover { background: rgba(0,229,255,0.05); }
+.lib-search {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.lib-search input {
+  width: 100%;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--text);
+  padding: 5px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+.lib-search input:focus { outline: none; border-color: var(--blue); }
 
-  .lib-group-chevron {
-    font-size: 9px; color: var(--text-dim);
-    transition: transform 0.2s; flex-shrink: 0;
-  }
-  .lib-group-chevron.open { transform: rotate(90deg); }
+.sidebar-scroll { overflow-y: auto; flex: 1; }
+.sidebar-scroll::-webkit-scrollbar { width: 3px; }
+.sidebar-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
-  .lib-group-name {
-    font-family: var(--mono); font-size: 9px;
-    color: var(--text-dim); letter-spacing: 0.08em; flex: 1;
-  }
-  .lib-group-count {
-    font-family: var(--mono); font-size: 9px; color: var(--border);
-  }
+/* カテゴリグループ */
+.lib-group { border-bottom: 1px solid var(--border); }
+.lib-group-header {
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 10px;
+  cursor: pointer; user-select: none;
+  background: var(--surface2);
+  transition: background 0.1s;
+}
+.lib-group-header:hover { background: var(--blue-bg); }
+.lib-group-chevron {
+  font-size: 9px; color: var(--text-4); transition: transform 0.18s; flex-shrink: 0;
+}
+.lib-group-chevron.open { transform: rotate(90deg); }
+.lib-group-name  { font-size: 11px; font-weight: 700; color: var(--text-2); flex: 1; }
+.lib-group-count { font-size: 10px; color: var(--text-4); }
+.lib-group-items { display: none; }
+.lib-group-items.open { display: block; }
 
-  .lib-group-items { display: none; }
-  .lib-group-items.open { display: block; }
+.motion-btn {
+  display: flex; align-items: center; gap: 7px;
+  padding: 6px 10px 6px 14px;
+  cursor: pointer; border: none; background: none;
+  width: 100%; text-align: left; color: var(--text);
+  transition: background 0.1s;
+}
+.motion-btn:hover { background: var(--blue-bg); }
+.motion-icon { font-size: 13px; min-width: 18px; text-align: center; }
+.motion-name { font-size: 11px; flex: 1; line-height: 1.3; color: var(--text-2); }
+.motion-time { font-size: 10px; color: var(--text-3); white-space: nowrap; font-variant-numeric: tabular-nums; }
 
-  .motion-btn {
-    display: flex; align-items: center; gap: 7px;
-    padding: 6px 10px 6px 14px;
-    cursor: pointer; border: none; background: none;
-    width: 100%; text-align: left; color: var(--text);
-    transition: background 0.1s;
-  }
-  .motion-btn:hover { background: rgba(0,229,255,0.06); }
-  .motion-icon { font-size: 13px; min-width: 18px; text-align: center; }
-  .motion-name { font-size: 11px; flex: 1; text-align: left; line-height: 1.3; }
-  .motion-time { font-family: var(--mono); font-size: 10px; color: var(--text-dim); white-space: nowrap; }
+/* 分類バッジ（ライブラリ） */
+.type-pill {
+  font-size: 9px; font-weight: 800;
+  padding: 1px 5px; border-radius: 10px; flex-shrink: 0;
+  white-space: nowrap;
+}
+.type-pill.va  { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+.type-pill.sv  { background: #fef3c7; color: #b45309; border: 1px solid #fcd34d; }
+.type-pill.nva { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
 
-  .lib-type-badge {
-    font-family: var(--mono); font-size: 8px; font-weight: 600;
-    padding: 1px 4px; border-radius: 2px; flex-shrink: 0; white-space: nowrap;
-  }
-  .lib-type-badge.va  { background: rgba(0,208,132,0.15);  color: var(--type-va);  border: 1px solid rgba(0,208,132,0.3); }
-  .lib-type-badge.sv  { background: rgba(255,209,102,0.15); color: var(--type-sv);  border: 1px solid rgba(255,209,102,0.3); }
-  .lib-type-badge.nva { background: rgba(255,77,77,0.15);   color: var(--type-nva); border: 1px solid rgba(255,77,77,0.3); }
+body.dark .type-pill.va  { background: rgba(0,208,132,0.12); color: var(--va);  border-color: rgba(0,208,132,0.3); }
+body.dark .type-pill.sv  { background: rgba(255,209,102,0.12); color: var(--sv); border-color: rgba(255,209,102,0.3); }
+body.dark .type-pill.nva { background: rgba(255,77,77,0.12); color: var(--nva); border-color: rgba(255,77,77,0.3); }
 
-  .add-custom-btn {
-    margin: 8px; padding: 6px;
-    background: transparent; border: 1px dashed var(--border);
-    color: var(--text-dim); border-radius: 5px; cursor: pointer;
-    font-size: 11px; width: calc(100% - 16px); transition: all 0.15s;
-  }
-  .add-custom-btn:hover { border-color: var(--accent); color: var(--accent); }
+.add-custom-btn {
+  margin: 8px 10px; padding: 6px 10px;
+  background: transparent;
+  border: 1px dashed var(--border);
+  color: var(--text-3); border-radius: 4px; cursor: pointer;
+  font-size: 11px; font-weight: 600; width: calc(100% - 20px);
+  transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 5px;
+}
+.add-custom-btn:hover { border-color: var(--blue); color: var(--blue); }
 
-  /* ========== 中央パネル ========== */
-  .panel-center { display: flex; flex-direction: column; overflow: hidden; }
+/* ===== 中央エリア ===== */
+.workspace {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  overflow: hidden;
+}
 
-  .tab-bar {
-    display: flex; background: var(--surface2);
-    border-bottom: 1px solid var(--border); flex-shrink: 0;
-  }
-  .tab-btn {
-    padding: 8px 18px; background: none;
-    border: none; border-bottom: 2px solid transparent;
-    color: var(--text-dim); font-family: var(--mono); font-size: 11px;
-    cursor: pointer; transition: all 0.15s;
-  }
-  .tab-btn:hover { color: var(--text); }
-  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+/* Topbar */
+.topbar {
+  display: flex; align-items: center; gap: 10px;
+  padding: 0 16px;
+  height: 48px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.topbar-title { font-size: 14px; font-weight: 800; color: var(--text); flex: 1; }
+.topbar input[type=text] {
+  flex: 1; min-width: 140px; max-width: 320px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--text);
+  padding: 5px 9px; border-radius: 4px; font-size: 13px; font-weight: 600;
+}
+.topbar input[type=text]:focus { outline: none; border-color: var(--blue); }
+.topbar-label { font-size: 11px; color: var(--text-3); white-space: nowrap; }
+.topbar input[type=number] {
+  width: 58px; border: 1px solid var(--border);
+  background: var(--surface2); color: var(--text);
+  padding: 5px 6px; border-radius: 4px; text-align: right;
+}
+.topbar input[type=number]:focus { outline: none; border-color: var(--blue); }
 
-  .tab-content { display: none; flex: 1; overflow: hidden; flex-direction: column; }
-  .tab-content.active { display: flex; }
+/* タブ */
+.tab-bar {
+  display: flex; background: var(--surface2);
+  border-bottom: 1px solid var(--border); flex-shrink: 0;
+  padding: 0 8px;
+  gap: 2px;
+}
+.tab-btn {
+  padding: 7px 16px; background: none;
+  border: none; border-bottom: 2px solid transparent;
+  color: var(--text-3); font-size: 12px; font-weight: 700;
+  cursor: pointer; transition: all 0.15s; margin-bottom: -1px;
+}
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active { color: var(--blue); border-bottom-color: var(--blue); }
 
-  .editor-toolbar {
-    padding: 7px 12px; border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; gap: 8px;
-    background: var(--surface2); flex-shrink: 0; flex-wrap: wrap;
-  }
-  .input-field {
-    background: var(--surface); border: 1px solid var(--border);
-    color: var(--text); font-family: var(--sans); font-size: 12px;
-    padding: 5px 8px; border-radius: 4px;
-  }
-  .input-field:focus { outline: none; border-color: var(--accent); }
-  .label-sm { font-size: 11px; color: var(--text-dim); white-space: nowrap; }
+.tab-pane { display: none; flex: 1; overflow: hidden; flex-direction: column; }
+.tab-pane.active { display: flex; }
 
-  /* ========== ステップリスト ========== */
-  .step-list { flex: 1; overflow-y: auto; padding: 6px 8px; }
-  .step-list::-webkit-scrollbar { width: 3px; }
-  .step-list::-webkit-scrollbar-thumb { background: var(--border); }
+/* ===== ステップリスト ===== */
+.step-list { flex: 1; overflow-y: auto; padding: 6px 8px; }
+.step-list::-webkit-scrollbar { width: 3px; }
+.step-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
-  .step-empty {
-    display: flex; flex-direction: column; align-items: center;
-    justify-content: center; height: 200px; color: var(--text-dim); gap: 8px;
-  }
+.step-empty {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; height: 200px; color: var(--text-4); gap: 8px;
+}
+.step-empty-icon { font-size: 32px; opacity: 0.25; }
+.step-empty-text { font-size: 12px; }
 
-  /* ステップ：1行カード */
-  .step-card {
-    display: flex; align-items: center; gap: 7px;
-    padding: 0 8px 0 0;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-left-width: 3px;
-    border-radius: 5px;
-    margin-bottom: 4px;
-    height: 40px;           /* 固定高さ・1行 */
-    transition: border-color 0.15s;
-    cursor: grab;
-  }
-  .step-card:hover { border-color: rgba(0,229,255,0.35); }
-  .step-card.type-va  { border-left-color: var(--type-va); }
-  .step-card.type-sv  { border-left-color: var(--type-sv); }
-  .step-card.type-nva { border-left-color: var(--type-nva); }
-  .step-card.dragging  { opacity: 0.4; }
-  .step-card.drag-over { border-color: var(--accent); background: rgba(0,229,255,0.04); }
+/* ステップカード 1行 */
+.step-card {
+  display: flex; align-items: center; gap: 6px;
+  padding: 0 8px 0 0;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-left-width: 3px;
+  border-radius: var(--radius);
+  margin-bottom: 3px;
+  height: 38px;
+  transition: border-color 0.12s, box-shadow 0.12s;
+  cursor: grab;
+  box-shadow: var(--shadow);
+}
+.step-card:hover { border-color: var(--blue); box-shadow: var(--shadow-md); }
+.step-card.type-va  { border-left-color: var(--va); }
+.step-card.type-sv  { border-left-color: var(--sv); }
+.step-card.type-nva { border-left-color: var(--nva); }
+.step-card.dragging  { opacity: 0.45; }
+.step-card.drag-over { border-color: var(--blue); background: var(--blue-bg); }
 
-  .step-drag { color: var(--text-dim); font-size: 11px; padding: 0 3px; flex-shrink: 0; cursor: grab; }
-  .step-num  { font-family: var(--mono); font-size: 10px; color: var(--text-dim); min-width: 20px; flex-shrink: 0; }
-  .step-icon { font-size: 14px; min-width: 20px; text-align: center; flex-shrink: 0; }
+.step-drag { color: var(--text-4); font-size: 11px; padding: 0 4px; flex-shrink: 0; cursor: grab; }
+.step-num  { font-size: 10px; color: var(--text-4); min-width: 20px; flex-shrink: 0; font-variant-numeric: tabular-nums; }
+.step-icon { font-size: 14px; min-width: 20px; text-align: center; flex-shrink: 0; }
 
-  /* タイトル入力（flex:1 で残り幅を全部使う） */
-  .step-title-input {
-    flex: 1; min-width: 0;
-    background: transparent; border: none;
-    border-bottom: 1px solid transparent;
-    color: var(--text); font-family: var(--sans);
-    font-size: 13px; font-weight: 500;
-    padding: 0 4px; height: 100%;
-    cursor: text;
-  }
-  .step-title-input:focus { outline: none; border-bottom-color: var(--accent); background: rgba(0,229,255,0.03); }
-  .step-title-input::placeholder { color: var(--text-dim); font-weight: 400; font-size: 12px; }
+.step-title-input {
+  flex: 1; min-width: 0;
+  background: transparent; border: none;
+  border-bottom: 1px solid transparent;
+  color: var(--text); font-size: 13px; font-weight: 600;
+  padding: 0 4px; height: 100%; cursor: text;
+}
+.step-title-input:focus { outline: none; border-bottom-color: var(--blue); }
+.step-title-input::placeholder { color: var(--text-4); font-weight: 400; font-size: 12px; }
 
-  /* メモ：タイトルの右に幅広インライン */
-  .step-memo-input {
-    width: 180px;
-    background: transparent; border: none;
-    border-bottom: 1px solid var(--border);
-    color: var(--text-dim); font-family: var(--sans);
-    font-size: 11px; padding: 0 4px; height: 22px;
-    flex-shrink: 0;
-  }
-  .step-memo-input:focus { outline: none; border-bottom-color: var(--accent); color: var(--text); background: rgba(0,229,255,0.03); }
-  .step-memo-input::placeholder { color: rgba(107,122,153,0.5); }
+.step-memo-input {
+  width: 160px; flex-shrink: 0;
+  background: transparent; border: none;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-3); font-size: 11px;
+  padding: 0 4px; height: 22px;
+}
+.step-memo-input:focus { outline: none; border-bottom-color: var(--blue); color: var(--text); }
+.step-memo-input::placeholder { color: var(--text-4); }
 
-  /* 距離入力 */
-  .step-dist-wrap { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
-  .step-dist-input {
-    background: var(--bg); border: 1px solid var(--border);
-    color: var(--yellow); font-family: var(--mono); font-size: 13px; font-weight: 600;
-    padding: 3px 5px; border-radius: 3px;
-    width: 58px; text-align: center; height: 28px;
-  }
-  .step-dist-input:focus { outline: none; border-color: var(--yellow); }
-  .step-dist-unit { font-family: var(--mono); font-size: 11px; color: var(--text-dim); }
+/* 分類バッジ（ステップ行） */
+.type-badge {
+  font-size: 9px; font-weight: 800;
+  padding: 2px 7px; border-radius: 10px;
+  cursor: pointer; user-select: none; flex-shrink: 0;
+  white-space: nowrap; transition: filter 0.12s;
+}
+.type-badge.va  { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+.type-badge.sv  { background: #fef3c7; color: #b45309; border: 1px solid #fcd34d; }
+.type-badge.nva { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+.type-badge:hover { filter: brightness(0.92); }
+body.dark .type-badge.va  { background: rgba(0,208,132,0.15); color: var(--va);  border-color: rgba(0,208,132,0.4); }
+body.dark .type-badge.sv  { background: rgba(255,209,102,0.15); color: var(--sv); border-color: rgba(255,209,102,0.4); }
+body.dark .type-badge.nva { background: rgba(255,77,77,0.15); color: var(--nva); border-color: rgba(255,77,77,0.4); }
 
-  /* 分類バッジ */
-  .type-badge {
-    font-family: var(--mono); font-size: 9px; font-weight: 700;
-    padding: 3px 7px; border-radius: 3px;
-    cursor: pointer; user-select: none; flex-shrink: 0;
-    transition: filter 0.15s; white-space: nowrap;
-  }
-  .type-badge.va  { background: rgba(0,208,132,0.2);  color: var(--type-va);  border: 1px solid rgba(0,208,132,0.5); }
-  .type-badge.sv  { background: rgba(255,209,102,0.2); color: var(--type-sv);  border: 1px solid rgba(255,209,102,0.5); }
-  .type-badge.nva { background: rgba(255,77,77,0.2);   color: var(--type-nva); border: 1px solid rgba(255,77,77,0.5); }
-  .type-badge:hover { filter: brightness(1.3); }
+/* 距離・時間入力 */
+.step-dist-wrap, .step-time-wrap { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
+.step-dist-input, .step-time-input {
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--text);
+  font-size: 13px; font-weight: 700;
+  padding: 3px 5px; border-radius: 4px;
+  width: 56px; text-align: right; height: 26px;
+  font-variant-numeric: tabular-nums;
+}
+.step-dist-input { color: var(--yellow); border-color: #fcd34d; }
+.step-dist-input:focus { outline: none; border-color: var(--yellow); }
+.step-time-input { color: var(--green); border-color: #86efac; }
+.step-time-input:focus { outline: none; border-color: var(--green); }
+body.dark .step-dist-input { border-color: var(--border); }
+body.dark .step-time-input { border-color: var(--border); }
+.step-time-calc { font-size: 13px; font-weight: 700; color: var(--green); min-width: 44px; text-align: right; font-variant-numeric: tabular-nums; }
+.step-unit { font-size: 10px; color: var(--text-3); }
 
-  /* 時間入力 */
-  .step-time-wrap { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
-  .step-time-input {
-    background: var(--bg); border: 1px solid var(--border);
-    color: var(--green); font-family: var(--mono); font-size: 13px; font-weight: 600;
-    padding: 3px 5px; border-radius: 3px;
-    width: 58px; text-align: right; height: 28px;
-  }
-  .step-time-input:focus { outline: none; border-color: var(--green); }
-  .step-time-calc {
-    font-family: var(--mono); font-size: 13px; font-weight: 600;
-    color: var(--green); min-width: 48px; text-align: right;
-  }
-  .step-time-unit { font-family: var(--mono); font-size: 11px; color: var(--text-dim); }
+.step-del {
+  background: none; border: none; color: var(--text-4);
+  cursor: pointer; font-size: 13px; padding: 4px 5px; border-radius: 4px; flex-shrink: 0;
+}
+.step-del:hover { color: var(--red); background: #fee2e2; }
+body.dark .step-del:hover { background: rgba(220,38,38,0.15); }
 
-  .step-del {
-    background: none; border: none; color: var(--text-dim);
-    cursor: pointer; font-size: 13px; padding: 4px 5px; border-radius: 3px; flex-shrink: 0;
-  }
-  .step-del:hover { color: #ff4444; }
+/* ===== 右パネル ===== */
+.properties {
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.props-header {
+  padding: 12px 14px;
+  font-size: 12px; font-weight: 800; color: var(--text-2);
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface2); flex-shrink: 0;
+}
+.props-scroll { overflow-y: auto; flex: 1; }
+.props-scroll::-webkit-scrollbar { width: 3px; }
+.props-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
-  /* ========== 分析タブ ========== */
-  .analysis-wrap {
-    flex: 1; padding: 12px; overflow-y: auto;
-    display: flex; flex-direction: column; gap: 12px;
-  }
-  .analysis-wrap::-webkit-scrollbar { width: 3px; }
-  .analysis-wrap::-webkit-scrollbar-thumb { background: var(--border); }
+.stat-block {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.stat-label { font-size: 10px; font-weight: 700; color: var(--text-3); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 4px; }
+.stat-value { font-size: 26px; font-weight: 900; color: var(--blue); line-height: 1; font-variant-numeric: tabular-nums; }
+.stat-sub   { font-size: 10px; color: var(--text-3); margin-top: 3px; }
 
-  .chart-card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 8px; padding: 14px;
-    display: flex; flex-direction: column; gap: 10px;
-  }
-  .chart-card-title {
-    font-family: var(--mono); font-size: 10px; color: var(--accent);
-    letter-spacing: 0.1em;
-  }
-  .chart-legend { display: flex; gap: 12px; flex-wrap: wrap; }
-  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-dim); }
-  .legend-dot  { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
-  .chart-canvas-wrap { position: relative; }
-  .chart-empty {
-    display: flex; align-items: center; justify-content: center;
-    flex-direction: column; gap: 8px; color: var(--text-dim);
-    font-size: 12px; min-height: 120px;
-  }
+/* VA率バー */
+.va-bar-wrap { height: 5px; background: var(--border); border-radius: 3px; margin-top: 7px; overflow: hidden; }
+.va-bar { height: 100%; border-radius: 3px; transition: width 0.4s; background: var(--va); }
+.va-segs { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+.va-seg  { font-size: 9px; display: flex; align-items: center; gap: 3px; }
+.va-seg-dot { width: 6px; height: 6px; border-radius: 2px; }
 
-  /* ========== 右パネル ========== */
-  .panel-right {
-    background: var(--surface); border-left: 1px solid var(--border);
-    display: flex; flex-direction: column; overflow: hidden;
-  }
-  .summary-block { padding: 11px 13px; border-bottom: 1px solid var(--border); }
-  .sum-label { font-family: var(--mono); font-size: 9px; color: var(--text-dim); letter-spacing: 0.1em; margin-bottom: 3px; }
-  .sum-value { font-family: var(--mono); font-size: 24px; font-weight: 600; color: var(--accent); line-height: 1; }
-  .sum-unit  { font-family: var(--mono); font-size: 10px; color: var(--text-dim); margin-top: 2px; }
-  .va-rate-bar-wrap { height: 5px; background: var(--border); border-radius: 3px; margin-top: 6px; overflow: hidden; }
-  .va-rate-bar { height: 100%; border-radius: 3px; transition: width 0.4s; background: linear-gradient(90deg, var(--type-va), rgba(0,208,132,0.4)); }
-  .va-rate-segments { display: flex; gap: 6px; margin-top: 5px; flex-wrap: wrap; }
-  .va-seg { font-family: var(--mono); font-size: 9px; display: flex; align-items: center; gap: 3px; }
-  .va-seg-dot { width: 6px; height: 6px; border-radius: 1px; }
-  .breakdown-item { padding: 5px 10px; border-bottom: 1px solid rgba(42,48,66,0.5); }
-  .bd-row { display: flex; align-items: center; gap: 5px; margin-bottom: 3px; }
-  .bd-icon { font-size: 11px; min-width: 15px; }
-  .bd-name { font-size: 11px; flex: 1; color: var(--text-dim); }
-  .bd-count { font-family: var(--mono); font-size: 10px; color: var(--text-dim); min-width: 22px; text-align: center; }
-  .bd-time  { font-family: var(--mono); font-size: 11px; color: var(--text); min-width: 42px; text-align: right; }
-  .bd-bar-wrap { height: 2px; background: var(--border); border-radius: 1px; }
-  .bd-bar { height: 100%; background: var(--accent); border-radius: 1px; transition: width 0.3s; }
+/* カテゴリ内訳 */
+.cat-item { padding: 6px 14px; border-bottom: 1px solid var(--border); }
+.cat-row  { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; }
+.cat-icon  { font-size: 11px; min-width: 16px; }
+.cat-name  { font-size: 11px; color: var(--text-2); flex: 1; }
+.cat-count { font-size: 10px; color: var(--text-3); min-width: 22px; text-align: center; }
+.cat-time  { font-size: 11px; font-weight: 700; color: var(--text); min-width: 40px; text-align: right; font-variant-numeric: tabular-nums; }
+.cat-bar-wrap { height: 2px; background: var(--border); border-radius: 1px; }
+.cat-bar { height: 100%; background: var(--blue); border-radius: 1px; transition: width 0.3s; }
 
-  /* ========== フッター ========== */
-  footer {
-    height: 42px; background: var(--surface2);
-    border-top: 1px solid var(--border);
-    display: flex; align-items: center; gap: 8px; padding: 0 12px; flex-shrink: 0;
-  }
-  .btn {
-    padding: 5px 13px; border-radius: 4px; border: none; cursor: pointer;
-    font-family: var(--mono); font-size: 11px; font-weight: 600; transition: all 0.15s;
-  }
-  .btn-csv   { background: var(--green); color: #0f1117; }
-  .btn-csv:hover   { filter: brightness(1.1); }
-  .btn-json  { background: var(--accent); color: #0f1117; }
-  .btn-json:hover  { filter: brightness(1.1); }
-  .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--text-dim); }
-  .btn-ghost:hover { border-color: var(--text-dim); color: var(--text); }
-  .btn-danger { background: transparent; border: 1px solid transparent; color: var(--text-dim); margin-left: auto; }
-  .btn-danger:hover { border-color: #ff4444; color: #ff4444; }
-  .footer-info { font-family: var(--mono); font-size: 10px; color: var(--text-dim); }
+/* ===== 分析タブ ===== */
+.analysis-wrap {
+  flex: 1; padding: 10px; overflow-y: auto;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.analysis-wrap::-webkit-scrollbar { width: 3px; }
+.analysis-wrap::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
-  /* ========== モーダル ========== */
-  .modal-overlay {
-    display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,0.7); z-index: 100;
-    align-items: center; justify-content: center;
-  }
-  .modal-overlay.open { display: flex; }
-  .modal {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 8px; padding: 20px; width: 360px;
-  }
-  .modal h3 { font-size: 13px; margin-bottom: 14px; color: var(--accent); font-family: var(--mono); }
-  .modal-row { margin-bottom: 10px; }
-  .modal-label { font-size: 11px; color: var(--text-dim); margin-bottom: 4px; }
-  .modal-input {
-    width: 100%; background: var(--bg); border: 1px solid var(--border);
-    color: var(--text); font-family: var(--sans); font-size: 12px;
-    padding: 6px 8px; border-radius: 4px;
-  }
-  .modal-input:focus { outline: none; border-color: var(--accent); }
-  .modal-footer { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
-  .btn-primary {
-    background: var(--accent); color: #0f1117;
-    padding: 6px 16px; border-radius: 4px; border: none; cursor: pointer;
-    font-family: var(--mono); font-size: 11px; font-weight: 600;
-  }
-  select.modal-input { cursor: pointer; }
+.chart-card {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  padding: 14px;
+  display: flex; flex-direction: column; gap: 8px;
+  box-shadow: var(--shadow);
+}
+.chart-title {
+  font-size: 11px; font-weight: 800; color: var(--text-2); letter-spacing: 0.04em;
+}
+.chart-legend { display: flex; gap: 10px; flex-wrap: wrap; }
+.legend-item  { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-3); }
+.legend-dot   { width: 9px; height: 9px; border-radius: 2px; flex-shrink: 0; }
+.chart-wrap   { position: relative; }
+.chart-empty  {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column; gap: 6px; color: var(--text-4); font-size: 12px;
+}
+
+/* ===== フッター ===== */
+footer {
+  height: 42px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  display: flex; align-items: center; gap: 6px; padding: 0 12px; flex-shrink: 0;
+}
+.btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 12px; border-radius: 4px;
+  border: 1px solid var(--border); cursor: pointer;
+  font-size: 11px; font-weight: 700; transition: all 0.12s;
+  background: var(--surface);
+  color: var(--text-2);
+}
+.btn:hover { background: var(--surface2); border-color: var(--blue); color: var(--blue); }
+.btn-primary { background: var(--blue); color: #fff; border-color: var(--blue); }
+.btn-primary:hover { filter: brightness(1.1); color: #fff; }
+.btn-green  { background: var(--green); color: #fff; border-color: var(--green); }
+.btn-green:hover  { filter: brightness(1.1); color: #fff; }
+.btn-danger { margin-left: auto; color: var(--text-4); background: transparent; border-color: transparent; }
+.btn-danger:hover { color: var(--red); border-color: var(--red); background: transparent; }
+.footer-info { font-size: 10px; color: var(--text-4); }
+
+/* テーマ切り替えボタン */
+.theme-btn {
+  display: grid; place-items: center;
+  width: 30px; height: 30px;
+  border: 1px solid var(--border); border-radius: 4px;
+  background: var(--surface2); color: var(--text-2);
+  font-size: 14px; cursor: pointer; transition: all 0.12s;
+}
+.theme-btn:hover { border-color: var(--blue); color: var(--blue); }
+
+/* ===== モーダル ===== */
+.modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.45); z-index: 100;
+  align-items: center; justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 20px; width: 360px;
+  box-shadow: 0 8px 32px rgba(15,23,42,0.18);
+}
+.modal h3 { font-size: 14px; font-weight: 800; margin-bottom: 14px; color: var(--text); }
+.modal-row { margin-bottom: 10px; }
+.modal-label { font-size: 11px; color: var(--text-3); margin-bottom: 4px; font-weight: 700; }
+.modal-input {
+  width: 100%; background: var(--surface2); border: 1px solid var(--border);
+  color: var(--text); padding: 6px 8px; border-radius: 4px; font-size: 12px;
+}
+.modal-input:focus { outline: none; border-color: var(--blue); }
+.modal-footer { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
+.modal-btn-primary {
+  background: var(--blue); color: #fff; border: none;
+  padding: 7px 18px; border-radius: 4px; cursor: pointer;
+  font-size: 12px; font-weight: 800;
+}
+.modal-btn-primary:hover { filter: brightness(1.1); }
+select.modal-input { cursor: pointer; }
 </style>
 </head>
 <body>
 
-<header>
-  <div class="logo">ST DESIGNER</div>
-  <div class="title">標準時間設計ツール</div>
-  <div class="header-right">
-    <span style="font-family:var(--mono);font-size:10px;color:var(--text-dim)">時間単位: 秒</span>
-  </div>
-</header>
+<div class="app-shell">
 
-<main>
-  <!-- 左：ライブラリ -->
-  <div class="panel-left">
-    <div class="panel-header">
-      <span>作業要素ライブラリ</span>
-      <span style="color:var(--text-dim);font-size:9px">クリックで追加</span>
+  <!-- ===== 左サイドバー ===== -->
+  <div class="sidebar">
+    <div class="brand">
+      <div class="brand-icon">⏱</div>
+      <div>
+        <div class="brand-text">ST Designer</div>
+        <div class="brand-sub">標準時間設計ツール</div>
+      </div>
     </div>
     <div class="lib-search">
       <input type="text" id="libSearch" placeholder="動作を検索…" oninput="renderLib()">
     </div>
-    <div class="panel-scroll" id="motionLib"></div>
+    <div class="sidebar-scroll" id="motionLib"></div>
     <button class="add-custom-btn" onclick="openCustomModal()">＋ カスタム要素を追加</button>
   </div>
 
-  <!-- 中央：タブ -->
-  <div class="panel-center">
-    <div class="tab-bar">
-      <button class="tab-btn active" onclick="switchTab('editor')">工程エディタ</button>
-      <button class="tab-btn" onclick="switchTab('analysis')">分析</button>
+  <!-- ===== 中央 ===== -->
+  <div class="workspace">
+    <div class="topbar">
+      <input type="text" id="processName" placeholder="工程名…" value="部品取り付け工程">
+      <span class="topbar-label">日次数量</span>
+      <input type="number" id="dailyCount" value="100" min="1" oninput="updateSummary()">
+      <span class="topbar-label">台</span>
+      <span class="topbar-label">余裕率</span>
+      <input type="number" id="allowance" value="10" min="0" max="50" style="width:46px" oninput="updateSummary()">
+      <span class="topbar-label">%</span>
+      <button class="theme-btn" onclick="toggleTheme()" title="テーマ切り替え">🌓</button>
     </div>
 
-    <!-- エディタ -->
-    <div class="tab-content active" id="tab-editor">
-      <div class="editor-toolbar">
-        <input class="input-field" id="processName" type="text" placeholder="工程名…" value="部品取り付け工程" style="flex:1;min-width:140px">
-        <span class="label-sm">日次数量</span>
-        <input class="input-field" id="dailyCount" type="number" value="100" min="1" style="width:60px" oninput="updateSummary()">
-        <span class="label-sm">台</span>
-        <span class="label-sm">余裕率</span>
-        <input class="input-field" id="allowance" type="number" value="10" min="0" max="50" style="width:46px" oninput="updateSummary()">
-        <span class="label-sm">%</span>
+    <div style="display:flex;flex-direction:column;overflow:hidden;flex:1">
+      <div class="tab-bar">
+        <button class="tab-btn active" onclick="switchTab('editor')">工程エディタ</button>
+        <button class="tab-btn" onclick="switchTab('analysis')">分析</button>
       </div>
-      <div class="step-list" id="stepList"></div>
+
+      <!-- エディタ -->
+      <div class="tab-pane active" id="tab-editor">
+        <div class="step-list" id="stepList"></div>
+      </div>
+
+      <!-- 分析 -->
+      <div class="tab-pane" id="tab-analysis">
+        <div class="analysis-wrap">
+
+          <div class="chart-card">
+            <div class="chart-title">パレート図（時間降順）</div>
+            <div class="chart-legend">
+              <div class="legend-item"><div class="legend-dot" style="background:var(--va)"></div>主要 (VA)</div>
+              <div class="legend-item"><div class="legend-dot" style="background:var(--sv)"></div>補助 (SV)</div>
+              <div class="legend-item"><div class="legend-dot" style="background:var(--nva)"></div>ムダ (NVA)</div>
+              <div class="legend-item"><div class="legend-dot" style="background:var(--blue);border-radius:50%"></div>累積%</div>
+            </div>
+            <div class="chart-wrap" style="height:270px">
+              <canvas id="paretoChart"></canvas>
+              <div id="paretoEmpty" class="chart-empty"><div style="font-size:28px;opacity:0.18">📊</div><div>工程エディタで要素を追加してください</div></div>
+            </div>
+          </div>
+
+          <div class="chart-card">
+            <div class="chart-title">動作分類の内訳（時間比率）</div>
+            <div class="chart-wrap" style="height:200px">
+              <canvas id="donutChart"></canvas>
+              <div id="donutEmpty" class="chart-empty"><div style="font-size:28px;opacity:0.18">🥧</div><div>工程エディタで要素を追加してください</div></div>
+            </div>
+          </div>
+
+          <div class="chart-card">
+            <div class="chart-title">カテゴリ別時間内訳</div>
+            <div class="chart-wrap" style="height:200px">
+              <canvas id="catChart"></canvas>
+              <div id="catEmpty" class="chart-empty"><div style="font-size:28px;opacity:0.18">📋</div><div>工程エディタで要素を追加してください</div></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
     </div>
 
-    <!-- 分析タブ -->
-    <div class="tab-content" id="tab-analysis">
-      <div class="analysis-wrap">
+    <!-- フッター -->
+    <footer>
+      <button class="btn btn-green" onclick="exportCSV()">↓ CSV</button>
+      <button class="btn btn-primary" onclick="exportJSON()">↓ JSON</button>
+      <button class="btn" onclick="loadJSON()">↑ JSON読込</button>
+      <span class="footer-info" id="stepCount">0 要素</span>
+      <button class="btn btn-danger" onclick="clearAll()">クリア</button>
+    </footer>
+  </div>
 
-        <!-- 1. パレート図 -->
-        <div class="chart-card">
-          <div class="chart-card-title">パレート図（時間降順）</div>
-          <div class="chart-legend">
-            <div class="legend-item"><div class="legend-dot" style="background:var(--type-va)"></div>主要 (VA)</div>
-            <div class="legend-item"><div class="legend-dot" style="background:var(--type-sv)"></div>補助 (SV)</div>
-            <div class="legend-item"><div class="legend-dot" style="background:var(--type-nva)"></div>ムダ (NVA)</div>
-            <div class="legend-item"><div class="legend-dot" style="background:var(--accent);border-radius:50%"></div>累積%</div>
-          </div>
-          <div class="chart-canvas-wrap" style="height:280px">
-            <canvas id="paretoChart"></canvas>
-            <div id="paretoEmpty" class="chart-empty" style="position:absolute;inset:0">
-              <div style="font-size:24px;opacity:0.2">📊</div>
-              <div>工程エディタで要素を追加してください</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 2. VA/SV/NVA ドーナツ -->
-        <div class="chart-card">
-          <div class="chart-card-title">動作分類の内訳（時間比率）</div>
-          <div class="chart-legend">
-            <div class="legend-item"><div class="legend-dot" style="background:var(--type-va)"></div>主要 (VA)</div>
-            <div class="legend-item"><div class="legend-dot" style="background:var(--type-sv)"></div>補助 (SV)</div>
-            <div class="legend-item"><div class="legend-dot" style="background:var(--type-nva)"></div>ムダ (NVA)</div>
-          </div>
-          <div class="chart-canvas-wrap" style="height:220px">
-            <canvas id="donutChart"></canvas>
-            <div id="donutEmpty" class="chart-empty" style="position:absolute;inset:0">
-              <div style="font-size:24px;opacity:0.2">🥧</div>
-              <div>工程エディタで要素を追加してください</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 3. カテゴリ別横棒 -->
-        <div class="chart-card">
-          <div class="chart-card-title">カテゴリ別時間（秒）</div>
-          <div class="chart-canvas-wrap" style="height:220px">
-            <canvas id="catChart"></canvas>
-            <div id="catEmpty" class="chart-empty" style="position:absolute;inset:0">
-              <div style="font-size:24px;opacity:0.2">📋</div>
-              <div>工程エディタで要素を追加してください</div>
-            </div>
-          </div>
-        </div>
-
+  <!-- ===== 右パネル ===== -->
+  <div class="properties">
+    <div class="props-header">集計</div>
+    <div class="props-scroll">
+      <div class="stat-block">
+        <div class="stat-label">正味時間（1サイクル）</div>
+        <div class="stat-value" id="totalSec">0.0</div>
+        <div class="stat-sub">秒</div>
       </div>
+      <div class="stat-block">
+        <div class="stat-label">標準時間（余裕込み）</div>
+        <div class="stat-value" id="stdSec" style="color:var(--sv)">0.0</div>
+        <div class="stat-sub">秒 = <span id="stdMin">0.000</span> min</div>
+      </div>
+      <div class="stat-block">
+        <div class="stat-label">付加価値率 (VA%)</div>
+        <div class="stat-value" id="vaRate" style="font-size:22px">—</div>
+        <div class="stat-sub">主要時間 ÷ 合計時間</div>
+        <div class="va-bar-wrap"><div class="va-bar" id="vaBar" style="width:0%"></div></div>
+        <div class="va-segs" id="vaSegs"></div>
+      </div>
+      <div class="stat-block">
+        <div class="stat-label">日次工数</div>
+        <div class="stat-value" id="dailyHour" style="font-size:20px">0.00 h</div>
+        <div class="stat-sub" id="dailyInfo"></div>
+      </div>
+      <div class="props-header" style="border-top:1px solid var(--border)">カテゴリ内訳</div>
+      <div id="breakdown"></div>
     </div>
   </div>
 
-  <!-- 右：集計 -->
-  <div class="panel-right">
-    <div class="panel-header">集計</div>
-    <div class="summary-block">
-      <div class="sum-label">正味時間（1サイクル）</div>
-      <div class="sum-value" id="totalSec">0.0</div>
-      <div class="sum-unit">秒</div>
-    </div>
-    <div class="summary-block">
-      <div class="sum-label">標準時間（余裕込み）</div>
-      <div class="sum-value" id="stdSec" style="color:var(--yellow)">0.0</div>
-      <div class="sum-unit">秒 = <span id="stdMin">0.000</span> min</div>
-    </div>
-    <div class="summary-block">
-      <div class="sum-label">付加価値率</div>
-      <div class="sum-value" style="font-size:22px" id="vaRate">—</div>
-      <div class="sum-unit">主要時間 ÷ 合計時間</div>
-      <div class="va-rate-bar-wrap"><div class="va-rate-bar" id="vaRateBar" style="width:0%"></div></div>
-      <div class="va-rate-segments" id="vaSegments"></div>
-    </div>
-    <div class="summary-block">
-      <div class="sum-label">日次工数</div>
-      <div class="sum-value" style="font-size:20px" id="dailyHour">0.00 h</div>
-      <div class="sum-unit" id="dailyInfo"></div>
-    </div>
-    <div class="panel-header" style="border-top:1px solid var(--border)">カテゴリ内訳</div>
-    <div class="panel-scroll" id="breakdown"></div>
-  </div>
-</main>
-
-<footer>
-  <button class="btn btn-csv" onclick="exportCSV()">CSV出力</button>
-  <button class="btn btn-json" onclick="exportJSON()">JSON保存</button>
-  <button class="btn btn-ghost" onclick="loadJSON()">JSON読込</button>
-  <span class="footer-info" id="stepCount">0 要素</span>
-  <button class="btn btn-danger" onclick="clearAll()">クリア</button>
-</footer>
+</div>
 
 <!-- カスタム要素モーダル -->
 <div class="modal-overlay" id="customModal">
@@ -555,8 +644,8 @@
       </select>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeCustomModal()">キャンセル</button>
-      <button class="btn-primary" onclick="saveCustom()">追加</button>
+      <button class="btn" onclick="closeCustomModal()">キャンセル</button>
+      <button class="modal-btn-primary" onclick="saveCustom()">追加</button>
     </div>
   </div>
 </div>
@@ -564,20 +653,33 @@
 <input type="file" id="jsonFileInput" accept=".json" style="display:none" onchange="handleJSONLoad(event)">
 
 <script>
-const TYPE_LABELS = { va: '主要', sv: '補助', nva: 'ムダ' };
-const TYPE_ORDER  = ['va', 'sv', 'nva'];
-const TYPE_COLORS = {
-  va:  'rgba(0,208,132,0.85)',
-  sv:  'rgba(255,209,102,0.85)',
-  nva: 'rgba(255,77,77,0.85)',
-};
-function cycleType(t) { return TYPE_ORDER[(TYPE_ORDER.indexOf(t) + 1) % TYPE_ORDER.length]; }
+// ===== 定数 =====
+const TYPE_LABELS = { va:'主要', sv:'補助', nva:'ムダ' };
+const TYPE_ORDER  = ['va','sv','nva'];
 
+function typeColors() {
+  const s = getComputedStyle(document.documentElement);
+  return {
+    va:  s.getPropertyValue('--va').trim()  || '#16a34a',
+    sv:  s.getPropertyValue('--sv').trim()  || '#d97706',
+    nva: s.getPropertyValue('--nva').trim() || '#dc2626',
+  };
+}
+function typeBgColors() {
+  const c = typeColors();
+  return {
+    va:  c.va  + 'cc',
+    sv:  c.sv  + 'cc',
+    nva: c.nva + 'cc',
+  };
+}
+function cycleType(t) { return TYPE_ORDER[(TYPE_ORDER.indexOf(t)+1)%TYPE_ORDER.length]; }
+
+// ===== ライブラリ =====
 const DEFAULT_LIBRARY = [
   { id:'w1',  cat:'移動系', icon:'🚶', name:'歩く',                          sec:1.5,  param:'distance', secPerUnit:0.015, defaultType:'nva' },
   { id:'w2',  cat:'移動系', icon:'🤚', name:'手を伸ばす',                    sec:1.0,  param:'distance', secPerUnit:0.02,  defaultType:'sv'  },
   { id:'w3',  cat:'移動系', icon:'↩️', name:'体を向ける・振り向く',          sec:1.5,  param:'none',                      defaultType:'nva' },
-
   { id:'g1',  cat:'把握・操作系', icon:'✋', name:'部品をつかむ',            sec:1.0, param:'none', defaultType:'sv'  },
   { id:'g2',  cat:'把握・操作系', icon:'📥', name:'部品を置く',              sec:1.0, param:'none', defaultType:'sv'  },
   { id:'g3',  cat:'把握・操作系', icon:'🔥', name:'部品を組み付ける・はめる', sec:2.0, param:'none', defaultType:'va'  },
@@ -585,7 +687,6 @@ const DEFAULT_LIBRARY = [
   { id:'g5',  cat:'把握・操作系', icon:'🔄', name:'持ち替え・向きを変える',  sec:1.5, param:'none', defaultType:'nva' },
   { id:'g6',  cat:'把握・操作系', icon:'🤜', name:'部品を圧入・押し込む',    sec:2.0, param:'none', defaultType:'va'  },
   { id:'g7',  cat:'把握・操作系', icon:'🔁', name:'部品を回転・ねじ込む',    sec:1.5, param:'none', defaultType:'va'  },
-
   { id:'f1',  cat:'固定系', icon:'🔓', name:'ねじ・クランプを緩める',        sec:2.0, param:'none', defaultType:'sv'  },
   { id:'f2',  cat:'固定系', icon:'🔩', name:'ボルト・ねじを手締めする',      sec:3.0, param:'none', defaultType:'va'  },
   { id:'f3',  cat:'固定系', icon:'🔧', name:'ボルト・ねじを工具で本締めする', sec:4.0, param:'none', defaultType:'va'  },
@@ -593,27 +694,23 @@ const DEFAULT_LIBRARY = [
   { id:'f5',  cat:'固定系', icon:'🗜️', name:'クランプ・バイスを解除する',    sec:2.0, param:'none', defaultType:'sv'  },
   { id:'f6',  cat:'固定系', icon:'📌', name:'ピン・キーを挿入する',          sec:2.0, param:'none', defaultType:'va'  },
   { id:'f7',  cat:'固定系', icon:'📍', name:'ピン・キーを抜く',              sec:2.0, param:'none', defaultType:'sv'  },
-
-  { id:'wl1', cat:'溶接・接合系', icon:'⚡', name:'スポット溶接する',        sec:2.0, param:'none',     defaultType:'va' },
-  { id:'wl2', cat:'溶接・接合系', icon:'🔦', name:'アーク溶接する',          sec:5.0, param:'none',                     defaultType:'va' },
-  { id:'wl3', cat:'溶接・接合系', icon:'🟡', name:'ろう付けする',            sec:4.0, param:'none',     defaultType:'va' },
-  { id:'wl4', cat:'溶接・接合系', icon:'💧', name:'接着剤を塗布・圧着する',  sec:4.0, param:'none',     defaultType:'va' },
-  { id:'wl5', cat:'溶接・接合系', icon:'🔗', name:'リベット・かしめる',      sec:3.0, param:'none',     defaultType:'va' },
-
-  { id:'m1',  cat:'機械・設定操作系', icon:'🔀', name:'スイッチ・ボタンを押す', sec:0.5,  param:'none', defaultType:'sv'  },
-  { id:'m2',  cat:'機械・設定操作系', icon:'🦶', name:'ペダルを踏む',           sec:0.5,  param:'none', defaultType:'sv'  },
-  { id:'m3',  cat:'機械・設定操作系', icon:'🚪', name:'ドアを開閉する',         sec:2.0,  param:'none', defaultType:'sv'  },
-  { id:'m4',  cat:'機械・設定操作系', icon:'▶️', name:'機械スタートを押す',     sec:0.5,  param:'none', defaultType:'sv'  },
-  { id:'m5',  cat:'機械・設定操作系', icon:'⏳', name:'機械加工完了を待つ',     sec:10.0, param:'none', defaultType:'nva' },
-  { id:'m6',  cat:'機械・設定操作系', icon:'⚙️', name:'治具・工具をセットする', sec:3.0,  param:'none', defaultType:'sv'  },
-  { id:'m7',  cat:'機械・設定操作系', icon:'🔩', name:'工具・治具を外す',       sec:2.0,  param:'none', defaultType:'sv'  },
-
+  { id:'wl1', cat:'溶接・接合系', icon:'⚡', name:'スポット溶接する',        sec:2.0, param:'none', defaultType:'va'  },
+  { id:'wl2', cat:'溶接・接合系', icon:'🔦', name:'アーク溶接する',          sec:5.0, param:'none', defaultType:'va'  },
+  { id:'wl3', cat:'溶接・接合系', icon:'🟡', name:'ろう付けする',            sec:4.0, param:'none', defaultType:'va'  },
+  { id:'wl4', cat:'溶接・接合系', icon:'💧', name:'接着剤を塗布・圧着する',  sec:4.0, param:'none', defaultType:'va'  },
+  { id:'wl5', cat:'溶接・接合系', icon:'🔗', name:'リベット・かしめる',      sec:3.0, param:'none', defaultType:'va'  },
+  { id:'m1',  cat:'機械・設定操作系', icon:'🔀', name:'スイッチ・ボタンを押す', sec:0.5, param:'none', defaultType:'sv'  },
+  { id:'m2',  cat:'機械・設定操作系', icon:'🦶', name:'ペダルを踏む',          sec:0.5, param:'none', defaultType:'sv'  },
+  { id:'m3',  cat:'機械・設定操作系', icon:'🚪', name:'ドアを開閉する',        sec:2.0, param:'none', defaultType:'sv'  },
+  { id:'m4',  cat:'機械・設定操作系', icon:'▶️', name:'機械スタートを押す',    sec:0.5, param:'none', defaultType:'sv'  },
+  { id:'m5',  cat:'機械・設定操作系', icon:'⏳', name:'機械加工完了を待つ',    sec:10.0,param:'none', defaultType:'nva' },
+  { id:'m6',  cat:'機械・設定操作系', icon:'⚙️', name:'治具・工具をセットする', sec:3.0, param:'none', defaultType:'sv'  },
+  { id:'m7',  cat:'機械・設定操作系', icon:'🔩', name:'工具・治具を外す',       sec:2.0, param:'none', defaultType:'sv'  },
   { id:'p1',  cat:'処理系', icon:'💨', name:'エアーで清掃する',               sec:2.0, param:'none', defaultType:'sv'  },
   { id:'p2',  cat:'処理系', icon:'🧴', name:'潤滑剤・シール剤を塗布する',     sec:3.0, param:'none', defaultType:'va'  },
   { id:'p3',  cat:'処理系', icon:'🖌️', name:'塗装・コーティングする',         sec:5.0, param:'none', defaultType:'va'  },
   { id:'p4',  cat:'処理系', icon:'🧼', name:'洗浄・脱脂する',                 sec:5.0, param:'none', defaultType:'va'  },
   { id:'p5',  cat:'処理系', icon:'🔥', name:'加熱・熱処理する',               sec:8.0, param:'none', defaultType:'va'  },
-
   { id:'c1',  cat:'確認・検査系', icon:'👁️', name:'目視検査する',             sec:3.0, param:'none', defaultType:'va'  },
   { id:'c2',  cat:'確認・検査系', icon:'📏', name:'寸法・トルクを測定する',   sec:5.0, param:'none', defaultType:'va'  },
   { id:'c3',  cat:'確認・検査系', icon:'🏷️', name:'ラベル・シールを貼る',     sec:3.0, param:'none', defaultType:'va'  },
@@ -628,144 +725,125 @@ let dragSrcIdx  = null;
 let paretoChart = null;
 let donutChart  = null;
 let catChart    = null;
-
-// カテゴリの折りたたみ状態（初期：すべて展開）
 const libCollapsed = {};
 
 function loadLibrary() {
-  const custom = JSON.parse(localStorage.getItem('st_custom_elements') || '[]');
+  const custom = JSON.parse(localStorage.getItem('st_custom_elements')||'[]');
   library = [...DEFAULT_LIBRARY, ...custom];
 }
 function saveCustomElements() {
-  localStorage.setItem('st_custom_elements', JSON.stringify(library.filter(x => x.custom)));
+  localStorage.setItem('st_custom_elements', JSON.stringify(library.filter(x=>x.custom)));
+}
+
+// ===== テーマ =====
+function initTheme() {
+  if (localStorage.getItem('st_theme') === 'dark') document.body.classList.add('dark');
+}
+function toggleTheme() {
+  document.body.classList.toggle('dark');
+  localStorage.setItem('st_theme', document.body.classList.contains('dark') ? 'dark' : 'light');
+  // グラフ再描画（色を更新）
+  const active = document.querySelector('.tab-pane.active');
+  if (active && active.id === 'tab-analysis') renderAnalysis();
 }
 
 // ===== タブ =====
 function switchTab(name) {
-  document.querySelectorAll('.tab-btn').forEach((b, i) => {
+  document.querySelectorAll('.tab-btn').forEach((b,i) => {
     b.classList.toggle('active', ['editor','analysis'][i] === name);
   });
-  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-  document.getElementById('tab-' + name).classList.add('active');
+  document.querySelectorAll('.tab-pane').forEach(c => c.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
   if (name === 'analysis') renderAnalysis();
 }
 
-// ===== ライブラリ描画（カテゴリ折りたたみ付き） =====
+// ===== ライブラリ描画 =====
 function renderLib() {
   const q  = document.getElementById('libSearch').value.toLowerCase();
   const el = document.getElementById('motionLib');
   el.innerHTML = '';
-
-  const filtered = q
-    ? library.filter(x => x.name.toLowerCase().includes(q) || x.cat.toLowerCase().includes(q))
-    : library;
-
+  const filtered = q ? library.filter(x=>x.name.toLowerCase().includes(q)||x.cat.toLowerCase().includes(q)) : library;
   const groups = {};
-  filtered.forEach(item => { (groups[item.cat] = groups[item.cat] || []).push(item); });
+  filtered.forEach(item => { (groups[item.cat]=groups[item.cat]||[]).push(item); });
 
   for (const [cat, items] of Object.entries(groups)) {
-    // 検索中は強制展開
     const isOpen = q ? true : !libCollapsed[cat];
-
-    const group = document.createElement('div');
+    const group  = document.createElement('div');
     group.className = 'lib-group';
 
-    const header = document.createElement('div');
-    header.className = 'lib-group-header';
-    header.innerHTML = `
-      <span class="lib-group-chevron ${isOpen ? 'open' : ''}">▶</span>
+    const hdr = document.createElement('div');
+    hdr.className = 'lib-group-header';
+    hdr.innerHTML = `<span class="lib-group-chevron ${isOpen?'open':''}">▶</span>
       <span class="lib-group-name">${cat}</span>
-      <span class="lib-group-count">${items.length}</span>
-    `;
-    header.addEventListener('click', () => {
-      libCollapsed[cat] = !libCollapsed[cat];
-      renderLib();
-    });
+      <span class="lib-group-count">${items.length}</span>`;
+    hdr.addEventListener('click', () => { libCollapsed[cat]=!libCollapsed[cat]; renderLib(); });
 
     const itemsEl = document.createElement('div');
-    itemsEl.className = `lib-group-items ${isOpen ? 'open' : ''}`;
+    itemsEl.className = `lib-group-items ${isOpen?'open':''}`;
 
     items.forEach(item => {
-      const dt = item.defaultType || 'sv';
-      const timeLabel = item.param === 'distance' ? `${item.secPerUnit}s/cm` : `${item.sec}s`;
+      const dt = item.defaultType||'sv';
+      const tl = item.param==='distance' ? `${item.secPerUnit}s/cm` : `${item.sec}s`;
       const btn = document.createElement('button');
       btn.className = 'motion-btn';
-      btn.innerHTML = `
-        <span class="motion-icon">${item.icon}</span>
+      btn.innerHTML = `<span class="motion-icon">${item.icon}</span>
         <span class="motion-name">${item.name}</span>
-        <span class="motion-time">${timeLabel}</span>
-        <span class="lib-type-badge ${dt}">${TYPE_LABELS[dt]}</span>
-        ${item.param === 'distance' ? '<span style="font-size:9px;color:var(--yellow);margin-left:1px">📐</span>' : ''}
-        ${item.custom ? '<span style="font-size:9px;color:var(--accent2);margin-left:1px">★</span>' : ''}
-      `;
+        <span class="motion-time">${tl}</span>
+        <span class="type-pill ${dt}">${TYPE_LABELS[dt]}</span>
+        ${item.param==='distance'?'<span style="font-size:9px;color:var(--sv)">📐</span>':''}
+        ${item.custom?'<span style="font-size:9px;color:var(--blue)">★</span>':''}`;
       btn.onclick = () => addStep(item);
       itemsEl.appendChild(btn);
     });
 
-    group.appendChild(header);
-    group.appendChild(itemsEl);
+    group.appendChild(hdr); group.appendChild(itemsEl);
     el.appendChild(group);
   }
 }
 
-// ===== ステップ追加 =====
+// ===== ステップ =====
 function addStep(item) {
-  steps.push({
-    ...item,
-    stepId:      Date.now() + Math.random(),
-    title:       '',
-    note:        '',
-    distanceVal: item.param === 'distance' ? 30 : null,
-    customSec:   item.param === 'distance' ? null : item.sec,
-    type:        item.defaultType || 'sv',
-  });
-  renderSteps();
-  updateSummary();
+  steps.push({ ...item, stepId:Date.now()+Math.random(), title:'', note:'',
+    distanceVal: item.param==='distance'?30:null,
+    customSec:   item.param==='distance'?null:item.sec,
+    type: item.defaultType||'sv' });
+  renderSteps(); updateSummary();
 }
 
 function calcStepSec(s) {
-  if (s.param === 'distance') return (s.secPerUnit || 0.02) * (s.distanceVal || 0);
-  return s.customSec != null ? s.customSec : s.sec;
+  if (s.param==='distance') return (s.secPerUnit||0.02)*(s.distanceVal||0);
+  return s.customSec!=null ? s.customSec : s.sec;
 }
 
-// ===== ステップ描画（1行） =====
 function renderSteps() {
   const el = document.getElementById('stepList');
   el.innerHTML = '';
-
-  if (steps.length === 0) {
+  if (!steps.length) {
     el.innerHTML = `<div class="step-empty">
-      <div style="font-size:28px;opacity:0.2">＋</div>
-      <div style="font-size:12px">左のライブラリからクリックして工程を組み立ててください</div>
-    </div>`;
-    return;
+      <div class="step-empty-icon">＋</div>
+      <div class="step-empty-text">左のライブラリからクリックして工程を組み立ててください</div>
+    </div>`; return;
   }
-
-  steps.forEach((s, i) => {
+  steps.forEach((s,i) => {
     const sec = calcStepSec(s);
-    const t   = s.type || 'sv';
-
+    const t   = s.type||'sv';
     const card = document.createElement('div');
     card.className = `step-card type-${t}`;
     card.draggable = true;
 
-    // 距離入力（距離パラメータがある動作のみ）
-    const distHtml = s.param === 'distance' ? `
+    const distHtml = s.param==='distance' ? `
       <div class="step-dist-wrap">
         <input class="step-dist-input" type="number" value="${s.distanceVal}" min="1" step="5"
-          onclick="event.stopPropagation()"
-          onchange="updateDist(${i},this.value)">
-        <span class="step-dist-unit">cm</span>
+          onclick="event.stopPropagation()" onchange="updateDist(${i},this.value)">
+        <span class="step-unit">cm</span>
       </div>` : '';
 
-    // 時間（距離パラメータ→計算値表示のみ、それ以外→編集可）
-    const timeHtml = s.param === 'distance'
-      ? `<div class="step-time-wrap"><span class="step-time-calc">${sec.toFixed(1)}</span><span class="step-time-unit">s</span></div>`
+    const timeHtml = s.param==='distance'
+      ? `<div class="step-time-wrap"><span class="step-time-calc">${sec.toFixed(1)}</span><span class="step-unit">s</span></div>`
       : `<div class="step-time-wrap">
            <input class="step-time-input" type="number" value="${sec}" min="0.1" step="0.1"
-             onclick="event.stopPropagation()"
-             onchange="updateTime(${i},this.value)">
-           <span class="step-time-unit">s</span>
+             onclick="event.stopPropagation()" onchange="updateTime(${i},this.value)">
+           <span class="step-unit">s</span>
          </div>`;
 
     card.innerHTML = `
@@ -773,289 +851,225 @@ function renderSteps() {
       <span class="step-num">${String(i+1).padStart(2,'0')}</span>
       <span class="step-icon">${s.icon}</span>
       <input class="step-title-input" type="text"
-        placeholder="${escHtml(s.name)}"
-        value="${escHtml(s.title)}"
-        onclick="event.stopPropagation()"
-        onchange="updateTitle(${i},this.value)"
-        title="ステップ名（空欄=動作名）">
+        placeholder="${escHtml(s.name)}" value="${escHtml(s.title)}"
+        onclick="event.stopPropagation()" onchange="updateTitle(${i},this.value)">
       <input class="step-memo-input" type="text"
-        placeholder="メモ…"
-        value="${escHtml(s.note)}"
-        onclick="event.stopPropagation()"
-        onchange="updateNote(${i},this.value)">
+        placeholder="メモ…" value="${escHtml(s.note)}"
+        onclick="event.stopPropagation()" onchange="updateNote(${i},this.value)">
       ${distHtml}
-      <span class="type-badge ${t}"
-        onclick="event.stopPropagation();toggleType(${i})"
-        title="クリックで分類切替">${TYPE_LABELS[t]}</span>
+      <span class="type-badge ${t}" onclick="event.stopPropagation();toggleType(${i})">${TYPE_LABELS[t]}</span>
       ${timeHtml}
-      <button class="step-del" onclick="event.stopPropagation();deleteStep(${i})">✕</button>
-    `;
+      <button class="step-del" onclick="event.stopPropagation();deleteStep(${i})">✕</button>`;
 
-    card.addEventListener('dragstart', e => {
-      dragSrcIdx = i; card.classList.add('dragging');
-      e.dataTransfer.effectAllowed = 'move';
-    });
-    card.addEventListener('dragend', () => {
-      card.classList.remove('dragging');
-      document.querySelectorAll('.step-card').forEach(c => c.classList.remove('drag-over'));
-    });
-    card.addEventListener('dragover',  e => { e.preventDefault(); card.classList.add('drag-over'); });
-    card.addEventListener('dragleave', () => card.classList.remove('drag-over'));
-    card.addEventListener('drop', e => {
-      e.preventDefault();
-      if (dragSrcIdx === null || dragSrcIdx === i) return;
-      const moved = steps.splice(dragSrcIdx, 1)[0];
-      steps.splice(i, 0, moved);
-      dragSrcIdx = null;
-      renderSteps(); updateSummary();
-    });
-
+    card.addEventListener('dragstart', e=>{ dragSrcIdx=i; card.classList.add('dragging'); e.dataTransfer.effectAllowed='move'; });
+    card.addEventListener('dragend',   ()=>{ card.classList.remove('dragging'); document.querySelectorAll('.step-card').forEach(c=>c.classList.remove('drag-over')); });
+    card.addEventListener('dragover',  e=>{ e.preventDefault(); card.classList.add('drag-over'); });
+    card.addEventListener('dragleave', ()=>card.classList.remove('drag-over'));
+    card.addEventListener('drop', e=>{ e.preventDefault();
+      if (dragSrcIdx===null||dragSrcIdx===i) return;
+      steps.splice(i,0,steps.splice(dragSrcIdx,1)[0]);
+      dragSrcIdx=null; renderSteps(); updateSummary(); });
     el.appendChild(card);
   });
 }
 
-function escHtml(s) {
-  return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-function toggleType(i)      { steps[i].type = cycleType(steps[i].type||'sv'); renderSteps(); updateSummary(); }
-function updateTitle(i, v)  { steps[i].title = v; }
-function updateNote(i, v)   { steps[i].note  = v; }
-function updateTime(i, v)   { steps[i].customSec = Math.max(0.1, parseFloat(v)||0.1); updateSummary(); }
-function updateDist(i, v)   { steps[i].distanceVal = parseFloat(v)||0; updateSummary(); renderSteps(); }
+function escHtml(s) { return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function toggleType(i)      { steps[i].type=cycleType(steps[i].type||'sv'); renderSteps(); updateSummary(); }
+function updateTitle(i,v)   { steps[i].title=v; }
+function updateNote(i,v)    { steps[i].note=v; }
+function updateTime(i,v)    { steps[i].customSec=Math.max(0.1,parseFloat(v)||0.1); updateSummary(); }
+function updateDist(i,v)    { steps[i].distanceVal=parseFloat(v)||0; updateSummary(); renderSteps(); }
 function deleteStep(i)      { steps.splice(i,1); renderSteps(); updateSummary(); }
 
 // ===== 集計 =====
 function updateSummary() {
-  const totalSec  = steps.reduce((s, x) => s + calcStepSec(x), 0);
-  const allowance = (parseFloat(document.getElementById('allowance').value)||0) / 100;
-  const stdSec    = totalSec * (1 + allowance);
-  const stdMin    = stdSec / 60;
-  const daily     = parseInt(document.getElementById('dailyCount').value)||100;
-  const dailyHour = stdMin * daily / 60;
+  const total   = steps.reduce((s,x)=>s+calcStepSec(x),0);
+  const allow   = (parseFloat(document.getElementById('allowance').value)||0)/100;
+  const std     = total*(1+allow);
+  const stdMin  = std/60;
+  const daily   = parseInt(document.getElementById('dailyCount').value)||100;
+  const dh      = stdMin*daily/60;
 
-  document.getElementById('totalSec').textContent  = totalSec.toFixed(1);
-  document.getElementById('stdSec').textContent    = stdSec.toFixed(1);
+  document.getElementById('totalSec').textContent  = total.toFixed(1);
+  document.getElementById('stdSec').textContent    = std.toFixed(1);
   document.getElementById('stdMin').textContent    = stdMin.toFixed(3);
-  document.getElementById('dailyHour').textContent = `${dailyHour.toFixed(2)} h`;
+  document.getElementById('dailyHour').textContent = `${dh.toFixed(2)} h`;
   document.getElementById('dailyInfo').textContent = `${daily}台/日 × ${stdMin.toFixed(3)} min`;
   document.getElementById('stepCount').textContent = `${steps.length} 要素`;
 
-  const typeSec = { va:0, sv:0, nva:0 };
-  steps.forEach(s => { typeSec[s.type||'sv'] += calcStepSec(s); });
-  const vaRate = totalSec > 0 ? typeSec.va / totalSec * 100 : null;
+  const ts = {va:0,sv:0,nva:0};
+  steps.forEach(s=>{ts[s.type||'sv']+=calcStepSec(s);});
+  const vaRate = total>0 ? ts.va/total*100 : null;
 
-  document.getElementById('vaRate').textContent    = vaRate !== null ? vaRate.toFixed(1)+'%' : '—';
-  document.getElementById('vaRateBar').style.width = vaRate !== null ? vaRate.toFixed(1)+'%' : '0%';
+  document.getElementById('vaRate').textContent   = vaRate!==null ? vaRate.toFixed(1)+'%' : '—';
+  document.getElementById('vaBar').style.width    = vaRate!==null ? vaRate.toFixed(1)+'%' : '0%';
 
-  const segs = document.getElementById('vaSegments');
-  segs.innerHTML = '';
-  [['va','var(--type-va)'],['sv','var(--type-sv)'],['nva','var(--type-nva)']].forEach(([k,col]) => {
-    if (!typeSec[k]) return;
-    const pct = (typeSec[k]/totalSec*100).toFixed(0);
-    const d = document.createElement('div');
-    d.className = 'va-seg';
-    d.innerHTML = `<div class="va-seg-dot" style="background:${col}"></div>
+  const segs = document.getElementById('vaSegs'); segs.innerHTML='';
+  const C = typeColors();
+  [['va',C.va],['sv',C.sv],['nva',C.nva]].forEach(([k,col])=>{
+    if (!ts[k]) return;
+    const pct = (ts[k]/total*100).toFixed(0);
+    const d = document.createElement('div'); d.className='va-seg';
+    d.innerHTML=`<div class="va-seg-dot" style="background:${col}"></div>
       <span style="color:${col}">${TYPE_LABELS[k]}</span>
-      <span style="color:var(--text-dim)">${typeSec[k].toFixed(1)}s (${pct}%)</span>`;
+      <span style="color:var(--text-3)">${ts[k].toFixed(1)}s (${pct}%)</span>`;
     segs.appendChild(d);
   });
 
-  const cats = {};
-  steps.forEach(s => {
-    if (!cats[s.cat]) cats[s.cat] = { icon:s.icon, cat:s.cat, count:0, sec:0 };
-    cats[s.cat].count++; cats[s.cat].sec += calcStepSec(s);
-  });
-  const maxSec = Math.max(...Object.values(cats).map(x=>x.sec), 0.001);
-  const bdEl = document.getElementById('breakdown');
-  bdEl.innerHTML = '';
-  Object.values(cats).sort((a,b)=>b.sec-a.sec).forEach(item => {
-    const d = document.createElement('div');
-    d.className = 'breakdown-item';
-    d.innerHTML = `<div class="bd-row">
-        <span class="bd-icon">${item.icon}</span>
-        <span class="bd-name">${item.cat}</span>
-        <span class="bd-count">×${item.count}</span>
-        <span class="bd-time">${item.sec.toFixed(1)}s</span>
+  // カテゴリ内訳
+  const cats={};
+  steps.forEach(s=>{ if(!cats[s.cat]) cats[s.cat]={icon:s.icon,cat:s.cat,count:0,sec:0};
+    cats[s.cat].count++; cats[s.cat].sec+=calcStepSec(s); });
+  const maxSec = Math.max(...Object.values(cats).map(x=>x.sec),0.001);
+  const bd=document.getElementById('breakdown'); bd.innerHTML='';
+  Object.values(cats).sort((a,b)=>b.sec-a.sec).forEach(item=>{
+    const d=document.createElement('div'); d.className='cat-item';
+    d.innerHTML=`<div class="cat-row">
+        <span class="cat-icon">${item.icon}</span>
+        <span class="cat-name">${item.cat}</span>
+        <span class="cat-count">×${item.count}</span>
+        <span class="cat-time">${item.sec.toFixed(1)}s</span>
       </div>
-      <div class="bd-bar-wrap"><div class="bd-bar" style="width:${item.sec/maxSec*100}%"></div></div>`;
-    bdEl.appendChild(d);
+      <div class="cat-bar-wrap"><div class="cat-bar" style="width:${item.sec/maxSec*100}%"></div></div>`;
+    bd.appendChild(d);
   });
 }
 
-// ===== 分析タブ：全グラフ描画 =====
-function renderAnalysis() {
-  renderParetoChart();
-  renderDonutChart();
-  renderCatChart();
+// ===== 分析グラフ =====
+function renderAnalysis() { renderParetoChart(); renderDonutChart(); renderCatChart(); }
+
+function setVis(cvs,emp,has) {
+  document.getElementById(cvs).style.display=has?'block':'none';
+  document.getElementById(emp).style.display=has?'none':'flex';
 }
 
-// 共通：空表示切り替え
-function setChartVisible(canvasId, emptyId, hasData) {
-  document.getElementById(canvasId).style.display = hasData ? 'block' : 'none';
-  document.getElementById(emptyId).style.display  = hasData ? 'none'  : 'flex';
+function chartDefaults() {
+  const isDark = document.body.classList.contains('dark');
+  return {
+    gridColor:  isDark ? 'rgba(42,48,66,0.7)' : 'rgba(200,210,225,0.6)',
+    tickColor:  isDark ? '#6b7a99' : '#64748b',
+    tooltipBg:  isDark ? '#1e2330' : '#fff',
+    tooltipBdr: isDark ? '#2a3042' : '#cad3df',
+    tooltipTitle: isDark ? '#e0e6f0' : '#172033',
+    tooltipBody:  isDark ? '#6b7a99' : '#64748b',
+    legendColor:  isDark ? '#6b7a99' : '#64748b',
+  };
 }
 
-// ---- 1. パレート図 ----
 function renderParetoChart() {
-  setChartVisible('paretoChart', 'paretoEmpty', steps.length > 0);
-  if (!steps.length) { if (paretoChart) { paretoChart.destroy(); paretoChart = null; } return; }
-
-  const sorted = [...steps]
-    .map(s => ({ label: s.title||s.name, sec: calcStepSec(s), type: s.type||'sv' }))
-    .sort((a,b) => b.sec - a.sec);
-  const total = sorted.reduce((s,x)=>s+x.sec, 0);
-  let cum = 0;
-  const cumPct = sorted.map(x => { cum += x.sec; return +(cum/total*100).toFixed(1); });
-
-  if (paretoChart) { paretoChart.destroy(); paretoChart = null; }
-  paretoChart = new Chart(document.getElementById('paretoChart'), {
-    data: {
-      labels: sorted.map((x,i) => `${String(i+1).padStart(2,'0')} ${x.label}`),
-      datasets: [
-        { type:'bar', label:'時間(秒)', data: sorted.map(x=>+x.sec.toFixed(2)),
-          backgroundColor: sorted.map(x=>TYPE_COLORS[x.type]),
-          borderColor: sorted.map(x=>TYPE_COLORS[x.type].replace('0.85','1')),
-          borderWidth:1, yAxisID:'y', order:2 },
-        { type:'line', label:'累積%', data: cumPct,
-          borderColor:'rgba(0,229,255,0.9)', backgroundColor:'rgba(0,229,255,0.08)',
-          pointBackgroundColor:'rgba(0,229,255,1)', pointRadius:3, borderWidth:2,
-          fill:false, yAxisID:'y2', order:1, tension:0.2 },
+  setVis('paretoChart','paretoEmpty',steps.length>0);
+  if (!steps.length) { if(paretoChart){paretoChart.destroy();paretoChart=null;} return; }
+  const C  = typeBgColors();
+  const df = chartDefaults();
+  const sorted=[...steps].map(s=>({label:s.title||s.name,sec:calcStepSec(s),type:s.type||'sv'})).sort((a,b)=>b.sec-a.sec);
+  const tot=sorted.reduce((s,x)=>s+x.sec,0);
+  let cum=0;
+  const cumPct=sorted.map(x=>{cum+=x.sec;return+(cum/tot*100).toFixed(1);});
+  if(paretoChart){paretoChart.destroy();paretoChart=null;}
+  paretoChart=new Chart(document.getElementById('paretoChart'),{
+    data:{
+      labels:sorted.map((x,i)=>`${String(i+1).padStart(2,'0')} ${x.label}`),
+      datasets:[
+        {type:'bar',label:'時間(秒)',data:sorted.map(x=>+x.sec.toFixed(2)),
+          backgroundColor:sorted.map(x=>C[x.type]),
+          borderColor:sorted.map(x=>C[x.type]),
+          borderWidth:0,yAxisID:'y',order:2},
+        {type:'line',label:'累積%',data:cumPct,
+          borderColor:'rgba(37,99,235,0.9)',backgroundColor:'rgba(37,99,235,0.07)',
+          pointBackgroundColor:'rgba(37,99,235,1)',pointRadius:3,borderWidth:2,
+          fill:false,yAxisID:'y2',order:1,tension:0.2},
       ],
     },
-    options: {
-      responsive:true, maintainAspectRatio:false,
-      interaction:{ mode:'index', intersect:false },
-      plugins: {
-        legend: { display:false },
-        tooltip: {
-          backgroundColor:'#1e2330', borderColor:'#2a3042', borderWidth:1,
-          titleColor:'#e0e6f0', bodyColor:'#6b7a99',
-          callbacks: { label: ctx => ctx.datasetIndex===0
-            ? ` ${ctx.parsed.y}秒  [${TYPE_LABELS[sorted[ctx.dataIndex].type]}]`
-            : ` 累積 ${ctx.parsed.y}%` },
-        },
-      },
-      scales: {
-        x: { ticks:{color:'#6b7a99',font:{size:10},maxRotation:45}, grid:{color:'rgba(42,48,66,0.6)'} },
-        y: { position:'left', title:{display:true,text:'時間 (秒)',color:'#6b7a99',font:{size:10}},
-             ticks:{color:'#6b7a99',font:{size:10}}, grid:{color:'rgba(42,48,66,0.6)'} },
-        y2:{ position:'right', min:0, max:100,
-             title:{display:true,text:'累積 (%)',color:'#00e5ff',font:{size:10}},
-             ticks:{color:'#00e5ff',font:{size:10},callback:v=>v+'%'},
-             grid:{drawOnChartArea:false} },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{legend:{display:false},
+        tooltip:{backgroundColor:df.tooltipBg,borderColor:df.tooltipBdr,borderWidth:1,
+          titleColor:df.tooltipTitle,bodyColor:df.tooltipBody,
+          callbacks:{label:ctx=>ctx.datasetIndex===0
+            ?` ${ctx.parsed.y}秒  [${TYPE_LABELS[sorted[ctx.dataIndex].type]}]`
+            :` 累積 ${ctx.parsed.y}%`}}},
+      scales:{
+        x:{ticks:{color:df.tickColor,font:{size:10},maxRotation:45},grid:{color:df.gridColor}},
+        y:{position:'left',title:{display:true,text:'時間 (秒)',color:df.tickColor,font:{size:10}},
+           ticks:{color:df.tickColor,font:{size:10}},grid:{color:df.gridColor}},
+        y2:{position:'right',min:0,max:100,
+            title:{display:true,text:'累積 (%)',color:df.tickColor,font:{size:10}},
+            ticks:{color:df.tickColor,font:{size:10},callback:v=>v+'%'},
+            grid:{drawOnChartArea:false}},
       },
     },
   });
 }
 
-// ---- 2. 動作分類ドーナツ ----
 function renderDonutChart() {
-  setChartVisible('donutChart', 'donutEmpty', steps.length > 0);
-  if (!steps.length) { if (donutChart) { donutChart.destroy(); donutChart = null; } return; }
-
-  const ts = { va:0, sv:0, nva:0 };
-  steps.forEach(s => { ts[s.type||'sv'] += calcStepSec(s); });
-  const total = ts.va + ts.sv + ts.nva;
-
-  if (donutChart) { donutChart.destroy(); donutChart = null; }
-  donutChart = new Chart(document.getElementById('donutChart'), {
-    type: 'doughnut',
-    data: {
-      labels: ['主要 (VA)', '補助 (SV)', 'ムダ (NVA)'],
-      datasets: [{
-        data: [+ts.va.toFixed(2), +ts.sv.toFixed(2), +ts.nva.toFixed(2)],
-        backgroundColor: ['rgba(0,208,132,0.8)', 'rgba(255,209,102,0.8)', 'rgba(255,77,77,0.8)'],
-        borderColor:     ['rgba(0,208,132,1)',    'rgba(255,209,102,1)',   'rgba(255,77,77,1)'],
-        borderWidth: 1,
-        hoverOffset: 6,
-      }],
+  setVis('donutChart','donutEmpty',steps.length>0);
+  if (!steps.length) { if(donutChart){donutChart.destroy();donutChart=null;} return; }
+  const C  = typeBgColors();
+  const df = chartDefaults();
+  const ts={va:0,sv:0,nva:0};
+  steps.forEach(s=>{ts[s.type||'sv']+=calcStepSec(s);});
+  const tot=ts.va+ts.sv+ts.nva;
+  if(donutChart){donutChart.destroy();donutChart=null;}
+  donutChart=new Chart(document.getElementById('donutChart'),{
+    type:'doughnut',
+    data:{
+      labels:['主要 (VA)','補助 (SV)','ムダ (NVA)'],
+      datasets:[{data:[+ts.va.toFixed(2),+ts.sv.toFixed(2),+ts.nva.toFixed(2)],
+        backgroundColor:[C.va,C.sv,C.nva],
+        borderColor:[C.va,C.sv,C.nva],
+        borderWidth:0,hoverOffset:5}],
     },
-    options: {
-      responsive:true, maintainAspectRatio:false,
-      cutout: '62%',
-      plugins: {
-        legend: {
-          display: true, position: 'right',
-          labels: { color:'#6b7a99', font:{size:11}, padding:14,
-            generateLabels: chart => {
-              const ds = chart.data.datasets[0];
-              return chart.data.labels.map((label, i) => ({
-                text: `${label}  ${ds.data[i].toFixed(1)}s  (${total>0?(ds.data[i]/total*100).toFixed(0):0}%)`,
-                fillStyle: ds.backgroundColor[i],
-                strokeStyle: ds.borderColor[i],
-                lineWidth: 1, hidden: false, index: i,
-              }));
-            },
-          },
-        },
-        tooltip: {
-          backgroundColor:'#1e2330', borderColor:'#2a3042', borderWidth:1,
-          titleColor:'#e0e6f0', bodyColor:'#6b7a99',
-          callbacks: {
-            label: ctx => {
-              const v = ctx.parsed;
-              const pct = total > 0 ? (v/total*100).toFixed(1) : 0;
-              return ` ${v.toFixed(1)}秒  (${pct}%)`;
-            },
-          },
-        },
-      },
+    options:{
+      responsive:true,maintainAspectRatio:false,cutout:'60%',
+      plugins:{
+        legend:{display:true,position:'right',
+          labels:{color:df.legendColor,font:{size:11},padding:12,boxWidth:10,
+            generateLabels:chart=>{
+              const ds=chart.data.datasets[0];
+              return chart.data.labels.map((lbl,i)=>({
+                text:`${lbl}  ${ds.data[i].toFixed(1)}s  (${tot>0?(ds.data[i]/tot*100).toFixed(0):0}%)`,
+                fillStyle:ds.backgroundColor[i],strokeStyle:ds.backgroundColor[i],
+                lineWidth:0,hidden:false,index:i}));}}},
+        tooltip:{backgroundColor:df.tooltipBg,borderColor:df.tooltipBdr,borderWidth:1,
+          titleColor:df.tooltipTitle,bodyColor:df.tooltipBody,
+          callbacks:{label:ctx=>{const v=ctx.parsed;const pct=tot>0?(v/tot*100).toFixed(1):0;return` ${v.toFixed(1)}秒  (${pct}%)`;}}}},
     },
   });
 }
 
-// ---- 3. カテゴリ別横棒 ----
 function renderCatChart() {
-  setChartVisible('catChart', 'catEmpty', steps.length > 0);
-  if (!steps.length) { if (catChart) { catChart.destroy(); catChart = null; } return; }
-
-  // カテゴリ集計（VA/SV/NVAに分解）
-  const cats = {};
-  steps.forEach(s => {
-    if (!cats[s.cat]) cats[s.cat] = { va:0, sv:0, nva:0 };
-    cats[s.cat][s.type||'sv'] += calcStepSec(s);
-  });
-  const sorted = Object.entries(cats)
-    .map(([cat, ts]) => ({ cat, total: ts.va+ts.sv+ts.nva, ...ts }))
-    .sort((a,b) => b.total - a.total);
-
-  const labels = sorted.map(x => x.cat);
-
-  if (catChart) { catChart.destroy(); catChart = null; }
-  catChart = new Chart(document.getElementById('catChart'), {
-    type: 'bar',
-    data: {
-      labels,
-      datasets: [
-        { label:'主要 (VA)', data: sorted.map(x=>+x.va.toFixed(2)),
-          backgroundColor:'rgba(0,208,132,0.8)', borderColor:'rgba(0,208,132,1)', borderWidth:1 },
-        { label:'補助 (SV)', data: sorted.map(x=>+x.sv.toFixed(2)),
-          backgroundColor:'rgba(255,209,102,0.8)', borderColor:'rgba(255,209,102,1)', borderWidth:1 },
-        { label:'ムダ (NVA)', data: sorted.map(x=>+x.nva.toFixed(2)),
-          backgroundColor:'rgba(255,77,77,0.8)', borderColor:'rgba(255,77,77,1)', borderWidth:1 },
+  setVis('catChart','catEmpty',steps.length>0);
+  if (!steps.length) { if(catChart){catChart.destroy();catChart=null;} return; }
+  const C  = typeBgColors();
+  const df = chartDefaults();
+  const cats={};
+  steps.forEach(s=>{if(!cats[s.cat])cats[s.cat]={va:0,sv:0,nva:0};cats[s.cat][s.type||'sv']+=calcStepSec(s);});
+  const sorted=Object.entries(cats).map(([cat,ts])=>({cat,total:ts.va+ts.sv+ts.nva,...ts})).sort((a,b)=>b.total-a.total);
+  if(catChart){catChart.destroy();catChart=null;}
+  catChart=new Chart(document.getElementById('catChart'),{
+    type:'bar',
+    data:{
+      labels:sorted.map(x=>x.cat),
+      datasets:[
+        {label:'主要 (VA)', data:sorted.map(x=>+x.va.toFixed(2)),  backgroundColor:C.va,  borderWidth:0},
+        {label:'補助 (SV)', data:sorted.map(x=>+x.sv.toFixed(2)),  backgroundColor:C.sv,  borderWidth:0},
+        {label:'ムダ (NVA)',data:sorted.map(x=>+x.nva.toFixed(2)), backgroundColor:C.nva, borderWidth:0},
       ],
     },
-    options: {
-      indexAxis: 'y',
-      responsive:true, maintainAspectRatio:false,
-      interaction:{ mode:'index', intersect:false },
-      plugins: {
-        legend: {
-          display:true, position:'top',
-          labels:{ color:'#6b7a99', font:{size:10}, padding:10, boxWidth:10 },
-        },
-        tooltip: {
-          backgroundColor:'#1e2330', borderColor:'#2a3042', borderWidth:1,
-          titleColor:'#e0e6f0', bodyColor:'#6b7a99',
-          callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.x.toFixed(1)}s` },
-        },
-      },
-      scales: {
-        x: { stacked:true,
-             ticks:{color:'#6b7a99',font:{size:10}}, grid:{color:'rgba(42,48,66,0.6)'},
-             title:{display:true,text:'時間 (秒)',color:'#6b7a99',font:{size:10}} },
-        y: { stacked:true,
-             ticks:{color:'#6b7a99',font:{size:10}}, grid:{color:'rgba(42,48,66,0.4)'} },
+    options:{
+      indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{display:true,position:'top',
+          labels:{color:df.legendColor,font:{size:10},padding:10,boxWidth:9}},
+        tooltip:{backgroundColor:df.tooltipBg,borderColor:df.tooltipBdr,borderWidth:1,
+          titleColor:df.tooltipTitle,bodyColor:df.tooltipBody,
+          callbacks:{label:ctx=>` ${ctx.dataset.label}: ${ctx.parsed.x.toFixed(1)}s`}}},
+      scales:{
+        x:{stacked:true,ticks:{color:df.tickColor,font:{size:10}},grid:{color:df.gridColor},
+           title:{display:true,text:'時間 (秒)',color:df.tickColor,font:{size:10}}},
+        y:{stacked:true,ticks:{color:df.tickColor,font:{size:10}},grid:{color:df.gridColor}},
       },
     },
   });
@@ -1065,102 +1079,79 @@ function renderCatChart() {
 function openCustomModal()  { document.getElementById('customModal').classList.add('open'); }
 function closeCustomModal() { document.getElementById('customModal').classList.remove('open'); }
 function saveCustom() {
-  const name = document.getElementById('customName').value.trim();
-  if (!name) { alert('動作名を入力してください'); return; }
-  library.push({
-    id: 'custom_'+Date.now(),
-    cat: document.getElementById('customCategory').value,
-    icon: document.getElementById('customIcon').value || '⚙️',
-    name,
-    sec: parseFloat(document.getElementById('customTime').value)||3,
-    param: document.getElementById('customParam').value,
-    secPerUnit: 0.02,
-    defaultType: document.getElementById('customDefaultType').value,
-    custom: true,
-  });
-  saveCustomElements(); renderLib(); closeCustomModal();
-  document.getElementById('customName').value = '';
+  const name=document.getElementById('customName').value.trim();
+  if(!name){alert('動作名を入力してください');return;}
+  library.push({id:'custom_'+Date.now(),
+    cat:document.getElementById('customCategory').value,
+    icon:document.getElementById('customIcon').value||'⚙️',
+    name,sec:parseFloat(document.getElementById('customTime').value)||3,
+    param:document.getElementById('customParam').value,secPerUnit:0.02,
+    defaultType:document.getElementById('customDefaultType').value,custom:true});
+  saveCustomElements();renderLib();closeCustomModal();
+  document.getElementById('customName').value='';
 }
 
-// ===== CSV =====
+// ===== CSV/JSON =====
 function exportCSV() {
-  if (!steps.length) { alert('工程が空です'); return; }
-  const name  = document.getElementById('processName').value||'工程';
-  const daily = document.getElementById('dailyCount').value;
-  const allow = document.getElementById('allowance').value;
-  const total = steps.reduce((s,x)=>s+calcStepSec(x),0);
-  const std   = total*(1+parseFloat(allow)/100);
-  const ts    = {va:0,sv:0,nva:0};
-  steps.forEach(s=>{ts[s.type||'sv']+=calcStepSec(s);});
-  const vaR = total>0?(ts.va/total*100).toFixed(1):'—';
-  let csv = '﻿';
-  csv += `工程名,${name}\n日次数量,${daily}\n余裕率,${allow}%\n正味時間(秒),${total.toFixed(1)}\n標準時間(秒),${std.toFixed(1)}\n付加価値率,${vaR}%\n主要時間(秒),${ts.va.toFixed(1)}\n補助時間(秒),${ts.sv.toFixed(1)}\nムダ時間(秒),${ts.nva.toFixed(1)}\n\n`;
-  csv += 'No,カテゴリ,タイトル,ライブラリ動作,分類,分類コード,距離(cm),時間(秒),メモ\n';
-  steps.forEach((s,i)=>{
-    const t=s.type||'sv';
-    csv+=`${i+1},${s.cat},"${s.title||s.name}","${s.name}",${TYPE_LABELS[t]},${t.toUpperCase()},${s.distanceVal||''},${calcStepSec(s).toFixed(1)},"${s.note}"\n`;
-  });
+  if(!steps.length){alert('工程が空です');return;}
+  const name=document.getElementById('processName').value||'工程';
+  const daily=document.getElementById('dailyCount').value;
+  const allow=document.getElementById('allowance').value;
+  const tot=steps.reduce((s,x)=>s+calcStepSec(x),0);
+  const std=tot*(1+parseFloat(allow)/100);
+  const ts={va:0,sv:0,nva:0};steps.forEach(s=>{ts[s.type||'sv']+=calcStepSec(s);});
+  const vaR=tot>0?(ts.va/tot*100).toFixed(1):'—';
+  let csv='﻿';
+  csv+=`工程名,${name}\n日次数量,${daily}\n余裕率,${allow}%\n正味時間(秒),${tot.toFixed(1)}\n標準時間(秒),${std.toFixed(1)}\n付加価値率,${vaR}%\n主要時間(秒),${ts.va.toFixed(1)}\n補助時間(秒),${ts.sv.toFixed(1)}\nムダ時間(秒),${ts.nva.toFixed(1)}\n\n`;
+  csv+='No,カテゴリ,タイトル,ライブラリ動作,分類,分類コード,距離(cm),時間(秒),メモ\n';
+  steps.forEach((s,i)=>{const t=s.type||'sv';
+    csv+=`${i+1},${s.cat},"${s.title||s.name}","${s.name}",${TYPE_LABELS[t]},${t.toUpperCase()},${s.distanceVal||''},${calcStepSec(s).toFixed(1)},"${s.note}"\n`;});
   dl(csv,`${name}_ST.csv`,'text/csv;charset=utf-8;');
 }
-
-// ===== JSON =====
 function exportJSON() {
-  if (!steps.length) { alert('工程が空です'); return; }
-  const name  = document.getElementById('processName').value||'工程';
-  const daily = parseInt(document.getElementById('dailyCount').value);
-  const allow = parseFloat(document.getElementById('allowance').value);
-  const total = steps.reduce((s,x)=>s+calcStepSec(x),0);
-  const ts    = {va:0,sv:0,nva:0};
-  steps.forEach(s=>{ts[s.type||'sv']+=calcStepSec(s);});
-  dl(JSON.stringify({
-    processName:name, dailyCount:daily, allowancePct:allow,
-    totalSec:+total.toFixed(1), stdSec:+(total*(1+allow/100)).toFixed(1),
-    vaRatePct:total>0?+(ts.va/total*100).toFixed(1):null,
-    steps: steps.map((s,i)=>({
-      no:i+1, cat:s.cat, icon:s.icon, name:s.name, title:s.title||'',
-      type:s.type||'sv', typeLabel:TYPE_LABELS[s.type||'sv'],
-      distanceVal:s.distanceVal||null, customSec:s.customSec||null,
-      sec:+calcStepSec(s).toFixed(1), note:s.note,
-    })),
-    exportedAt:new Date().toISOString(),
-  },null,2),`${name}_ST.json`,'application/json');
+  if(!steps.length){alert('工程が空です');return;}
+  const name=document.getElementById('processName').value||'工程';
+  const daily=parseInt(document.getElementById('dailyCount').value);
+  const allow=parseFloat(document.getElementById('allowance').value);
+  const tot=steps.reduce((s,x)=>s+calcStepSec(x),0);
+  const ts={va:0,sv:0,nva:0};steps.forEach(s=>{ts[s.type||'sv']+=calcStepSec(s);});
+  dl(JSON.stringify({processName:name,dailyCount:daily,allowancePct:allow,
+    totalSec:+tot.toFixed(1),stdSec:+(tot*(1+allow/100)).toFixed(1),
+    vaRatePct:tot>0?+(ts.va/tot*100).toFixed(1):null,
+    steps:steps.map((s,i)=>({no:i+1,cat:s.cat,icon:s.icon,name:s.name,title:s.title||'',
+      type:s.type||'sv',typeLabel:TYPE_LABELS[s.type||'sv'],
+      distanceVal:s.distanceVal||null,customSec:s.customSec||null,
+      sec:+calcStepSec(s).toFixed(1),note:s.note})),
+    exportedAt:new Date().toISOString()},null,2),`${name}_ST.json`,'application/json');
 }
-
-function dl(content, filename, mime) {
-  const a = Object.assign(document.createElement('a'), {
-    href: URL.createObjectURL(new Blob([content],{type:mime})), download: filename,
-  });
-  a.click(); URL.revokeObjectURL(a.href);
+function dl(content,filename,mime){
+  const a=Object.assign(document.createElement('a'),{
+    href:URL.createObjectURL(new Blob([content],{type:mime})),download:filename});
+  a.click();URL.revokeObjectURL(a.href);
 }
-
-function loadJSON() { document.getElementById('jsonFileInput').click(); }
-function handleJSONLoad(e) {
-  const file = e.target.files[0]; if (!file) return;
-  const reader = new FileReader();
-  reader.onload = ev => {
-    try {
-      const data = JSON.parse(ev.target.result);
-      document.getElementById('processName').value = data.processName||'';
-      document.getElementById('dailyCount').value  = data.dailyCount||100;
-      document.getElementById('allowance').value   = data.allowancePct||10;
-      steps = data.steps.map(s => {
-        const lib = library.find(x=>x.name===s.name)||{};
-        return { ...lib, ...s, stepId:Date.now()+Math.random(),
-          type:s.type||lib.defaultType||'sv', customSec:s.customSec||null };
-      });
-      renderSteps(); updateSummary();
-    } catch { alert('JSONの読み込みに失敗しました'); }
+function loadJSON(){document.getElementById('jsonFileInput').click();}
+function handleJSONLoad(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{const data=JSON.parse(ev.target.result);
+      document.getElementById('processName').value=data.processName||'';
+      document.getElementById('dailyCount').value=data.dailyCount||100;
+      document.getElementById('allowance').value=data.allowancePct||10;
+      steps=data.steps.map(s=>{const lib=library.find(x=>x.name===s.name)||{};
+        return{...lib,...s,stepId:Date.now()+Math.random(),type:s.type||lib.defaultType||'sv',customSec:s.customSec||null};});
+      renderSteps();updateSummary();
+    }catch{alert('JSONの読み込みに失敗しました');}
     e.target.value='';
-  };
-  reader.readAsText(file);
+  };reader.readAsText(file);
+}
+function clearAll(){
+  if(steps.length>0&&!confirm('工程をクリアしますか？'))return;
+  steps=[];renderSteps();updateSummary();
 }
 
-function clearAll() {
-  if (steps.length>0 && !confirm('工程をクリアしますか？')) return;
-  steps=[]; renderSteps(); updateSummary();
-}
-
-loadLibrary(); renderLib(); renderSteps(); updateSummary();
+// ===== 初期化 =====
+initTheme();loadLibrary();renderLib();renderSteps();updateSummary();
 </script>
 </body>
 </html>
