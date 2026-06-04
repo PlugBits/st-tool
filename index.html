@@ -1106,6 +1106,7 @@ function renderParetoChart() {
     },
     options:{
       responsive:true,maintainAspectRatio:false,
+      animation:false,
       interaction:{mode:'index',intersect:false},
       plugins:{legend:{display:false},
         tooltip:{backgroundColor:df.tooltipBg,borderColor:df.tooltipBdr,borderWidth:1,
@@ -1146,6 +1147,7 @@ function renderDonutChart() {
     },
     options:{
       responsive:true,maintainAspectRatio:false,cutout:'60%',
+      animation:false,
       plugins:{
         legend:{display:true,position:'right',
           labels:{color:df.legendColor,font:{size:11},padding:12,boxWidth:10,
@@ -1183,6 +1185,7 @@ function renderCatChart() {
     },
     options:{
       indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      animation:false,
       interaction:{mode:'index',intersect:false},
       plugins:{
         legend:{display:true,position:'top',
@@ -1490,6 +1493,9 @@ function exportJSON() {
 function waitFrame() {
   return new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
 }
+function settleCharts() {
+  [paretoChart,donutChart,catChart,ganttChart].forEach(chart=>{ if(chart) chart.update('none'); });
+}
 async function exportPDF() {
   if(!steps.length){alert('工程が空です');return;}
   if(!window.html2canvas || !window.jspdf?.jsPDF){alert('PDF出力ライブラリの読み込みに失敗しました');return;}
@@ -1504,8 +1510,16 @@ async function exportPDF() {
     await waitFrame();
     if (pages[i]==='analysis') renderAnalysis();
     if (pages[i]==='gantt') renderGanttChart();
+    settleCharts();
     await waitFrame();
-    const canvas=await html2canvas(captureTarget,{scale:2,backgroundColor:getComputedStyle(document.body).backgroundColor});
+    const canvas=await html2canvas(captureTarget,{
+      scale:2,
+      backgroundColor:getComputedStyle(document.body).backgroundColor,
+      onclone:doc=>{
+        const footer=doc.querySelector('.workspace > footer');
+        if(footer) footer.style.display='none';
+      },
+    });
     const img=canvas.toDataURL('image/png');
     const imgW=canvas.width;
     const imgH=canvas.height;
