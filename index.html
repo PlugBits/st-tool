@@ -226,6 +226,11 @@ body.dark .type-pill.nva { background: rgba(255,77,77,0.12); color: var(--nva); 
   padding: 5px 6px; border-radius: 4px; text-align: right;
 }
 .topbar input[type=number]:focus { outline: none; border-color: var(--blue); }
+.topbar-actions {
+  margin-left: auto;
+  display: flex; align-items: center; gap: 6px;
+  flex-shrink: 0;
+}
 
 /* タブ */
 .tab-bar {
@@ -445,6 +450,12 @@ body.dark .step-del:hover { background: rgba(220,38,38,0.15); }
 .chart-title {
   font-size: 14px; font-weight: 800; color: var(--text-2); letter-spacing: 0.04em;
 }
+.chart-title-row {
+  display: flex; align-items: center; gap: 10px; justify-content: space-between;
+}
+.chart-toolbar {
+  display: flex; align-items: center; gap: 6px; flex-shrink: 0;
+}
 .chart-legend { display: flex; gap: 10px; flex-wrap: wrap; }
 .legend-item  { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--text-3); }
 .legend-dot   { width: 9px; height: 9px; border-radius: 2px; flex-shrink: 0; }
@@ -492,7 +503,7 @@ footer {
   font-size: 12px; font-weight: 800; color: var(--blue);
   min-width: 112px; font-variant-numeric: tabular-nums;
 }
-.footer-select {
+.chart-select {
   border: 1px solid var(--border); border-radius: 4px;
   background: var(--surface2); color: var(--text-2);
   height: 30px; padding: 3px 6px; font-size: 12px; font-weight: 800;
@@ -569,7 +580,12 @@ select.modal-input { cursor: pointer; }
       <span class="topbar-label">余裕率</span>
       <input type="number" id="allowance" value="10" min="0" max="50" style="width:46px" oninput="updateSummary()">
       <span class="topbar-label">%</span>
-      <button class="theme-btn" onclick="toggleTheme()" title="テーマ切り替え">🌓</button>
+      <div class="topbar-actions">
+        <button class="btn" onclick="exportCSV()">↓ CSV ZIP</button>
+        <button class="btn btn-primary" onclick="exportJSON()">↓ JSON</button>
+        <button class="btn" onclick="loadJSON()">↑ JSON読込</button>
+        <button class="theme-btn" onclick="toggleTheme()" title="テーマ切り替え">🌓</button>
+      </div>
     </div>
 
     <div style="display:flex;flex-direction:column;overflow:hidden;flex:1">
@@ -625,7 +641,15 @@ select.modal-input { cursor: pointer; }
       <div class="tab-pane" id="tab-gantt">
         <div class="analysis-wrap">
           <div class="chart-card">
-            <div class="chart-title">連続動作チャート（ガントチャート型）</div>
+            <div class="chart-title-row">
+              <div class="chart-title">連続動作チャート（ガントチャート型）</div>
+              <div class="chart-toolbar">
+                <select class="chart-select" id="ganttMode" onchange="renderGanttChart()" title="連続動作チャートの表示単位">
+                  <option value="element">要素単位</option>
+                  <option value="group">グループ単位</option>
+                </select>
+              </div>
+            </div>
             <div class="chart-legend">
               <div class="legend-item"><div class="legend-dot" style="background:var(--va)"></div>主要</div>
               <div class="legend-item"><div class="legend-dot" style="background:var(--sv)"></div>補助</div>
@@ -643,17 +667,10 @@ select.modal-input { cursor: pointer; }
 
     <!-- フッター -->
     <footer>
-      <button class="btn" onclick="exportCSV()">↓ CSV ZIP</button>
-      <button class="btn btn-primary" onclick="exportJSON()">↓ JSON</button>
-      <button class="btn" onclick="loadJSON()">↑ JSON読込</button>
       <button class="btn" onclick="duplicateSelectedSteps()">選択複製</button>
       <button class="btn" onclick="groupSelectedSteps()">グループ化</button>
       <button class="btn" onclick="ungroupSelectedSteps()">解除</button>
       <button class="btn" onclick="clearStepSelection()">選択解除</button>
-      <select class="footer-select" id="ganttMode" onchange="renderGanttChart()" title="連続動作チャートの表示単位">
-        <option value="element">ガント: 要素</option>
-        <option value="group">ガント: グループ</option>
-      </select>
       <span class="selection-info" id="selectedTotal">選択 0.0s</span>
       <span class="footer-info" id="stepCount">0 要素</span>
       <button class="btn btn-danger" onclick="clearAll()">クリア</button>
@@ -1260,7 +1277,7 @@ function renderParetoChart() {
     },
     options:{
       responsive:true,maintainAspectRatio:false,
-      animation:false,
+      animation:{duration:650,easing:'easeOutQuart'},
       interaction:{mode:'index',intersect:false},
       plugins:{legend:{display:false},
         tooltip:{backgroundColor:df.tooltipBg,borderColor:df.tooltipBdr,borderWidth:1,
@@ -1301,7 +1318,7 @@ function renderDonutChart() {
     },
     options:{
       responsive:true,maintainAspectRatio:false,cutout:'60%',
-      animation:false,
+      animation:{duration:650,easing:'easeOutQuart'},
       plugins:{
         legend:{display:true,position:'right',
           labels:{color:df.legendColor,font:{size:11},padding:12,boxWidth:10,
@@ -1339,7 +1356,7 @@ function renderCatChart() {
     },
     options:{
       indexAxis:'y',responsive:true,maintainAspectRatio:false,
-      animation:false,
+      animation:{duration:650,easing:'easeOutQuart'},
       interaction:{mode:'index',intersect:false},
       plugins:{
         legend:{display:true,position:'top',
