@@ -166,6 +166,18 @@ body.dark {
   transition: background 0.1s;
 }
 .motion-btn:hover { background: var(--blue-bg); }
+.motion-row {
+  display: flex; align-items: stretch;
+}
+.motion-row .motion-btn { flex: 1; min-width: 0; }
+.custom-delete-btn {
+  width: 28px; flex-shrink: 0;
+  border: none; border-left: 1px solid var(--border);
+  background: transparent; color: var(--text-4);
+  cursor: pointer; font-size: 12px; font-weight: 900;
+}
+.custom-delete-btn:hover { color: var(--red); background: #fee2e2; }
+body.dark .custom-delete-btn:hover { background: rgba(220,38,38,0.15); }
 .motion-btn:disabled {
   opacity: 0.45;
   cursor: not-allowed;
@@ -863,7 +875,7 @@ const I18N = {
     valueCode:'価値分類コード', ieClass:'IE分類', distanceCsv:'距離(cm)', note:'メモ', displayUnit:'表示単位',
     startSec:'開始(秒)', endSec:'終了(秒)', categoryCsv:'カテゴリ', totalSecCsv:'合計(秒)', processNo:'工程No.',
     ieDonutTitle:'IE分類の内訳（時間比率）', duplicateGroup:'複製', groupCopySuffix:'コピー',
-    secPerCm:'距離あたり時間（秒/cm）',
+    secPerCm:'距離あたり時間（秒/cm）', deleteCustom:'削除', deleteCustomConfirm:'このカスタム要素を削除しますか？',
   },
   en: {
     appTitle:'Standard Time Design Tool', brandSub:'Standard Time Design Tool', searchMotion:'Search motions...',
@@ -901,7 +913,7 @@ const I18N = {
     valueCode:'Value class code', ieClass:'IE class', distanceCsv:'Distance (cm)', note:'Memo', displayUnit:'Display unit',
     startSec:'Start (sec)', endSec:'End (sec)', categoryCsv:'Category', totalSecCsv:'Total (sec)', processNo:'Process No.',
     ieDonutTitle:'IE Classification Breakdown (time ratio)', duplicateGroup:'Duplicate', groupCopySuffix:'copy',
-    secPerCm:'Time per distance (sec/cm)',
+    secPerCm:'Time per distance (sec/cm)', deleteCustom:'Delete', deleteCustomConfirm:'Delete this custom element?',
   }
 };
 const TYPE_LABELS_BY_LANG = {
@@ -1143,6 +1155,14 @@ function loadLibrary() {
 function saveCustomElements() {
   localStorage.setItem('st_custom_elements', JSON.stringify(library.filter(x=>x.custom)));
 }
+function deleteCustomElement(id) {
+  const item = library.find(x=>x.id===id && x.custom);
+  if (!item) return;
+  if (!confirm(t('deleteCustomConfirm'))) return;
+  library = library.filter(x=>x.id!==id);
+  saveCustomElements();
+  renderLib();
+}
 
 // ===== テーマ =====
 function initTheme() {
@@ -1242,7 +1262,25 @@ function renderLib() {
         ${item.param==='distance'?'<span style="font-size:9px;color:var(--sv)">📐</span>':''}
         ${item.custom?'<span style="font-size:9px;color:var(--blue)">★</span>':''}`;
       btn.onclick = () => addStep(item);
-      itemsEl.appendChild(btn);
+      if (item.custom) {
+        const row = document.createElement('div');
+        row.className = 'motion-row';
+        const del = document.createElement('button');
+        del.className = 'custom-delete-btn';
+        del.type = 'button';
+        del.title = t('deleteCustom');
+        del.setAttribute('aria-label', t('deleteCustom'));
+        del.textContent = '×';
+        del.onclick = e => {
+          e.stopPropagation();
+          deleteCustomElement(item.id);
+        };
+        row.appendChild(btn);
+        row.appendChild(del);
+        itemsEl.appendChild(row);
+      } else {
+        itemsEl.appendChild(btn);
+      }
     });
 
     group.appendChild(hdr); group.appendChild(itemsEl);
