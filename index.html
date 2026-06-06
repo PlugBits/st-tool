@@ -613,6 +613,9 @@ select.modal-input { cursor: pointer; }
 #ganttOverlayChart {
   display: block;
 }
+#editorOverlayCanvas {
+  margin: 0 auto;
+}
 
 </style>
 </head>
@@ -669,6 +672,9 @@ select.modal-input { cursor: pointer; }
 
       <!-- エディタ -->
       <div class="tab-pane active" id="tab-editor">
+        <div style="display:flex;justify-content:flex-end;padding:4px 8px 0;flex-shrink:0">
+          <button class="btn" onclick="openEditorOverlay()" data-i18n="editorFullview">⛶ 全体表示</button>
+        </div>
         <div class="step-list" id="stepList"></div>
       </div>
 
@@ -867,6 +873,18 @@ select.modal-input { cursor: pointer; }
   </div>
 </div>
 
+<!-- 工程エディタ全体表示オーバーレイ -->
+<div class="gantt-overlay" id="editorOverlay">
+  <div class="gantt-overlay-header">
+    <span class="gantt-overlay-title" id="editorOverlayTitle">工程</span>
+    <button class="btn btn-primary" onclick="saveEditorPng()" data-i18n="editorSavePng">↓ PNG保存</button>
+    <button class="btn" onclick="closeEditorOverlay()" title="閉じる (ESC)">✕ 閉じる</button>
+  </div>
+  <div class="gantt-overlay-body">
+    <canvas id="editorOverlayCanvas" style="display:block"></canvas>
+  </div>
+</div>
+
 <!-- 分析タブ全体表示オーバーレイ -->
 <div class="gantt-overlay" id="analysisOverlay">
   <div class="gantt-overlay-header">
@@ -964,6 +982,7 @@ const I18N = {
     secPerCm:'距離あたり時間（秒/cm）', deleteCustom:'削除', deleteCustomConfirm:'このカスタム要素を削除しますか？',
     ganttFullview:'⛶ 全体表示', ganttSavePng:'↓ PNG保存',
     analysisFullview:'⛶ 全体表示', analysisSavePng:'↓ PNG保存',
+    editorFullview:'⛶ 全体表示', editorSavePng:'↓ PNG保存',
   },
   en: {
     appTitle:'Standard Time Design Tool', brandSub:'Standard Time Design Tool', searchMotion:'Search motions...',
@@ -1004,6 +1023,7 @@ const I18N = {
     secPerCm:'Time per distance (sec/cm)', deleteCustom:'Delete', deleteCustomConfirm:'Delete this custom element?',
     ganttFullview:'⛶ Full view', ganttSavePng:'↓ Save PNG',
     analysisFullview:'⛶ Full view', analysisSavePng:'↓ Save PNG',
+    editorFullview:'⛶ Full view', editorSavePng:'↓ Save PNG',
   }
 };
 const TYPE_LABELS_BY_LANG = {
@@ -2161,6 +2181,245 @@ function renderGanttChart() {
   });
 }
 
+// ===== 工程エディタ全体表示 =====
+function openEditorOverlay() {
+  if (!steps.length) return;
+  document.getElementById('editorOverlay').classList.add('open');
+  renderEditorOverlayCanvas();
+}
+function closeEditorOverlay() {
+  document.getElementById('editorOverlay').classList.remove('open');
+}
+function saveEditorPng() {
+  const canvas = document.getElementById('editorOverlayCanvas');
+  if (!canvas) return;
+  const processName = document.getElementById('processName').value || t('processDefault');
+  const link = document.createElement('a');
+  link.download = `${fileSafeName(processName)}_steps.png`;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+
+function renderEditorOverlayCanvas() {
+  const canvas = document.getElementById('editorOverlayCanvas');
+  const ctx = canvas.getContext('2d');
+  const isDark = document.body.classList.contains('dark');
+  const processName = document.getElementById('processName').value || t('processDefault');
+
+  // タイトル更新
+  document.getElementById('editorOverlayTitle').textContent = processName;
+
+  // ===== デザイントークン =====
+  const bg       = isDark ? '#0f1117' : '#ffffff';
+  const surface  = isDark ? '#181c24' : '#f8fafc';
+  const border   = isDark ? '#2a3042' : '#cad3df';
+  const textMain = isDark ? '#e0e6f0' : '#172033';
+  const textSub  = isDark ? '#6b7a99' : '#64748b';
+  const blue     = isDark ? '#00e5ff' : '#2563eb';
+  const green    = isDark ? '#00d084' : '#16a34a';
+  const yellow   = isDark ? '#ffd166' : '#d97706';
+  const red      = isDark ? '#ff4d4d' : '#dc2626';
+  const typeColor = { va: green, sv: yellow, nva: red };
+
+  // ===== 計算 =====
+  const total = steps.reduce((s, x) => s + calcStepSec(x), 0);
+  const allow = (parseFloat(document.getElementById('allowance').value) || 0) / 100;
+  const std   = total * (1 + allow);
+  const daily = parseInt(document.getElementById('dailyCount').value) || 100;
+  const dh    = std / 60 * daily / 60;
+  const ts    = { va:0, sv:0, nva:0 };
+  steps.forEach(s => { ts[s.type||'sv'] += calcStepSec(s); });
+  const vaRate = total > 0 ? ts.va / total * 100 : 0;
+
+  const ieTotals = { transport:0, work:0, wait:0, inspect:0 };
+  steps.forEach(s => { const ie = s.ieClass||inferIeClass(s); ieTotals[ie] = (ieTotals[ie]||0) + calcStepSec(s); });
+  const IC = ieColors();
+
+  const catTotals = {};
+  steps.forEach(s => { catTotals[s.cat] = (catTotals[s.cat]||0) + calcStepSec(s); });
+  const catSorted = Object.entries(catTotals).sort((a,b)=>b[1]-a[1]);
+
+  // ===== レイアウト定数 =====
+  const outerPad = 32;
+  const W = 1200;
+
+  // --- サマリーカード ---
+  const summaryH = 200;
+  // --- ステップテーブル ---
+  const rowH   = 28;
+  const headerH = 32;
+  const tableH  = headerH + steps.length * rowH + 1;
+  const totalH  = outerPad + summaryH + 20 + tableH + outerPad;
+
+  canvas.width  = W;
+  canvas.height = totalH;
+  canvas.style.width  = W + 'px';
+  canvas.style.height = totalH + 'px';
+
+  // 背景
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, totalH);
+
+  // ===== サマリーカード =====
+  const sx = outerPad, sy = outerPad, sw = W - outerPad * 2, sh = summaryH;
+  ctx.fillStyle = surface;
+  ctx.strokeStyle = border;
+  ctx.lineWidth = 1;
+  roundRect(ctx, sx, sy, sw, sh, 6);
+  ctx.fill(); ctx.stroke();
+
+  // サマリーカード内のカラム
+  const cols = [
+    { label: t('netTime'),      value: total.toFixed(1), unit: t('seconds') },
+    { label: t('standardTime'), value: std.toFixed(1),   unit: t('seconds') },
+    { label: t('vaRate'),       value: vaRate.toFixed(1)+'%', unit: '' },
+    { label: t('dailyWorkload'),value: dh.toFixed(2)+' h', unit: '' },
+  ];
+  const colW = sw / cols.length;
+  ctx.font = '700 11px system-ui, sans-serif';
+  ctx.textBaseline = 'top';
+  cols.forEach((col, i) => {
+    const cx = sx + colW * i + 16;
+    const cy = sy + 16;
+    ctx.fillStyle = textSub;
+    ctx.font = '700 10px system-ui, sans-serif';
+    ctx.fillText(col.label.toUpperCase(), cx, cy);
+    ctx.fillStyle = blue;
+    ctx.font = 'bold 28px system-ui, sans-serif';
+    ctx.fillText(col.value, cx, cy + 18);
+    if (col.unit) {
+      ctx.fillStyle = textSub;
+      ctx.font = '11px system-ui, sans-serif';
+      ctx.fillText(col.unit, cx, cy + 52);
+    }
+    // 区切り線
+    if (i > 0) {
+      ctx.strokeStyle = border; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(sx + colW * i, sy + 12); ctx.lineTo(sx + colW * i, sy + sh - 12); ctx.stroke();
+    }
+  });
+
+  // VA率バー
+  const barY = sy + 90, barX = sx + 16, barW = sw - 32, barH2 = 6;
+  ctx.fillStyle = border;
+  roundRect(ctx, barX, barY, barW, barH2, 3); ctx.fill();
+  if (vaRate > 0) {
+    ctx.fillStyle = green;
+    roundRect(ctx, barX, barY, barW * vaRate / 100, barH2, 3); ctx.fill();
+  }
+  // VA/SV/NVA 内訳テキスト
+  let segX = barX;
+  ctx.font = '11px system-ui, sans-serif'; ctx.textBaseline = 'top';
+  [['va',green],['sv',yellow],['nva',red]].forEach(([k, col]) => {
+    if (!ts[k]) return;
+    const pct = (ts[k]/total*100).toFixed(0);
+    const label = `${TYPE_LABELS[k]} ${ts[k].toFixed(1)}s (${pct}%)`;
+    ctx.fillStyle = col;
+    ctx.fillText('■ ', segX, barY + 12);
+    ctx.fillStyle = textSub;
+    ctx.fillText(label, segX + 14, barY + 12);
+    segX += ctx.measureText('■ ' + label).width + 20;
+  });
+
+  // IE分類とカテゴリ内訳（下段）
+  const row2Y = sy + 130;
+  const halfW = (sw - 32) / 2;
+  // IE分類
+  ctx.fillStyle = textSub; ctx.font = '700 10px system-ui, sans-serif'; ctx.textBaseline = 'top';
+  ctx.fillText(t('ieBreakdown').toUpperCase(), sx + 16, row2Y);
+  let ieX = sx + 16, ieY = row2Y + 16;
+  IE_ORDER.filter(k=>ieTotals[k]>0).sort((a,b)=>ieTotals[b]-ieTotals[a]).forEach(k => {
+    ctx.fillStyle = IC[k]; ctx.fillText('■ ', ieX, ieY);
+    ctx.fillStyle = textSub; ctx.font = '11px system-ui, sans-serif';
+    ctx.fillText(`${IE_LABELS[k]}  ${ieTotals[k].toFixed(1)}s`, ieX + 14, ieY);
+    ieX += ctx.measureText(`■ ${IE_LABELS[k]}  ${ieTotals[k].toFixed(1)}s`).width + 20;
+  });
+  // カテゴリ内訳
+  ctx.fillStyle = textSub; ctx.font = '700 10px system-ui, sans-serif';
+  ctx.fillText(t('categoryBreakdown').toUpperCase(), sx + halfW + 32, row2Y);
+  let catX = sx + halfW + 32, catY = row2Y + 16;
+  catSorted.slice(0,4).forEach(([cat, sec]) => {
+    ctx.fillStyle = textSub; ctx.font = '11px system-ui, sans-serif';
+    const label = `${categoryLabel(cat)}  ${sec.toFixed(1)}s`;
+    ctx.fillText(label, catX, catY);
+    catX += ctx.measureText(label).width + 20;
+  });
+
+  // ===== ステップテーブル =====
+  const ty = sy + sh + 20;
+  const cols2 = [
+    { key:'no',    label:'No.',         w: 40 },
+    { key:'type',  label:t('valueClass'), w: 52 },
+    { key:'ie',    label:t('ieClass'),   w: 56 },
+    { key:'cat',   label:t('categoryCsv'), w: 100 },
+    { key:'title', label:t('title'),     w: 0 }, // flex
+    { key:'dist',  label:'cm',          w: 56 },
+    { key:'sec',   label:t('seconds'),  w: 52 },
+    { key:'note',  label:t('note'),     w: 160 },
+  ];
+  const fixedW = cols2.reduce((s,c)=>s+c.w, 0) - 0;
+  const flexW  = sw - fixedW - outerPad * 0 - cols2.length * 8;
+  // テーブルヘッダー背景
+  ctx.fillStyle = surface; ctx.strokeStyle = border; ctx.lineWidth = 1;
+  ctx.fillRect(sx, ty, sw, headerH);
+  ctx.strokeRect(sx, ty, sw, headerH);
+  // ヘッダーテキスト
+  ctx.fillStyle = textSub; ctx.font = '700 10px system-ui, sans-serif'; ctx.textBaseline = 'middle';
+  let hx = sx + 8;
+  cols2.forEach(col => {
+    const cw = col.w || flexW;
+    ctx.fillText(col.label, hx, ty + headerH / 2);
+    hx += cw + 8;
+  });
+  // 行
+  steps.forEach((s, i) => {
+    const ry = ty + headerH + i * rowH;
+    ctx.fillStyle = i % 2 === 0 ? bg : surface;
+    ctx.fillRect(sx, ry, sw, rowH);
+    ctx.strokeStyle = border; ctx.lineWidth = 0.5;
+    ctx.strokeRect(sx, ry, sw, rowH);
+
+    const type = s.type || 'sv';
+    const ie   = s.ieClass || inferIeClass(s);
+    const sec  = calcStepSec(s);
+    const vals = [
+      { v: String(i+1).padStart(2,'0'), w: cols2[0].w },
+      { v: TYPE_LABELS[type],           w: cols2[1].w, color: typeColor[type] },
+      { v: IE_LABELS[ie],               w: cols2[2].w },
+      { v: categoryLabel(s.cat),        w: cols2[3].w },
+      { v: stepLabel(s),                w: flexW },
+      { v: s.param==='distance' ? String(s.distanceVal||0) : '', w: cols2[5].w },
+      { v: sec.toFixed(1),              w: cols2[6].w },
+      { v: s.note || '',                w: cols2[7].w },
+    ];
+    let vx = sx + 8;
+    ctx.textBaseline = 'middle'; ctx.font = '12px system-ui, sans-serif';
+    vals.forEach(val => {
+      ctx.fillStyle = val.color || textMain;
+      const maxW2 = val.w - 4;
+      ctx.fillText(fitCanvasText(ctx, val.v, maxW2), vx, ry + rowH / 2);
+      vx += val.w + 8;
+    });
+    // 左アクセント線
+    ctx.fillStyle = typeColor[type];
+    ctx.fillRect(sx, ry, 3, rowH);
+  });
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
 // ===== 分析タブ全体表示 =====
 let ovParetoChart = null, ovDonutChart = null, ovIeDonutChart = null, ovCatChart = null;
 
@@ -2491,8 +2750,9 @@ function saveGanttPng() {
 
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
-    if (document.getElementById('ganttOverlay').classList.contains('open')) closeGanttOverlay();
-    if (document.getElementById('analysisOverlay').classList.contains('open')) closeAnalysisOverlay();
+    if (document.getElementById('ganttOverlay').classList.contains('open'))     closeGanttOverlay();
+    if (document.getElementById('analysisOverlay').classList.contains('open'))  closeAnalysisOverlay();
+    if (document.getElementById('editorOverlay').classList.contains('open'))    closeEditorOverlay();
   }
 });
 
