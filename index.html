@@ -2346,13 +2346,18 @@ async function saveAnalysisPng() {
   const totalW = innerW + outerPad * 2;
   const totalH = innerH + outerPad * 2;
 
+  const titleH = 36;
   const merged = document.createElement('canvas');
   merged.width  = totalW;
-  merged.height = totalH;
+  merged.height = totalH + titleH;
   const mctx = merged.getContext('2d');
   mctx.fillStyle = bg;
-  mctx.fillRect(0, 0, totalW, totalH);
-  let y = outerPad;
+  mctx.fillRect(0, 0, merged.width, merged.height);
+  mctx.fillStyle = isDark ? '#e0e6f0' : '#172033';
+  mctx.font = 'bold 18px system-ui, -apple-system, sans-serif';
+  mctx.textBaseline = 'middle';
+  mctx.fillText(processName, outerPad, outerPad + titleH / 2);
+  let y = outerPad + titleH;
   rows.forEach(c => {
     mctx.drawImage(c, outerPad, y);
     y += c.height + pad;
@@ -2466,13 +2471,18 @@ function saveGanttPng() {
   const processName = document.getElementById('processName').value || t('processDefault');
   const isDark = document.body.classList.contains('dark');
   const outerPad = 32;
+  const titleH = 36;
   const merged = document.createElement('canvas');
   merged.width  = canvas.width  + outerPad * 2;
-  merged.height = canvas.height + outerPad * 2;
+  merged.height = canvas.height + outerPad * 2 + titleH;
   const mctx = merged.getContext('2d');
   mctx.fillStyle = isDark ? '#0f1117' : '#eef2f6';
   mctx.fillRect(0, 0, merged.width, merged.height);
-  mctx.drawImage(canvas, outerPad, outerPad);
+  mctx.fillStyle = isDark ? '#e0e6f0' : '#172033';
+  mctx.font = 'bold 18px system-ui, -apple-system, sans-serif';
+  mctx.textBaseline = 'middle';
+  mctx.fillText(processName, outerPad, outerPad + titleH / 2);
+  mctx.drawImage(canvas, outerPad, outerPad + titleH);
   const link = document.createElement('a');
   link.download = `${fileSafeName(processName)}_gantt.png`;
   link.href = merged.toDataURL('image/png');
