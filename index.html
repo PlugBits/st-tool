@@ -2194,9 +2194,23 @@ function saveEditorPng() {
   const canvas = document.getElementById('editorOverlayCanvas');
   if (!canvas) return;
   const processName = document.getElementById('processName').value || t('processDefault');
+  const isDark = document.body.classList.contains('dark');
+  const outerPad = 32;
+  const titleH = 36;
+  const merged = document.createElement('canvas');
+  merged.width  = canvas.width;
+  merged.height = canvas.height + titleH;
+  const mctx = merged.getContext('2d');
+  mctx.fillStyle = isDark ? '#0f1117' : '#ffffff';
+  mctx.fillRect(0, 0, merged.width, merged.height);
+  mctx.fillStyle = isDark ? '#e0e6f0' : '#172033';
+  mctx.font = 'bold 18px system-ui, -apple-system, sans-serif';
+  mctx.textBaseline = 'middle';
+  mctx.fillText(processName, outerPad, titleH / 2);
+  mctx.drawImage(canvas, 0, titleH);
   const link = document.createElement('a');
   link.download = `${fileSafeName(processName)}_steps.png`;
-  link.href = canvas.toDataURL('image/png');
+  link.href = merged.toDataURL('image/png');
   link.click();
 }
 
