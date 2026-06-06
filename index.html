@@ -2242,11 +2242,16 @@ function renderEditorOverlayCanvas() {
   // ===== レイアウト定数 =====
   const outerPad = 32;
   const W = 1200;
+  const pad = 16;
 
-  // --- サマリーカード ---
-  const summaryH = 200;
+  // --- サマリー高さを動的計算 ---
+  const ieActive = IE_ORDER.filter(k => ieTotals[k] > 0);
+  const barRowH  = 20; // 各横棒グラフ行の高さ
+  const barSectionH = 16 + Math.max(ieActive.length, catSorted.length) * barRowH + 8;
+  const summaryH = 72 + 28 + 16 + barSectionH + 16; // 指標行 + VAバー行 + 区切り + バーセクション + 余白
+
   // --- ステップテーブル ---
-  const rowH   = 28;
+  const rowH    = 28;
   const headerH = 32;
   const tableH  = headerH + steps.length * rowH + 1;
   const totalH  = outerPad + summaryH + 20 + tableH + outerPad;
@@ -2262,87 +2267,111 @@ function renderEditorOverlayCanvas() {
 
   // ===== サマリーカード =====
   const sx = outerPad, sy = outerPad, sw = W - outerPad * 2, sh = summaryH;
-  ctx.fillStyle = surface;
-  ctx.strokeStyle = border;
-  ctx.lineWidth = 1;
-  roundRect(ctx, sx, sy, sw, sh, 6);
-  ctx.fill(); ctx.stroke();
+  ctx.fillStyle = surface; ctx.strokeStyle = border; ctx.lineWidth = 1;
+  roundRect(ctx, sx, sy, sw, sh, 6); ctx.fill(); ctx.stroke();
 
-  // サマリーカード内のカラム
-  const cols = [
-    { label: t('netTime'),      value: total.toFixed(1), unit: t('seconds') },
-    { label: t('standardTime'), value: std.toFixed(1),   unit: t('seconds') },
-    { label: t('vaRate'),       value: vaRate.toFixed(1)+'%', unit: '' },
-    { label: t('dailyWorkload'),value: dh.toFixed(2)+' h', unit: '' },
+  // ── 上段：4指標 ──
+  const kpiCols = [
+    { label: t('netTime'),      value: total.toFixed(1), unit: t('seconds'), color: blue },
+    { label: t('standardTime'), value: std.toFixed(1),   unit: t('seconds'), color: yellow },
+    { label: t('vaRate'),       value: vaRate.toFixed(1)+'%', unit: '', color: green },
+    { label: t('dailyWorkload'),value: dh.toFixed(2)+' h', unit: '', color: blue },
   ];
-  const colW = sw / cols.length;
-  ctx.font = '700 11px system-ui, sans-serif';
+  const kpiColW = sw / kpiCols.length;
   ctx.textBaseline = 'top';
-  cols.forEach((col, i) => {
-    const cx = sx + colW * i + 16;
-    const cy = sy + 16;
-    ctx.fillStyle = textSub;
-    ctx.font = '700 10px system-ui, sans-serif';
+  kpiCols.forEach((col, i) => {
+    const cx = sx + kpiColW * i + pad;
+    const cy = sy + pad;
+    ctx.fillStyle = textSub; ctx.font = '700 10px system-ui, sans-serif';
     ctx.fillText(col.label.toUpperCase(), cx, cy);
-    ctx.fillStyle = blue;
-    ctx.font = 'bold 28px system-ui, sans-serif';
-    ctx.fillText(col.value, cx, cy + 18);
-    if (col.unit) {
-      ctx.fillStyle = textSub;
-      ctx.font = '11px system-ui, sans-serif';
-      ctx.fillText(col.unit, cx, cy + 52);
-    }
-    // 区切り線
+    ctx.fillStyle = col.color; ctx.font = 'bold 26px system-ui, sans-serif';
+    ctx.fillText(col.value, cx, cy + 14);
+    if (col.unit) { ctx.fillStyle = textSub; ctx.font = '11px system-ui, sans-serif'; ctx.fillText(col.unit, cx, cy + 44); }
     if (i > 0) {
       ctx.strokeStyle = border; ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.moveTo(sx + colW * i, sy + 12); ctx.lineTo(sx + colW * i, sy + sh - 12); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(sx + kpiColW * i, sy + 8); ctx.lineTo(sx + kpiColW * i, sy + 68); ctx.stroke();
     }
   });
 
-  // VA率バー
-  const barY = sy + 90, barX = sx + 16, barW = sw - 32, barH2 = 6;
-  ctx.fillStyle = border;
-  roundRect(ctx, barX, barY, barW, barH2, 3); ctx.fill();
-  if (vaRate > 0) {
-    ctx.fillStyle = green;
-    roundRect(ctx, barX, barY, barW * vaRate / 100, barH2, 3); ctx.fill();
-  }
-  // VA/SV/NVA 内訳テキスト
-  let segX = barX;
+  // ── VA分類セグメントバー ──
+  const vaBarY  = sy + 72;
+  const vaBarX  = sx + pad;
+  const vaBarW  = sw - pad * 2;
+  const vaBarH  = 14;
+  ctx.fillStyle = border; roundRect(ctx, vaBarX, vaBarY, vaBarW, vaBarH, 3); ctx.fill();
+  let segCursor = 0;
+  [['va',green],['sv',yellow],['nva',red]].forEach(([k, col]) => {
+    if (!ts[k]) return;
+    const segW = vaBarW * (ts[k] / total);
+    ctx.fillStyle = col;
+    ctx.beginPath();
+    ctx.rect(vaBarX + segCursor, vaBarY, segW, vaBarH);
+    ctx.fill();
+    segCursor += segW;
+  });
+  // 凡例テキスト（バーの下）
+  let legX = vaBarX;
   ctx.font = '11px system-ui, sans-serif'; ctx.textBaseline = 'top';
   [['va',green],['sv',yellow],['nva',red]].forEach(([k, col]) => {
     if (!ts[k]) return;
     const pct = (ts[k]/total*100).toFixed(0);
-    const label = `${TYPE_LABELS[k]} ${ts[k].toFixed(1)}s (${pct}%)`;
-    ctx.fillStyle = col;
-    ctx.fillText('■ ', segX, barY + 12);
-    ctx.fillStyle = textSub;
-    ctx.fillText(label, segX + 14, barY + 12);
-    segX += ctx.measureText('■ ' + label).width + 20;
+    const label = `${TYPE_LABELS[k]}  ${ts[k].toFixed(1)}s  (${pct}%)`;
+    ctx.fillStyle = col; ctx.fillText('■', legX, vaBarY + vaBarH + 4);
+    ctx.fillStyle = textSub; ctx.fillText(` ${label}`, legX + 12, vaBarY + vaBarH + 4);
+    legX += ctx.measureText(`■ ${label}`).width + 24;
   });
 
-  // IE分類とカテゴリ内訳（下段）
-  const row2Y = sy + 130;
-  const halfW = (sw - 32) / 2;
-  // IE分類
+  // ── 区切り線 ──
+  const divY = vaBarY + vaBarH + 28;
+  ctx.strokeStyle = border; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(sx + pad, divY); ctx.lineTo(sx + sw - pad, divY); ctx.stroke();
+
+  // ── IE分類 横棒グラフ（左カラム） ──
+  const halfColW = (sw - pad * 3) / 2;
+  const barSecY  = divY + 12;
+  const barLabelW = 60, barTrackX = sx + pad + barLabelW + 4;
+  const barTrackW = halfColW - barLabelW - 8;
+  const ieMax = Math.max(...ieActive.map(k => ieTotals[k]), 0.001);
+
   ctx.fillStyle = textSub; ctx.font = '700 10px system-ui, sans-serif'; ctx.textBaseline = 'top';
-  ctx.fillText(t('ieBreakdown').toUpperCase(), sx + 16, row2Y);
-  let ieX = sx + 16, ieY = row2Y + 16;
-  IE_ORDER.filter(k=>ieTotals[k]>0).sort((a,b)=>ieTotals[b]-ieTotals[a]).forEach(k => {
-    ctx.fillStyle = IC[k]; ctx.fillText('■ ', ieX, ieY);
-    ctx.fillStyle = textSub; ctx.font = '11px system-ui, sans-serif';
-    ctx.fillText(`${IE_LABELS[k]}  ${ieTotals[k].toFixed(1)}s`, ieX + 14, ieY);
-    ieX += ctx.measureText(`■ ${IE_LABELS[k]}  ${ieTotals[k].toFixed(1)}s`).width + 20;
+  ctx.fillText(t('ieBreakdown').toUpperCase(), sx + pad, barSecY);
+  ieActive.sort((a,b)=>ieTotals[b]-ieTotals[a]).forEach((k, i) => {
+    const by = barSecY + 16 + i * barRowH;
+    const bw = barTrackW * (ieTotals[k] / ieMax);
+    // ラベル
+    ctx.fillStyle = textSub; ctx.font = '11px system-ui, sans-serif'; ctx.textBaseline = 'middle';
+    ctx.fillText(IE_LABELS[k], sx + pad, by + barRowH / 2);
+    // トラック
+    ctx.fillStyle = border;
+    roundRect(ctx, barTrackX, by + 4, barTrackW, barRowH - 8, 2); ctx.fill();
+    // バー
+    ctx.fillStyle = IC[k];
+    roundRect(ctx, barTrackX, by + 4, Math.max(bw, 2), barRowH - 8, 2); ctx.fill();
+    // 値
+    ctx.fillStyle = textSub; ctx.font = '10px system-ui, sans-serif'; ctx.textBaseline = 'middle';
+    ctx.fillText(ieTotals[k].toFixed(1)+'s', barTrackX + bw + 4, by + barRowH / 2);
   });
-  // カテゴリ内訳
-  ctx.fillStyle = textSub; ctx.font = '700 10px system-ui, sans-serif';
-  ctx.fillText(t('categoryBreakdown').toUpperCase(), sx + halfW + 32, row2Y);
-  let catX = sx + halfW + 32, catY = row2Y + 16;
-  catSorted.slice(0,4).forEach(([cat, sec]) => {
-    ctx.fillStyle = textSub; ctx.font = '11px system-ui, sans-serif';
-    const label = `${categoryLabel(cat)}  ${sec.toFixed(1)}s`;
-    ctx.fillText(label, catX, catY);
-    catX += ctx.measureText(label).width + 20;
+
+  // ── カテゴリ内訳 横棒グラフ（右カラム） ──
+  const catColX   = sx + pad + halfColW + pad;
+  const catLabelW = 80;
+  const catTrackX = catColX + catLabelW + 4;
+  const catTrackW = halfColW - catLabelW - 8;
+  const catMax    = catSorted.length ? catSorted[0][1] : 0.001;
+
+  ctx.fillStyle = textSub; ctx.font = '700 10px system-ui, sans-serif'; ctx.textBaseline = 'top';
+  ctx.fillText(t('categoryBreakdown').toUpperCase(), catColX, barSecY);
+  catSorted.forEach(([cat, sec], i) => {
+    const by = barSecY + 16 + i * barRowH;
+    const bw = catTrackW * (sec / catMax);
+    ctx.fillStyle = textSub; ctx.font = '11px system-ui, sans-serif'; ctx.textBaseline = 'middle';
+    ctx.fillText(fitCanvasText(ctx, categoryLabel(cat), catLabelW - 4), catColX, by + barRowH / 2);
+    ctx.fillStyle = border;
+    roundRect(ctx, catTrackX, by + 4, catTrackW, barRowH - 8, 2); ctx.fill();
+    ctx.fillStyle = blue + 'cc';
+    roundRect(ctx, catTrackX, by + 4, Math.max(bw, 2), barRowH - 8, 2); ctx.fill();
+    ctx.fillStyle = textSub; ctx.font = '10px system-ui, sans-serif'; ctx.textBaseline = 'middle';
+    ctx.fillText(sec.toFixed(1)+'s', catTrackX + bw + 4, by + barRowH / 2);
   });
 
   // ===== ステップテーブル =====
