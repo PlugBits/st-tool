@@ -2340,8 +2340,11 @@ async function saveAnalysisPng() {
 
   // 縦に積む: パレート / ドーナツ行 / カテゴリ
   const rows = [pareto, donutRow, cat];
-  const totalW = Math.max(...rows.map(c => c.width));
-  const totalH = rows.reduce((sum, c) => sum + c.height + pad, 0);
+  const outerPad = 32;
+  const innerW = Math.max(...rows.map(c => c.width));
+  const innerH = rows.reduce((sum, c) => sum + c.height + pad, -pad);
+  const totalW = innerW + outerPad * 2;
+  const totalH = innerH + outerPad * 2;
 
   const merged = document.createElement('canvas');
   merged.width  = totalW;
@@ -2349,9 +2352,9 @@ async function saveAnalysisPng() {
   const mctx = merged.getContext('2d');
   mctx.fillStyle = bg;
   mctx.fillRect(0, 0, totalW, totalH);
-  let y = 0;
+  let y = outerPad;
   rows.forEach(c => {
-    mctx.drawImage(c, 0, y);
+    mctx.drawImage(c, outerPad, y);
     y += c.height + pad;
   });
 
@@ -2461,9 +2464,18 @@ function saveGanttPng() {
   const canvas = document.getElementById('ganttOverlayChart');
   if (!canvas) return;
   const processName = document.getElementById('processName').value || t('processDefault');
+  const isDark = document.body.classList.contains('dark');
+  const outerPad = 32;
+  const merged = document.createElement('canvas');
+  merged.width  = canvas.width  + outerPad * 2;
+  merged.height = canvas.height + outerPad * 2;
+  const mctx = merged.getContext('2d');
+  mctx.fillStyle = isDark ? '#0f1117' : '#eef2f6';
+  mctx.fillRect(0, 0, merged.width, merged.height);
+  mctx.drawImage(canvas, outerPad, outerPad);
   const link = document.createElement('a');
   link.download = `${fileSafeName(processName)}_gantt.png`;
-  link.href = canvas.toDataURL('image/png');
+  link.href = merged.toDataURL('image/png');
   link.click();
 }
 
