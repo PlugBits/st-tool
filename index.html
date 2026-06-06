@@ -2247,7 +2247,7 @@ function renderAnalysisOverlay() {
                 fontColor:df.legendColor, lineWidth:0, hidden:false, index:i })); }}},
         tooltip:{ backgroundColor:df.tooltipBg, borderColor:df.tooltipBdr, borderWidth:1,
           titleColor:df.tooltipTitle, bodyColor:df.tooltipBody,
-          callbacks:{ label:ctx=>{ const v=ctx.parsed; const pct=totD>0?(v/totD*100).toFixed(1):0; return` ${v.toFixed(1)}${t('seconds')}  (${pct}%)`; }}}}},
+          callbacks:{ label:ctx=>{ const v=ctx.parsed; const pct=totD>0?(v/totD*100).toFixed(1):0; return` ${v.toFixed(1)}${t('seconds')}  (${pct}%)`; }}}},
     },
   });
 
@@ -2274,7 +2274,7 @@ function renderAnalysisOverlay() {
                 fontColor:df.legendColor, lineWidth:0, hidden:false, index:i })); }}},
         tooltip:{ backgroundColor:df.tooltipBg, borderColor:df.tooltipBdr, borderWidth:1,
           titleColor:df.tooltipTitle, bodyColor:df.tooltipBody,
-          callbacks:{ label:ctx=>{ const v=ctx.parsed; const pct=totI>0?(v/totI*100).toFixed(1):0; return` ${v.toFixed(1)}${t('seconds')}  (${pct}%)`; }}}}},
+          callbacks:{ label:ctx=>{ const v=ctx.parsed; const pct=totI>0?(v/totI*100).toFixed(1):0; return` ${v.toFixed(1)}${t('seconds')}  (${pct}%)`; }}}},
     },
   });
 
