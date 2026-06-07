@@ -3019,6 +3019,14 @@ const _origUpdateSummary = updateSummary;
 updateSummary = function() { _origUpdateSummary(); saveSession(); };
 
 // ===== 初期化 =====
+// URLパラメータ ?lang= があれば優先して適用（ja/en のみ対応）
+(function() {
+  const urlLang = new URLSearchParams(location.search).get('lang');
+  if (urlLang && I18N[urlLang]) {
+    currentLang = urlLang;
+    localStorage.setItem('st_lang', urlLang);
+  }
+})();
 initTheme(); loadLibrary();
 // ライブラリはデフォルト全折りたたみ（libCollapsed は既に空 = open なので逆に設定）
 DEFAULT_LIBRARY.forEach(item => { libCollapsed[item.cat] = true; });
